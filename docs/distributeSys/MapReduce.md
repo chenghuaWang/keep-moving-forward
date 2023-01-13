@@ -115,7 +115,224 @@ MR 最大的贡献我认为就是 scalability 和 fault tolerance。在 MillWhee
 
 我的实现在 WSL Ubuntu20.04 上 go版本 1.18。
 
+这次的要求貌似比以前更难了，这次需要 Worker 主动向 Master 请求任务，当任务超时后，需要 Master 来重新分配这个任务。
 
+总体思路其实也非常的简单，worker 和 coordinator 的交互都围绕着 RPC 展开，故先从 RPC 的定义开始。因为深受事件轮询编程模式的'荼毒'，我把 worker 和 coordinator 之间的交互过程以事件的形式来进行处理。首先定义事件的类型。
+
+```go
+// src/mr/rpc.go
+
+type TaskTp = int
+const (
+	TpRequireTask = iota
+	TpMapTaskDone
+	TpReduceTaskDone
+	TpSendMapTask
+	TpSendReduceTask
+	TpTaskAllDone
+	TpWait
+)
+```
+
+再来考虑 RPC 需要在 worker 和 coordinator 中传递什么信息？不论何种信息，首先都需要一个时间戳来记录 require 和 reply 对。其次每个 worker 都需要知道一共有多少个 Map 和 Reduce 任务。每个 require 需要跟上当前 worker 的任务编号。当然，因为是事件驱动的角度编写的，所以每条 require 和 reply 都需要有一个事件类型记录。
+
+```go
+// src/mr/rpc.go
+
+type RequireMsg struct {
+	Stamp   int64
+	MsgFlag TaskTp
+	TaskID  int
+}
+
+type ReplyMsg struct {
+	Stamp            int64
+	MsgFlag          TaskTp
+	TaskID           int
+	NumReduceWorkers int
+	NumMapWorkers    int
+	Content          string
+}
+```
+
+---
+
+对于 coordinator，其作用像是一个状态机，需要维护所有的 worker 的状态，并能做到回退(Fault Tolerance)。Coordinator 的定义如下
+
+```go
+// src/mr/coordinator.go
+
+type Coordinator struct {
+	nMapWorkers       int
+	nReduceWorkers    int
+	nMapWorking       int
+	nReduceWorking    int
+	MapWorkerState    []int64
+	ReduceWorkerState []int64
+	FilesContent      []string
+	MapWorkerPool     chan int
+	ReduceWorkerPool  chan int
+	IsDone            bool
+	GlobalLock        *sync.Cond // to make sure the rpc visit is atomic.
+}
+```
+
+coordinator 需要处理 RPC 的请求，对于不同的事件进行反应。因为需要超时处理，所以在这里，每一个 worker 都会有一个协程来进行相应的计时和 id 回收。
+
+```go
+// src/mr/coordinator.go
+
+func (c *Coordinator) ProcessEvents(args *RequireMsg, reply *ReplyMsg) error {
+	c.GlobalLock.L.Lock()
+	tmpBool := c.IsDone
+	c.GlobalLock.L.Unlock()
+	if tmpBool {
+		reply.MsgFlag = TpTaskAllDone
+		reply.Stamp = args.Stamp
+		return nil
+	}
+	switch args.MsgFlag {
+	case TpMapTaskDone:
+		c.GlobalLock.L.Lock()
+		if c.MapWorkerState[args.TaskID] == args.Stamp {
+			c.MapWorkerState[args.TaskID] = 1
+			c.nMapWorking--
+		}
+		c.GlobalLock.L.Unlock()
+	case TpReduceTaskDone:
+		c.GlobalLock.L.Lock()
+		if c.ReduceWorkerState[args.TaskID] == args.Stamp {
+			c.ReduceWorkerState[args.TaskID] = 1
+			c.nReduceWorking--
+		}
+		if c.nReduceWorking == 0 {
+			c.IsDone = true
+		}
+		c.GlobalLock.L.Unlock()
+	case TpRequireTask:
+		if len(c.MapWorkerPool) > 0 {
+			// State 1. Send Map Task to worker.
+			reply.Stamp = args.Stamp
+			reply.TaskID = <-c.MapWorkerPool
+			reply.MsgFlag = TpSendMapTask
+			reply.NumMapWorkers = c.nMapWorkers
+			reply.NumReduceWorkers = c.nReduceWorkers
+			reply.Content = c.FilesContent[reply.TaskID]
+			c.GlobalLock.L.Lock()
+			c.MapWorkerState[reply.TaskID] = args.Stamp
+			c.GlobalLock.L.Unlock()
+			go func(id int) {
+				time.Sleep(10 * time.Second)
+				c.GlobalLock.L.Lock()
+				if c.MapWorkerState[id] != 1 {
+					// run out of 10 secs. recycle this id to id pool.
+					c.MapWorkerPool <- id
+				}
+				c.GlobalLock.L.Unlock()
+			}(reply.TaskID)
+			return nil
+		} else {
+			c.GlobalLock.L.Lock()
+			nMapOnWorking := c.nMapWorking
+			nReduceOnWorking := c.nReduceWorking
+			c.GlobalLock.L.Unlock()
+			// State 2. All map worker is on working. wait.
+			if nMapOnWorking != 0 {
+				reply.Stamp = args.Stamp
+				reply.TaskID = -1
+				reply.MsgFlag = TpWait
+				reply.Content = "Just Wait !!! Map Worker !!!"
+				reply.NumMapWorkers = c.nMapWorkers
+				reply.NumReduceWorkers = c.nReduceWorkers
+			} else {
+				// State 3. Map is Done. Send Reduce task to works.
+				if len(c.ReduceWorkerPool) > 0 {
+					reply.Stamp = args.Stamp
+					reply.TaskID = <-c.ReduceWorkerPool
+					reply.MsgFlag = TpSendReduceTask
+					reply.Content = "Reduce no need to handle this"
+					reply.NumMapWorkers = c.nMapWorkers
+					reply.NumReduceWorkers = c.nReduceWorkers
+					c.GlobalLock.L.Lock()
+					c.ReduceWorkerState[reply.TaskID] = args.Stamp
+					c.GlobalLock.L.Unlock()
+					go func(id int) {
+						time.Sleep(10 * time.Second)
+						c.GlobalLock.L.Lock()
+						if c.ReduceWorkerState[id] != 1 {
+							// run out of 10 secs. resolved this id to id pool.
+							c.ReduceWorkerPool <- id
+						}
+						c.GlobalLock.L.Unlock()
+					}(reply.TaskID)
+				} else {
+					// State 4. All reduce worker is on working. wait.
+					if nReduceOnWorking != 0 {
+						reply.Stamp = args.Stamp
+						reply.TaskID = -1
+						reply.MsgFlag = TpWait
+						reply.Content = "Just Wait !!! Reduce Worker !!!"
+						reply.NumMapWorkers = c.nMapWorkers
+						reply.NumReduceWorkers = c.nReduceWorkers
+					}
+				}
+			}
+		}
+	default:
+		return nil
+	}
+	return nil
+}
+```
+
+同样的，在 worker 中的流程也是不断的循环产生事件，处理事件
+
+```go
+// src/mr/worker.go
+
+func Worker(mapf func(string, string) []KeyValue,
+	reducef func(string, []string) string) {
+	for true {
+		ThisStamp := time.Now().Unix()
+		Req := RequireMsg{}
+		Req.Stamp = ThisStamp
+		Req.MsgFlag = TpRequireTask
+		Req.TaskID = -1
+		Rep := ReplyMsg{}
+		ok := call("Coordinator.ProcessEvents", &Req, &Rep)
+		if ok && Rep.Stamp == Req.Stamp {
+			switch Rep.MsgFlag {
+			case TpSendMapTask:
+				doMap(mapf, &Rep)
+			case TpSendReduceTask:
+				doReduce(reducef, &Rep)
+			case TpWait:
+				time.Sleep(time.Second)
+			case TpTaskAllDone:
+				return
+			default:
+				return
+			}
+		}
+	}
+	return
+}
+```
+
+`doMap(mapf, &Rep)` 和 `doReduce(reducef, &Rep)` 就是非常简单的逻辑编写了。Map需要把文件分拆到`N=numReduce`块中，总共产生`N * M(reduce num, map num)`块文件。Reduce worker从自己对应的编号中取出`M`块进行排序和合并。
+
+---
+
+结果顺利通过，没有过多的延迟(因为10s的判断)产生。
+
+<div align="center"> 
+<img src="./imgs/test-mr-pass.png" width = "40%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">Fig 2. test mr</div>
+</div>
 
 # Reference
 

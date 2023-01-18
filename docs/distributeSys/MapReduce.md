@@ -1,6 +1,6 @@
 # MapReduce
 
-OSDI ’04: 6th Symposium on Operating Systems Design and Implementation
+OSDI'04: 6th Symposium on Operating Systems Design and Implementation
 
 [go back to home](/)
 

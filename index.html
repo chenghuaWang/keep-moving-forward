@@ -1,1 +1,312 @@
-<script language="javascript"> location.replace("https://chenghuawang.github.io/keep-moving-forward/public/index.html") </script> 
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta name="generator" content="Hugo 0.109.0">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="Ubios&#39; blog, paper&amp;tech">
+		<meta property="og:title" content="Ubios Home" />
+<meta property="og:description" content="Ubios&#39; blog, paper&amp;tech" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/" />
+
+		<meta itemprop="name" content="Ubios Home">
+<meta itemprop="description" content="Ubios&#39; blog, paper&amp;tech">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/css/style.css">
+	
+	<link rel="alternate" type="application/rss+xml" href="/index.xml" title="Ubios Home">
+
+	<link rel="shortcut icon" href="/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo">
+		<a class="logo__link" href="/" title="Ubios Home" rel="home">
+			<div class="logo__item logo__text">
+					<div class="logo__title">Ubios Home</div>
+					
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Post</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+<main class="main list" role="main">
+	<article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/papers/ft-vm/" rel="bookmark">
+			The Design of a Practical System for Fault-Tolerant Virtual Machines
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of paper, ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-19T00:00:00Z">2023-01-19</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/distributed-sys/" rel="category">distributed sys</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		go back to home
+Paper link
+ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.
+Last Edit: Jan 19, 2023
+Introduction 是的，这节内容还是 FT(fault-tolerance)。现在做 FT 主要有两种手段[2]：
+State transfer Primary用来执行所有的任务，Primary发送该机器的所有状态(所有的内存变动，所有的磁盘变动，等)给Replica。State Transfer 虽然听起来非常的简单(实际上做起来也是的，相对于Replicated state machine)，但是需要占用非常大量的网络带宽来实现。
+尽管如此(占用大量的网络资源，导致传输缓慢)，State Transfer是对多处理器友好的一种方式，而Replicated state machine则不是。
+Replicated state machine Client 向 Primary 发送操作和数据(inputs)。Primary把这些操作和数据发送给Replicas，Replicas和Primary都会执行这些指令，都会受到这些数据(inputs)，所有的指令都以同样的顺序执行，只要Primary和Replicas初始的状态是一致的，那么二者就一直保持着同步(也意味着deterministic)。
+在并行化的应用中，State transfer 是首选，毕竟在并行的时候，并行顺序对于Replicated state machine来说是异常难同步的。
+主从复制时的挑战[2]：
+要复制什么状态 primary需要等待backup吗 什么时候需要切换到backup 切换的时候异常情况是否能看到 如何提高创建新backup的速度 VM-FT使用的就是Replicated state machine的方法。为了能够捕获数据，并且做出一些软件中断，Primary和Backup都是在VM上运行的，由hypervisor来管理他们。
+Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-FT主要依赖于 Deterministic replay(确定性重放)。VM-FT 通过确定性重放来产生相关的日志条目，但不将日志写入磁盘，而是通过 logging channel 发送给backup(这里指备用机)。backup实时重放日志项。
+因为一切都是在 logging channel 上做同步的。为了容错，必须在 logging channel 上实现严格的容错协议，有以下要求：
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/papers/ft-vm/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/papers/gfs/" rel="bookmark">
+			Google File System(GFS)
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of paper, Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp. 20-43</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-18T00:00:00Z">2023-01-18</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/distributed-sys/" rel="category">distributed sys</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		go back to home
+Paper link
+Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp. 20-43
+Last Edit: Jan 18, 2023
+GFS 有非常多的东西，这里只写了一些重要的部分。像是snapshot，文件删除，高可用机制，Replica管理等没有具体提及。
+Introduction GFS是google提出的一个可扩展分布式文件系统，为大型分布式数据密集型应用提供服务。可以在大规模的消费级机器集群上提供不错的容错能力。GFS在设计的时候主要依据6个假设(观察得出的):
+节点失效经常发生。系统由非常多的消费级机器组成，大量用户同时进行访问，这使得节点很容易因为程序bug、磁盘故障、内存故障等原因失效。 存储以大文件为主。每个文件通常100MB或几GB。系统需要支持小文件，但不需要对其进行特殊的优化。 大容量连续读，小容量随机读取是文件系统中的常态。 写入也已大容量为主，小容量无需特殊优化。 支持原子的文件追加操作。使得大量用户可以并行追加文件，而不需要额外的加锁机制。 高吞吐量比低延时更重要 为什么设计一个优秀的分布式存储系统非常的困难:
+Performance. 当数据量非常大的时候，数据分片(Sharding)是非常重要的。 Fault Tolerance. 但是由于数据在多台服务器上分片。由于多台服务器，整个系统出现故障的概率会大很多。因此需要容错机制 Replication. 复制数据副本到多台服务器上，但是为了用户能够拿到一致的数据，需要考虑一致性 Consistency. 为了一致性，不得不使用网络(极慢的数据交互方式)进行确认和同步。这又会影响性能(Performance)!!! 世界因此变成了一个美妙的环。:-)。这也是分布式的挑战之处。
+GFS讨论了上述的这些主题和在实际生产场景中的应用。
+Architecture Fig 1. GFS Arch[1] 一个GFS集群由一个Master节点和若干个Chunk Server节点组成。每个Chunk Server可以被许多个Client访问。GFS Chunk Server作为用户级进程在Linux服务器中运行，并且文件系统本身使用的就是Linux系统的那套。(所以文中说，没有特地的为GFS Chunk Server加入cache功能，因为Linux文件系统已经干了这件事)
+Chunk: GFS中的文件在存储的时候会被分割成多个Chunk，每个Chunk的大小为64MB。在Chunk分配的时候，Master会分配一个Handle给Chunk，类似于指针。Chunk在google的实现中，使用3份副本。
+Master: 维护元数据，记录文件被分割为哪些Chunk、以及这些Chunk的存储位置；它还负责Chunk的迁移、重新平衡(rebalancing)和垃圾回收；此外，Master通过心跳机制与ChunkServer通信，向其传递指令(是的，也是通过心跳机制)，并收集状态；
+Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，再从 Chunk Server获取数据。Client并不会每次都向Master发送数据进行询问，它会cache一部分的数据(不是Chunk的，是某个文件对应的Chunk Server的位置，即Chunk的地址)，并且保持一定的时间。
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/papers/gfs/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/papers/mapreduce/" rel="bookmark">
+			MapReduce
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of paper, OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-17T00:00:00Z">2023-01-17</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/distributed-sys/" rel="category">distributed sys</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		MapReduce OSDI'04: 6th Symposium on Operating Systems Design and Implementation
+go back to home
+Paper link
+什么是 MapReduce 在MapReduce原文中是这么说的
+MapReduce is a programming model and an associated implementation for processing and generating large data sets. [1]
+这是一个较为简单的处理大型问题的分布式编程模型。其产生的原因是因为 google 想要让普通的程序员也能够通过一套简单的编程模型来编写分布式应用程序，以此来处理 google 内部的大数据。然后著名的 Jeff Dean 和 Sanjay Ghemawat 出马搞定了这个问题(在知乎上关于Jeff Dean的轶事:-))。MapReduce 在 google 内部运行很长的时间并且处理了很多业务，但是目前也败下阵来，具体原因参见 MapReduce 缺陷章节(MR早在2004年就出来了，其实是古早的技术了，其没有在性能上做文章，主要在可扩展性上)。
+MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框架，思路也非常的直白。MapReduce 背后的核心思想是将数据集映射到一个 &lt;key, value&gt; pair的集合中，然后使用相同的键对所有pair进行整合。 整体概念很简单，但是如果你设想下下面的情况，MR实际上非常有用: 基本上所有的数据都能被映射到一个 &lt;key, value&gt; 对中，并且key和value可以是任意类型。
+在论文中MR使用的样例是在超大的文件里做单词统计。这个框架还可以用来做：
+分布式的排序 分布式的搜索 Web链接图遍历 &hellip; Fig 1.
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/papers/mapreduce/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/about/about/" rel="bookmark">
+			About
+			</a>
+		</h2>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-01T00:00:00Z">2023-01-01</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/trivial/" rel="category">trivial</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/about/paper_posts/" rel="bookmark">
+			Paper-Post
+			</a>
+		</h2>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-01T00:00:00Z">2023-01-01</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/trivial/" rel="category">trivial</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/about/tech_posts/" rel="bookmark">
+			Tech-Posts
+			</a>
+		</h2>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-01T00:00:00Z">2023-01-01</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/trivial/" rel="category">trivial</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		
+	</div>
+</article>
+</main>
+
+
+			</div>
+			<aside class="sidebar"><div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="https://google.com/search">
+		<label>
+			<input class="widget-search__field" type="search" placeholder="SEARCH…" value="" name="q" aria-label="SEARCH…">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="don&#39;t use this search" value="don&#39;t use this search/">
+	</form>
+</div>
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/papers/ft-vm/">The Design of a Practical System for Fault-Tolerant Virtual Machines</a></li>
+			<li class="widget__item"><a class="widget__link" href="/papers/gfs/">Google File System(GFS)</a></li>
+			<li class="widget__item"><a class="widget__link" href="/papers/mapreduce/">MapReduce</a></li>
+			<li class="widget__item"><a class="widget__link" href="/about/about/">About</a></li>
+			<li class="widget__item"><a class="widget__link" href="/about/paper_posts/">Paper-Post</a></li>
+			<li class="widget__item"><a class="widget__link" href="/about/tech_posts/">Tech-Posts</a></li>
+		</ul>
+	</div>
+</div>
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item">
+				<a class="widget__link" href="/categories/distributed-sys/">distributed sys</a>&nbsp;
+				<span class="widget__counter widget__counter--bubble">3</span>
+				</li>
+			<li class="widget__item">
+				<a class="widget__link" href="/categories/trivial/">trivial</a>&nbsp;
+				<span class="widget__counter widget__counter--bubble">3</span>
+				</li>
+		</ul>
+	</div>
+</div>
+<div class="widget-social widget">
+	<h4 class="widget-social__title widget__title">Social</h4>
+	<div class="widget-social__content widget__content">
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="GitHub" rel="noopener noreferrer" href="https://github.com/https://github.com/chenghuaWang" target="_blank">
+				<svg class="widget-social__link-icon icon icon-github" width="24" height="24" viewBox="0 0 384 374"><path d="m192 0c-106.1 0-192 85.8-192 191.7 0 84.7 55 156.6 131.3 181.9 9.6 1.8 13.1-4.2 13.1-9.2 0-4.6-.2-16.6-.3-32.6-53.4 11.6-64.7-25.7-64.7-25.7-8.7-22.1-21.3-28-21.3-28-17.4-11.9 1.3-11.6 1.3-11.6 19.3 1.4 29.4 19.8 29.4 19.8 17.1 29.3 44.9 20.8 55.9 15.9 1.7-12.4 6.7-20.8 12.2-25.6-42.6-4.8-87.5-21.3-87.5-94.8 0-20.9 7.5-38 19.8-51.4-2-4.9-8.6-24.3 1.9-50.7 0 0 16.1-5.2 52.8 19.7 15.3-4.2 31.7-6.4 48.1-6.5 16.3.1 32.7 2.2 48.1 6.5 36.7-24.8 52.8-19.7 52.8-19.7 10.5 26.4 3.9 45.9 1.9 50.7 12.3 13.4 19.7 30.5 19.7 51.4 0 73.7-44.9 89.9-87.7 94.6 6.9 5.9 13 17.6 13 35.5 0 25.6-.2 46.3-.2 52.6 0 5.1 3.5 11.1 13.2 9.2 76.2-25.5 131.2-97.3 131.2-182 0-105.9-86-191.7-192-191.7z"/></svg>
+				<span>GitHub</span>
+			</a>
+		</div>
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="Email" href="mailto:chenghua.wang.edu@gmail.com">
+				<svg class="widget-social__link-icon icon icon-mail" width="24" height="24" viewBox="0 0 416 288"><path d="m0 16v256 16h16 384 16v-16-256-16h-16-384-16zm347 16-139 92.5-139-92.5zm-148 125.5 9 5.5 9-5.5 167-111.5v210h-352v-210z"/></svg>
+				<span>chenghua.wang.edu@gmail.com</span>
+			</a>
+		</div>
+
+		
+	</div>
+</div>
+</aside>
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/js/menu.js"></script>
+</body>
+</html>

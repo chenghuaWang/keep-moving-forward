@@ -22,7 +22,7 @@ Replicated state machine Client 向 Primary 发送操作和数据(inputs)。Prim
 Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-FT主要依赖于 Deterministic replay(确定性重放)。VM-FT 通过确定性重放来产生相关的日志条目，但不将日志写入磁盘，而是通过 logging channel 发送给backup(这里指备用机)。backup实时重放日志项。
 因为一切都是在 logging channel 上做同步的。为了容错，必须在 logging channel 上实现严格的容错协议，有以下要求：" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="/papers/ft-vm/" /><meta property="article:section" content="Papers" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/" /><meta property="article:section" content="Papers" />
 <meta property="article:published_time" content="2023-01-19T00:00:00+00:00" />
 <meta property="article:modified_time" content="2023-01-19T00:00:00+00:00" />
 
@@ -48,10 +48,10 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 	<link rel="dns-prefetch" href="//fonts.gstatic.com">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
 
-	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
 	
 
-	<link rel="shortcut icon" href="/favicon.ico">
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
 		
 </head>
 <body class="body">
@@ -60,7 +60,7 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 	<div class="container header__container">
 		
 	<div class="logo">
-		<a class="logo__link" href="/" title="Ubios Home" rel="home">
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
 			<div class="logo__item logo__text">
 					<div class="logo__title">Ubios Home</div>
 					
@@ -74,21 +74,21 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 	</button>
 	<ul class="menu__list">
 		<li class="menu__item">
-			<a class="menu__link" href="/about/about/">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
 				
 				<span class="menu__text">About</span>
 				
 			</a>
 		</li>
 		<li class="menu__item">
-			<a class="menu__link" href="/about/paper_posts/">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
 				
 				<span class="menu__text">Paper-Post</span>
 				
 			</a>
 		</li>
 		<li class="menu__item">
-			<a class="menu__link" href="/about/tech_posts/">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
 				
 				<span class="menu__text">Tech-Posts</span>
 				
@@ -111,7 +111,7 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
 <div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-19T00:00:00Z">2023-01-19</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/distributed-sys/" rel="category">distributed sys</a>
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-19T00:00:00Z">2023-01-19</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/distributed-sys/" rel="category">distributed sys</a>
 	</span>
 </div></div>
 		</header>
@@ -178,7 +178,7 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 
 <nav class="pager flex">
 	<div class="pager__item pager__item--prev">
-		<a class="pager__link" href="/papers/gfs/" rel="prev">
+		<a class="pager__link" href="/keep-moving-forward/papers/gfs/" rel="prev">
 			<span class="pager__subtitle">«&thinsp;Previous</span>
 			<p class="pager__title">Google File System(GFS)</p>
 		</a>
@@ -199,7 +199,7 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 	</div>
 </footer>
 	</div>
-<script async defer src="/js/menu.js"></script>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
 </body>

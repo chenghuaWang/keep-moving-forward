@@ -22,7 +22,7 @@ Chunk: GFS中的文件在存储的时候会被分割成多个Chunk，每个Chunk
 Master: 维护元数据，记录文件被分割为哪些Chunk、以及这些Chunk的存储位置；它还负责Chunk的迁移、重新平衡(rebalancing)和垃圾回收；此外，Master通过心跳机制与ChunkServer通信，向其传递指令(是的，也是通过心跳机制)，并收集状态；
 Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，再从 Chunk Server获取数据。Client并不会每次都向Master发送数据进行询问，它会cache一部分的数据(不是Chunk的，是某个文件对应的Chunk Server的位置，即Chunk的地址)，并且保持一定的时间。" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="/papers/gfs/" /><meta property="article:section" content="Papers" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/papers/gfs/" /><meta property="article:section" content="Papers" />
 <meta property="article:published_time" content="2023-01-18T00:00:00+00:00" />
 <meta property="article:modified_time" content="2023-01-18T00:00:00+00:00" />
 
@@ -48,10 +48,10 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
 	<link rel="dns-prefetch" href="//fonts.gstatic.com">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
 
-	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
 	
 
-	<link rel="shortcut icon" href="/favicon.ico">
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
 		
 </head>
 <body class="body">
@@ -60,7 +60,7 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
 	<div class="container header__container">
 		
 	<div class="logo">
-		<a class="logo__link" href="/" title="Ubios Home" rel="home">
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
 			<div class="logo__item logo__text">
 					<div class="logo__title">Ubios Home</div>
 					
@@ -74,21 +74,21 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
 	</button>
 	<ul class="menu__list">
 		<li class="menu__item">
-			<a class="menu__link" href="/about/about/">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
 				
 				<span class="menu__text">About</span>
 				
 			</a>
 		</li>
 		<li class="menu__item">
-			<a class="menu__link" href="/about/paper_posts/">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
 				
 				<span class="menu__text">Paper-Post</span>
 				
 			</a>
 		</li>
 		<li class="menu__item">
-			<a class="menu__link" href="/about/tech_posts/">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
 				
 				<span class="menu__text">Tech-Posts</span>
 				
@@ -111,7 +111,7 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
 <div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-18T00:00:00Z">2023-01-18</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/distributed-sys/" rel="category">distributed sys</a>
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-18T00:00:00Z">2023-01-18</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/distributed-sys/" rel="category">distributed sys</a>
 	</span>
 </div></div>
 		</header>
@@ -353,13 +353,13 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
 
 <nav class="pager flex">
 	<div class="pager__item pager__item--prev">
-		<a class="pager__link" href="/papers/mapreduce/" rel="prev">
+		<a class="pager__link" href="/keep-moving-forward/papers/mapreduce/" rel="prev">
 			<span class="pager__subtitle">«&thinsp;Previous</span>
 			<p class="pager__title">MapReduce</p>
 		</a>
 	</div>
 	<div class="pager__item pager__item--next">
-		<a class="pager__link" href="/papers/ft-vm/" rel="next">
+		<a class="pager__link" href="/keep-moving-forward/papers/ft-vm/" rel="next">
 			<span class="pager__subtitle">Next&thinsp;»</span>
 			<p class="pager__title">The Design of a Practical System for Fault-Tolerant Virtual Machines</p>
 		</a>
@@ -380,7 +380,7 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
 	</div>
 </footer>
 	</div>
-<script async defer src="/js/menu.js"></script>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
 </body>

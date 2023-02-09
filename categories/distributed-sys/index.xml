@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>distributed sys on Ubios Home</title>
-    <link>/categories/distributed-sys/</link>
+    <link>https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/</link>
     <description>Recent content in distributed sys on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 19 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="/categories/distributed-sys/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 19 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>The Design of a Practical System for Fault-Tolerant Virtual Machines</title>
-      <link>/papers/ft-vm/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/</link>
       <pubDate>Thu, 19 Jan 2023 00:00:00 +0000</pubDate>
       
-      <guid>/papers/ft-vm/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/</guid>
       <description>go back to home
 Paper link
 ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.
@@ -30,10 +30,10 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
     
     <item>
       <title>Google File System(GFS)</title>
-      <link>/papers/gfs/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/gfs/</link>
       <pubDate>Wed, 18 Jan 2023 00:00:00 +0000</pubDate>
       
-      <guid>/papers/gfs/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/gfs/</guid>
       <description>go back to home
 Paper link
 Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp. 20-43
@@ -51,10 +51,10 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
     
     <item>
       <title>MapReduce</title>
-      <link>/papers/mapreduce/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/</link>
       <pubDate>Tue, 17 Jan 2023 00:00:00 +0000</pubDate>
       
-      <guid>/papers/mapreduce/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/</guid>
       <description>MapReduce OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
 go back to home
 Paper link

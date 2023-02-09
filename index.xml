@@ -72,16 +72,18 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/about/</guid>
-      <description></description>
+      <description>TODO, contact me: chenghua.wang.edu@gmail.com</description>
     </item>
     
     <item>
-      <title>Paper-Post</title>
+      <title>Paper-Posts</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description></description>
+      <description>2023-01-17, MapReduce, link
+2023-01-18, Google File System(GFS), link
+2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link</description>
     </item>
     
     <item>

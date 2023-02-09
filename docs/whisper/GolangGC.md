@@ -1,1 +1,0 @@
-# Tricolor marking algorithm in Golang

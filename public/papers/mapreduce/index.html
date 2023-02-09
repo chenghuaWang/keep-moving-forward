@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>MapReduce - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="MapReduce" />
+<meta property="og:description" content="MapReduce OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
+go back to home
+Paper link
+什么是 MapReduce 在MapReduce原文中是这么说的
+MapReduce is a programming model and an associated implementation for processing and generating large data sets. [1]
+这是一个较为简单的处理大型问题的分布式编程模型。其产生的原因是因为 google 想要让普通的程序员也能够通过一套简单的编程模型来编写分布式应用程序，以此来处理 google 内部的大数据。然后著名的 Jeff Dean 和 Sanjay Ghemawat 出马搞定了这个问题(在知乎上关于Jeff Dean的轶事:-))。MapReduce 在 google 内部运行很长的时间并且处理了很多业务，但是目前也败下阵来，具体原因参见 MapReduce 缺陷章节(MR早在2004年就出来了，其实是古早的技术了，其没有在性能上做文章，主要在可扩展性上)。
+MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框架，思路也非常的直白。MapReduce 背后的核心思想是将数据集映射到一个 &lt;key, value&gt; pair的集合中，然后使用相同的键对所有pair进行整合。 整体概念很简单，但是如果你设想下下面的情况，MR实际上非常有用: 基本上所有的数据都能被映射到一个 &lt;key, value&gt; 对中，并且key和value可以是任意类型。
+在论文中MR使用的样例是在超大的文件里做单词统计。这个框架还可以用来做：
+分布式的排序 分布式的搜索 Web链接图遍历 &hellip; Fig 1." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/papers/mapreduce/" /><meta property="article:section" content="Papers" />
+<meta property="article:published_time" content="2023-01-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-01-17T00:00:00+00:00" />
+
+		<meta itemprop="name" content="MapReduce">
+<meta itemprop="description" content="MapReduce OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
+go back to home
+Paper link
+什么是 MapReduce 在MapReduce原文中是这么说的
+MapReduce is a programming model and an associated implementation for processing and generating large data sets. [1]
+这是一个较为简单的处理大型问题的分布式编程模型。其产生的原因是因为 google 想要让普通的程序员也能够通过一套简单的编程模型来编写分布式应用程序，以此来处理 google 内部的大数据。然后著名的 Jeff Dean 和 Sanjay Ghemawat 出马搞定了这个问题(在知乎上关于Jeff Dean的轶事:-))。MapReduce 在 google 内部运行很长的时间并且处理了很多业务，但是目前也败下阵来，具体原因参见 MapReduce 缺陷章节(MR早在2004年就出来了，其实是古早的技术了，其没有在性能上做文章，主要在可扩展性上)。
+MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框架，思路也非常的直白。MapReduce 背后的核心思想是将数据集映射到一个 &lt;key, value&gt; pair的集合中，然后使用相同的键对所有pair进行整合。 整体概念很简单，但是如果你设想下下面的情况，MR实际上非常有用: 基本上所有的数据都能被映射到一个 &lt;key, value&gt; 对中，并且key和value可以是任意类型。
+在论文中MR使用的样例是在超大的文件里做单词统计。这个框架还可以用来做：
+分布式的排序 分布式的搜索 Web链接图遍历 &hellip; Fig 1."><meta itemprop="datePublished" content="2023-01-17T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-01-17T00:00:00+00:00" />
+<meta itemprop="wordCount" content="953">
+<meta itemprop="keywords" content="" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo">
+		<a class="logo__link" href="/" title="Ubios Home" rel="home">
+			<div class="logo__item logo__text">
+					<div class="logo__title">Ubios Home</div>
+					
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Post</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">MapReduce</h1>
+			<p class="post__lead">notes of paper, OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-17T00:00:00Z">2023-01-17</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/categories/distributed-sys/" rel="category">distributed sys</a>
+	</span>
+</div></div>
+		</header>
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#mapreduce-的设计框架和基本流程">MapReduce 的设计框架和基本流程</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#worker-failure">Worker Failure</a></li>
+    <li><a href="#master-failure">Master Failure</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<h1 id="mapreduce">MapReduce</h1>
+<p>OSDI'04: 6th Symposium on Operating Systems Design and Implementation</p>
+<p><a href="/">go back to home</a></p>
+<p><a href="https://pdos.csail.mit.edu/6.824/papers/mapreduce.pdf">Paper link</a></p>
+<hr>
+<h1 id="什么是-mapreduce">什么是 MapReduce</h1>
+<p>在MapReduce原文中是这么说的</p>
+<blockquote>
+<p>MapReduce is a programming model and an associated implementation for processing and generating large data sets. [1]</p>
+</blockquote>
+<p>这是一个较为简单的处理大型问题的分布式编程模型。其产生的原因是因为 google 想要让普通的程序员也能够通过一套简单的编程模型来编写分布式应用程序，以此来处理 google 内部的大数据。然后著名的 Jeff Dean 和 Sanjay Ghemawat 出马搞定了这个问题(<a href="https://www.zhihu.com/question/22081653">在知乎上关于Jeff Dean的轶事:-)</a>)。MapReduce 在 google 内部运行很长的时间并且处理了很多业务，但是目前也败下阵来，具体原因参见 MapReduce 缺陷章节(MR早在2004年就出来了，其实是古早的技术了，其没有在性能上做文章，主要在可扩展性上)。</p>
+<h2 id="mapreduce-的设计框架和基本流程">MapReduce 的设计框架和基本流程</h2>
+<p>MR实际上是一个非常简单的框架，思路也非常的直白。MapReduce 背后的核心思想是将数据集映射到一个 <code>&lt;key, value&gt;</code> pair的集合中，然后使用相同的键对所有pair进行整合。 整体概念很简单，但是如果你设想下下面的情况，MR实际上非常有用: 基本上所有的数据都能被映射到一个 <code>&lt;key, value&gt;</code> 对中，并且key和value可以是任意类型。</p>
+<p>在论文中MR使用的样例是在超大的文件里做单词统计。这个框架还可以用来做：</p>
+<ol>
+<li>分布式的排序</li>
+<li>分布式的搜索</li>
+<li>Web链接图遍历</li>
+<li>&hellip;</li>
+</ol>
+<hr>
+<div align="center"> 
+<img src="./imgs/MapReduceArch.png" width = "80%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">Fig 1. MapReduce Arch(ref [1])</div>
+</div>
+<p>MR 中的Map和Reduce是从函数式编程语言(LISP)中借鉴过来的一个概念。程序员只需要编写Map和Reduce两个函数就能够对某个任务并发处理。在 Fig 1 中，MR主要的流程分为6个部分</p>
+<ol>
+<li>
+<p>用户程序的MR首先将输入文件分成 M 块，每块通常为 16 MB到 64 MB(可由用户通过参数控制)。 然后，它会在一组机器上启动该程序的多个副本。</p>
+</li>
+<li>
+<p>这些副本中有一个控制程序(Master)。其余的程序(Worker)由控制程序(Master)来分配。有 M 个 Map 任务和 R 个 Reduce 任务要分配。Master 挑选空闲的 Worker 并为每个机器分配一个 Map 任务或 Reduce 任务。</p>
+</li>
+<li>
+<p>分配了 map 任务的 worker 读取相应的内容(拆分后的文件块)(设想下，如果这里的文件读取需要从数据仓库中拿出，那么整个框架的计算能力极大的被网络所限制了)。它从输入数据中解析出<code>&lt;key, value&gt;</code>对，并将每一对传递给用户定义的 Map 函数。 Map 函数产生的中间<code>&lt;key, value&gt;</code>对被缓存在内存中。</p>
+</li>
+<li>
+<p>缓存在机器中的中间<code>&lt;key, value&gt;</code>对周期性地被写入本地磁盘，由分区函数划分为 R 个区域。这些缓冲对在本地磁盘上的位置被传回 Master，Master 负责将这些位置转发给 Reduce Worker。</p>
+</li>
+<li>
+<p>当 Master 通知 Reduce Worker 有关这些位置时，它会使用RPC从 Map Worker 的本地磁盘读取缓冲数据。当 Reduce Worker 读取所有中间数据时，它会按中间键对其进行排序，以便将所有出现的相同键组合在一起。排序是因为通常许多不同的键映射到同一个 Reduce 任务。如果中间数据量太大而无法放入内存，则使用外部排序。</p>
+</li>
+<li>
+<p>Reduce Worker 迭代排序的中间数据，对于遇到的每个唯一中间键，它将键和相应的中间值集传递给用户的 Reduce 函数。Reduce 函数的输出到此 Reduce 分区的最终输出文件。</p>
+</li>
+<li>
+<p>当所有的 Map 任务和 Reduce 任务都完成后，Master唤醒用户程序。此时用户程序中的 MR 调用返回给用户代码</p>
+</li>
+</ol>
+<p>因为网络上的数据交换是非常缓慢的，作者在分发数据的时候尽量保证数据就在这台计算服务器上，而不需要传输数据。在原文中是这样说的：</p>
+<blockquote>
+<p>We conserve network bandwidth by taking advantage of the fact that the input data (managed by GFS) is stored on the local disks of the
+machines that make up our cluster.</p>
+</blockquote>
+<h1 id="mapreduce-的使用范例">MapReduce 的使用范例</h1>
+<p>论文中，以词频统计为例子，如论文中的伪代码：</p>
+<pre tabindex="0"><code>map(String key, String value):
+    // key: document name
+    // value: document contents
+    for each word w in value:
+        EmitIntermediate(w, &#34;1&#34;);
+</code></pre><pre tabindex="0"><code>reduce(String key, Iterator values):
+    // key: a word
+    // values: a list of counts
+    int result = 0;
+    for each v in values:
+        result += ParseInt(v);
+        Emit(AsString(result));
+</code></pre><h1 id="mr-fault-tolerance">MR Fault Tolerance</h1>
+<p>Fault Tolerance 在分布式程序中是非常重要的。MR 主要的贡献点其实就在 scalability 和 fault tolerance。</p>
+<h2 id="worker-failure">Worker Failure</h2>
+<p>Master 会定期的 ping Worker 服务器，如果不通，那么这个 Worker 被设置成 idle，分配给这台机器的任务会被分发给其他的机器。</p>
+<h2 id="master-failure">Master Failure</h2>
+<p>Master 因为只有少量的机器，所以发生错误的可能性非常的小。可以通过存储 Master 的状态为 checkpoints 来进行错误时回退和恢复。</p>
+<h1 id="mr-缺陷">MR 缺陷</h1>
+<p>MR 的缺陷实际上在 Google I/O 上已经说明了，如下:</p>
+<blockquote>
+<p>Today at Google I/O, we are demonstrating Google Cloud Dataflow for the first time. Cloud Dataflow is a fully managed service for creating data pipelines that ingest, transform and analyze data in both batch and streaming modes. Cloud Dataflow is a successor to MapReduce, and is based on our internal technologies like Flume and MillWheel.[2]</p>
+</blockquote>
+<ol>
+<li>MR是一个基于 batch mode 的框架。</li>
+<li>用 MR 写复杂的分析 pipeline 太麻烦。</li>
+</ol>
+<p>在很多情况下，一次 MR 执行是没法把事情做完的，需要很多个 MR 任务互相组合，这就是 MR pipeline. 在数据流复杂的分析任务中，设计好的 pipeline 达到最高运行效率很困难。</p>
+<p>MR 最大的贡献我认为就是 scalability 和 fault tolerance。在 MillWheel 里，结果可以随着数据流的输入实时的显示出来，而不是到数据流结束时才输出一个结果，而且这样中间结果不需要保存下来。</p>
+<h1 id="mr-lab-in-mit6824">MR Lab in MIT6.824</h1>
+<p><a href="https://pdos.csail.mit.edu/6.824/labs/lab-mr.html">Check the lab-mr page here</a></p>
+<p>在本实验中，我们将构建一个 MapReduce 系统。 我们将实现一个调用应用程序 Map 和 Reduce 函数并处理读写文件的程序，以及一个将任务分发给 Worker 并处理失败的 Worker 的进程(Master)。在 MR 实验中，使用 Golang 来编码实现。</p>
+<p>我的实现在 WSL Ubuntu20.04 上 go版本 1.18。</p>
+<p>这次的要求貌似比以前更难了，这次需要 Worker 主动向 Master 请求任务，当任务超时后，需要 Master 来重新分配这个任务。</p>
+<p>总体思路其实也非常的简单，worker 和 coordinator 的交互都围绕着 RPC 展开，故先从 RPC 的定义开始。因为深受事件轮询编程模式的&rsquo;荼毒&rsquo;，我把 worker 和 coordinator 之间的交互过程以事件的形式来进行处理。首先定义事件的类型。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// src/mr/rpc.go
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">TaskTp</span> = <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TpRequireTask</span> = <span style="color:#66d9ef">iota</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TpMapTaskDone</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TpReduceTaskDone</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TpSendMapTask</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TpSendReduceTask</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TpTaskAllDone</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TpWait</span>
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>再来考虑 RPC 需要在 worker 和 coordinator 中传递什么信息？不论何种信息，首先都需要一个时间戳来记录 require 和 reply 对。其次每个 worker 都需要知道一共有多少个 Map 和 Reduce 任务。每个 require 需要跟上当前 worker 的任务编号。当然，因为是事件驱动的角度编写的，所以每条 require 和 reply 都需要有一个事件类型记录。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// src/mr/rpc.go
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">RequireMsg</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Stamp</span>   <span style="color:#66d9ef">int64</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MsgFlag</span> <span style="color:#a6e22e">TaskTp</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TaskID</span>  <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">ReplyMsg</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Stamp</span>            <span style="color:#66d9ef">int64</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MsgFlag</span>          <span style="color:#a6e22e">TaskTp</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">TaskID</span>           <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">NumReduceWorkers</span> <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">NumMapWorkers</span>    <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Content</span>          <span style="color:#66d9ef">string</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><hr>
+<p>对于 coordinator，其作用像是一个状态机，需要维护所有的 worker 的状态，并能做到回退(Fault Tolerance)。Coordinator 的定义如下</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// src/mr/coordinator.go
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Coordinator</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">nMapWorkers</span>       <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">nReduceWorkers</span>    <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">nMapWorking</span>       <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">nReduceWorking</span>    <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MapWorkerState</span>    []<span style="color:#66d9ef">int64</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ReduceWorkerState</span> []<span style="color:#66d9ef">int64</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">FilesContent</span>      []<span style="color:#66d9ef">string</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">MapWorkerPool</span>     <span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ReduceWorkerPool</span>  <span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">IsDone</span>            <span style="color:#66d9ef">bool</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">GlobalLock</span>        <span style="color:#f92672">*</span><span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Cond</span> <span style="color:#75715e">// to make sure the rpc visit is atomic.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>coordinator 需要处理 RPC 的请求，对于不同的事件进行反应。因为需要超时处理，所以在这里，每一个 worker 都会有一个协程来进行相应的计时和 id 回收。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// src/mr/coordinator.go
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">c</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Coordinator</span>) <span style="color:#a6e22e">ProcessEvents</span>(<span style="color:#a6e22e">args</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">RequireMsg</span>, <span style="color:#a6e22e">reply</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">ReplyMsg</span>) <span style="color:#66d9ef">error</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">tmpBool</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">IsDone</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">tmpBool</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">MsgFlag</span> = <span style="color:#a6e22e">TpTaskAllDone</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Stamp</span> = <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">switch</span> <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">MsgFlag</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">TpMapTaskDone</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">MapWorkerState</span>[<span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">TaskID</span>] <span style="color:#f92672">==</span> <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">MapWorkerState</span>[<span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">TaskID</span>] = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nMapWorking</span><span style="color:#f92672">--</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">TpReduceTaskDone</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">ReduceWorkerState</span>[<span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">TaskID</span>] <span style="color:#f92672">==</span> <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">ReduceWorkerState</span>[<span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">TaskID</span>] = <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nReduceWorking</span><span style="color:#f92672">--</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nReduceWorking</span> <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">IsDone</span> = <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">TpRequireTask</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> len(<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">MapWorkerPool</span>) &gt; <span style="color:#ae81ff">0</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// State 1. Send Map Task to worker.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>			<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Stamp</span> = <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span> = <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">MapWorkerPool</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">MsgFlag</span> = <span style="color:#a6e22e">TpSendMapTask</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumMapWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nMapWorkers</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumReduceWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nReduceWorkers</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Content</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">FilesContent</span>[<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span>]
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">MapWorkerState</span>[<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span>] = <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">int</span>) {
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">10</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">MapWorkerState</span>[<span style="color:#a6e22e">id</span>] <span style="color:#f92672">!=</span> <span style="color:#ae81ff">1</span> {
+</span></span><span style="display:flex;"><span>					<span style="color:#75715e">// run out of 10 secs. recycle this id to id pool.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>					<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">MapWorkerPool</span> <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>				}
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>			}(<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+</span></span><span style="display:flex;"><span>		} <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">nMapOnWorking</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nMapWorking</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">nReduceOnWorking</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nReduceWorking</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>			<span style="color:#75715e">// State 2. All map worker is on working. wait.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>			<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">nMapOnWorking</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> {
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Stamp</span> = <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span> = <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">MsgFlag</span> = <span style="color:#a6e22e">TpWait</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Content</span> = <span style="color:#e6db74">&#34;Just Wait !!! Map Worker !!!&#34;</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumMapWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nMapWorkers</span>
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumReduceWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nReduceWorkers</span>
+</span></span><span style="display:flex;"><span>			} <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>				<span style="color:#75715e">// State 3. Map is Done. Send Reduce task to works.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>				<span style="color:#66d9ef">if</span> len(<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">ReduceWorkerPool</span>) &gt; <span style="color:#ae81ff">0</span> {
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Stamp</span> = <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span> = <span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">ReduceWorkerPool</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">MsgFlag</span> = <span style="color:#a6e22e">TpSendReduceTask</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Content</span> = <span style="color:#e6db74">&#34;Reduce no need to handle this&#34;</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumMapWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nMapWorkers</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumReduceWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nReduceWorkers</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">ReduceWorkerState</span>[<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span>] = <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span>
+</span></span><span style="display:flex;"><span>					<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>					<span style="color:#66d9ef">go</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">id</span> <span style="color:#66d9ef">int</span>) {
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#ae81ff">10</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Lock</span>()
+</span></span><span style="display:flex;"><span>						<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">ReduceWorkerState</span>[<span style="color:#a6e22e">id</span>] <span style="color:#f92672">!=</span> <span style="color:#ae81ff">1</span> {
+</span></span><span style="display:flex;"><span>							<span style="color:#75715e">// run out of 10 secs. resolved this id to id pool.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>							<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">ReduceWorkerPool</span> <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">id</span>
+</span></span><span style="display:flex;"><span>						}
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">GlobalLock</span>.<span style="color:#a6e22e">L</span>.<span style="color:#a6e22e">Unlock</span>()
+</span></span><span style="display:flex;"><span>					}(<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span>)
+</span></span><span style="display:flex;"><span>				} <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>					<span style="color:#75715e">// State 4. All reduce worker is on working. wait.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>					<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">nReduceOnWorking</span> <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> {
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Stamp</span> = <span style="color:#a6e22e">args</span>.<span style="color:#a6e22e">Stamp</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">TaskID</span> = <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">MsgFlag</span> = <span style="color:#a6e22e">TpWait</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">Content</span> = <span style="color:#e6db74">&#34;Just Wait !!! Reduce Worker !!!&#34;</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumMapWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nMapWorkers</span>
+</span></span><span style="display:flex;"><span>						<span style="color:#a6e22e">reply</span>.<span style="color:#a6e22e">NumReduceWorkers</span> = <span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">nReduceWorkers</span>
+</span></span><span style="display:flex;"><span>					}
+</span></span><span style="display:flex;"><span>				}
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">default</span>:
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>同样的，在 worker 中的流程也是不断的循环产生事件，处理事件</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">// src/mr/worker.go
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">Worker</span>(<span style="color:#a6e22e">mapf</span> <span style="color:#66d9ef">func</span>(<span style="color:#66d9ef">string</span>, <span style="color:#66d9ef">string</span>) []<span style="color:#a6e22e">KeyValue</span>,
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">reducef</span> <span style="color:#66d9ef">func</span>(<span style="color:#66d9ef">string</span>, []<span style="color:#66d9ef">string</span>) <span style="color:#66d9ef">string</span>) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> <span style="color:#66d9ef">true</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">ThisStamp</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Now</span>().<span style="color:#a6e22e">Unix</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">Req</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">RequireMsg</span>{}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">Req</span>.<span style="color:#a6e22e">Stamp</span> = <span style="color:#a6e22e">ThisStamp</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">Req</span>.<span style="color:#a6e22e">MsgFlag</span> = <span style="color:#a6e22e">TpRequireTask</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">Req</span>.<span style="color:#a6e22e">TaskID</span> = <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">Rep</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">ReplyMsg</span>{}
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">ok</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">call</span>(<span style="color:#e6db74">&#34;Coordinator.ProcessEvents&#34;</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Req</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Rep</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">ok</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">Rep</span>.<span style="color:#a6e22e">Stamp</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">Req</span>.<span style="color:#a6e22e">Stamp</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">switch</span> <span style="color:#a6e22e">Rep</span>.<span style="color:#a6e22e">MsgFlag</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">TpSendMapTask</span>:
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">doMap</span>(<span style="color:#a6e22e">mapf</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Rep</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">TpSendReduceTask</span>:
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">doReduce</span>(<span style="color:#a6e22e">reducef</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">Rep</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">TpWait</span>:
+</span></span><span style="display:flex;"><span>				<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Sleep</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">case</span> <span style="color:#a6e22e">TpTaskAllDone</span>:
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">default</span>:
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>			}
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><code>doMap(mapf, &amp;Rep)</code> 和 <code>doReduce(reducef, &amp;Rep)</code> 就是非常简单的逻辑编写了。Map需要把文件分拆到<code>N=numReduce</code>块中，总共产生<code>N * M(reduce num, map num)</code>块文件。Reduce worker从自己对应的编号中取出<code>M</code>块进行排序和合并。</p>
+<hr>
+<p>结果顺利通过，没有过多的延迟(因为10s的判断)产生。</p>
+<div align="center"> 
+<img src="./imgs/test-mr-pass.png" width = "40%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">Fig 2. test mr</div>
+</div>
+<h1 id="reference">Reference</h1>
+<p>[1] &ldquo;MapReduce: Simplified Data Processing on Large Clusters&rdquo; googleusercontent.com.</p>
+<p>[2] <a href="https://cloudplatform.googleblog.com/2014/06/reimagining-developer-productivity-and-data-analytics-in-the-cloud-news-from-google-io.html">Google cloud blog about MapReduce&rsquo;s successor</a></p>
+
+		</div>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Learning and developing Machine learning infrastructure.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--next">
+		<a class="pager__link" href="/papers/gfs/" rel="next">
+			<span class="pager__subtitle">Next&thinsp;»</span>
+			<p class="pager__title">Google File System(GFS)</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/js/menu.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+</body>
+</html>

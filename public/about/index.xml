@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Abouts on Ubios Home</title>
+    <link>/about/</link>
+    <description>Recent content in Abouts on Ubios Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 01 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="/about/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>About</title>
+      <link>/about/about/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/about/about/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Paper-Post</title>
+      <link>/about/paper_posts/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/about/paper_posts/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Tech-Posts</title>
+      <link>/about/tech_posts/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>/about/tech_posts/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

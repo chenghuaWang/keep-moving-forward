@@ -1,4 +1,68 @@
-baseURL = 'http://example.org/'
+baseURL = '/'
 languageCode = 'zh-cn'
-title = 'My New Hugo Site'
+title = 'Ubios Home'
 theme = "mainroad"
+
+# disqusShortname = "" # Enable Disqus comments by entering your Disqus shortname
+# googleAnalytics = "" # Enable Google Analytics by entering your tracking id
+
+[Author] # Used in authorbox
+  name = "chenghua.wang"
+  bio = "Learning and developing Machine learning infrastructure."
+  avatar = false # "img/some.png"
+
+[Params]
+  description = "Ubios' blog, paper&tech" # Site description. Used in meta description
+  copyright = "chenghua.wang" # Footer copyright holder, otherwise will use site title
+  opengraph = true # Enable OpenGraph if true
+  schema = true # Enable Schema
+  twitter_cards = false # Enable Twitter Cards if true
+  readmore = true # Show "Read more" button in list if true
+  authorbox = true # Show authorbox at bottom of pages if true
+  toc = true # Enable Table of Contents
+  pager = true # Show pager navigation (prev/next links) at the bottom of pages if true
+  post_meta = ["author", "date", "categories", "translations"] # Order of post meta information
+  mainSections = ["Tech", "Papers", "About"] # Specify section pages to show on home page and the "Recent articles" widget
+  dateformat = "2006-01-02" # Change the format of dates
+  mathjax = true # Enable MathJax
+  mathjaxPath = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js" # Specify MathJax path
+  mathjaxConfig = "TeX-AMS-MML_HTMLorMML" # Specify MathJax config
+  googleFontsLink = "https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700" # Load Google Fonts
+  # customCSS = ["css/custom.css"] # Include custom CSS files
+  # customJS = ["js/custom.js"] # Include custom JS files
+
+  # DEPRECATED PARAMS
+  # subtitle = "" # Deprecated in favor of .Site.Params.logo.subtitle
+  # highlightColor = "" # Deprecated in favor of .Site.Params.style.vars.highlightColor
+
+[Params.style.vars]
+  highlightColor = "#76b900" # Override highlight color
+
+[Params.sidebar]
+  home = "right" # Configure layout for home page
+  list = "left"  # Configure layout for list pages
+  single = false # Configure layout for single pages
+  # Enable widgets in given order
+  widgets = ["search", "recent", "categories", "taglist", "social", "languages"]
+
+[Params.widgets.social]
+  # Enable parts of social widget
+  github = "https://github.com/chenghuaWang"
+  email = "chenghua.wang.edu@gmail.com"
+
+[Params.widgets]
+  recent_num = 8 # Set the number of articles in the "Recent articles" widget
+  categories_counter = true # Enable counter for each category in "Categories" widget
+  tags_counter = true # Enable counter for each tag in "Tags" widget
+
+[markup]
+  defaultMarkdownHandler = "goldmark"
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[Params.widgets.search]
+  url = "https://google.com/search"
+  [Params.widgets.search.input]
+    name = "don't use this search"
+    pre = "don't use this search"

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Teches on Ubios Home</title>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tech/</link>
+    <description>Recent content in Teches on Ubios Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Thu, 23 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>XV6 Lab: Xv6 and Unix utilities</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</link>
+      <pubDate>Thu, 23 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</guid>
+      <description>MIT 6.S081 Lab1 website
+本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
+阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
+sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
+/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &amp;#34;kernel/types.h&amp;#34; #include &amp;#34;kernel/stat.h&amp;#34; #include &amp;#34;user/user.h&amp;#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&amp;#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

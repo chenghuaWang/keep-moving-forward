@@ -8,7 +8,7 @@
 	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
 	<meta name="description" content="">
 		<meta property="og:title" content="MapReduce" />
-<meta property="og:description" content="MapReduce OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
+<meta property="og:description" content="OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
 go back to home
 Paper link
 什么是 MapReduce 在MapReduce原文中是这么说的
@@ -23,7 +23,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 <meta property="article:modified_time" content="2023-01-17T00:00:00+00:00" />
 
 		<meta itemprop="name" content="MapReduce">
-<meta itemprop="description" content="MapReduce OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
+<meta itemprop="description" content="OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
 go back to home
 Paper link
 什么是 MapReduce 在MapReduce原文中是这么说的
@@ -33,7 +33,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 在论文中MR使用的样例是在超大的文件里做单词统计。这个框架还可以用来做：
 分布式的排序 分布式的搜索 Web链接图遍历 &hellip; Fig 1."><meta itemprop="datePublished" content="2023-01-17T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-01-17T00:00:00+00:00" />
-<meta itemprop="wordCount" content="953">
+<meta itemprop="wordCount" content="952">
 <meta itemprop="keywords" content="" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -51,11 +51,13 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 		<header class="header">
 	<div class="container header__container">
 		
-	<div class="logo">
+	<div class="logo logo--mixed">
 		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
-			<div class="logo__item logo__text">
+			<div class="logo__item logo__imagebox">
+					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
+				</div><div class="logo__item logo__text">
 					<div class="logo__title">Ubios Home</div>
-					
+					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
 				</div>
 		</a>
 	</div>
@@ -94,6 +96,8 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 		<div class="wrapper flex">
 			<div class="primary">
 			
+
+
 <main class="main" role="main">
 	<article class="post">
 		<header class="post__header">
@@ -123,8 +127,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 </nav>
 	</div>
 </div><div class="content post__content clearfix">
-			<h1 id="mapreduce">MapReduce</h1>
-<p>OSDI'04: 6th Symposium on Operating Systems Design and Implementation</p>
+			<p>OSDI'04: 6th Symposium on Operating Systems Design and Implementation</p>
 <p><a href="/">go back to home</a></p>
 <p><a href="https://pdos.csail.mit.edu/6.824/papers/mapreduce.pdf">Paper link</a></p>
 <hr>
@@ -145,7 +148,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 </ol>
 <hr>
 <div align="center"> 
-<img src="https://chenghuawang.github.io/keep-moving-forward/imgs/MapReduceArch.png" width = "80%"/>
+<img src="/keep-moving-forward/imgs/MapReduceArch.png" width = "80%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -402,7 +405,7 @@ machines that make up our cluster.</p>
 <hr>
 <p>结果顺利通过，没有过多的延迟(因为10s的判断)产生。</p>
 <div align="center"> 
-<img src="https://chenghuawang.github.io/keep-moving-forward/imgs/test-mr-pass.png" width = "40%"/>
+<img src="/keep-moving-forward/imgs/test-mr-pass.png" width = "40%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -418,11 +421,14 @@ machines that make up our cluster.</p>
 </main>
 
 <div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
 	<div class="authorbox__header">
 		<span class="authorbox__name">About chenghua.wang</span>
 	</div>
 	<div class="authorbox__description">
-		Learning and developing Machine learning infrastructure.
+		Learning and developing Machine learning infrastructure now. Did some works in Computer Vision and Graphics.
 	</div>
 </div>
 

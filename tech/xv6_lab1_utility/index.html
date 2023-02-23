@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>XV6 Lab: Xv6 and Unix utilities - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="XV6 Lab: Xv6 and Unix utilities" />
+<meta property="og:description" content="MIT 6.S081 Lab1 website
+本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
+阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
+sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
+/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/" /><meta property="article:section" content="Tech" />
+<meta property="article:published_time" content="2023-02-23T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-02-23T00:00:00+00:00" />
+
+		<meta itemprop="name" content="XV6 Lab: Xv6 and Unix utilities">
+<meta itemprop="description" content="MIT 6.S081 Lab1 website
+本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
+阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
+sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
+/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!"><meta itemprop="datePublished" content="2023-02-23T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-02-23T00:00:00+00:00" />
+<meta itemprop="wordCount" content="855">
+<meta itemprop="keywords" content="Lecture," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed">
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
+			<div class="logo__item logo__imagebox">
+					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
+				</div><div class="logo__item logo__text">
+					<div class="logo__title">Ubios Home</div>
+					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">XV6 Lab: Xv6 and Unix utilities</h1>
+			<p class="post__lead">notes of MIT6.S081 Lab 1</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-02-23T00:00:00Z">2023-02-23</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+		</header>
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#sleep">sleep</a></li>
+    <li><a href="#pingpong">pingpong</a></li>
+    <li><a href="#prime">prime</a></li>
+    <li><a href="#find">find</a></li>
+    <li><a href="#xargs">xargs</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<p><a href="https://pdos.csail.mit.edu/6.S081/2022/labs/util.html">MIT 6.S081 Lab1 website</a></p>
+<p>本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。</p>
+<p>阅读 <code>book-riscv-ref3</code> 熟悉 XV6 的系统组织形式</p>
+<h2 id="sleep">sleep</h2>
+<p>通过调用 <code>user.h</code> 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab1-utilities. sleep prog using syscall.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]){
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>){
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>); <span style="color:#75715e">// failure
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">sleep</span>(<span style="color:#a6e22e">atoi</span>(argv[<span style="color:#ae81ff">1</span>])); <span style="color:#75715e">// sys call provided by user.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>下面以 <code>sleep(int)</code> 系统调用来阐述 XV6 中调用的流程。<code>sleep</code> 函数在 <code>user/user.h</code> 中声明，具体的函数定义则通过其他模块的动态连接最终合成可执行文件 <code>_sleep</code>.</p>
+<p>在 <code>user/usys.S</code> 中 <code>sleep</code> 调用的汇编代码是这样的:</p>
+<pre tabindex="0"><code>.global sleep
+ sleep:
+  li a7, SYS_sleep
+  ecall
+  ret
+</code></pre><p>这里的 <code>sleep</code> 就是上面那个 <code>sleep</code> 函数的定义，就是说执行 <code>sleep</code> 时，就是执行这段汇编代码。可以看到在用户空间 <code>sleep</code> 函数的任务就是将 <code>SYS_sleep</code> 放入 <code>a7</code> 中，然后中断。<code>SYS_sleep</code> 在 <code>kernel/syscall.h</code> 中宏定义为一个系统调用号。可以看到这个 <code>usys.S</code> 文件也包含了这个头文件。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// kernel/syscall.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define SYS_sleep  13
+</span></span></span></code></pre></div><p>接下来在 <code>kernel/syscall.c</code> 中，可以看到 <code>SYS_sleep</code> 转换为了对应的 <code>sys_sleep</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// kernel/syscall.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// An array mapping syscall numbers from syscall.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// to the function that handles the system call.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#a6e22e">uint64</span> (<span style="color:#f92672">*</span>syscalls[])(<span style="color:#66d9ef">void</span>) <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>[SYS_fork]    sys_fork,
+</span></span><span style="display:flex;"><span>[SYS_exit]    sys_exit,
+</span></span><span style="display:flex;"><span>[SYS_wait]    sys_wait,
+</span></span><span style="display:flex;"><span>[SYS_pipe]    sys_pipe,
+</span></span><span style="display:flex;"><span>[SYS_read]    sys_read,
+</span></span><span style="display:flex;"><span>[SYS_kill]    sys_kill,
+</span></span><span style="display:flex;"><span>[SYS_exec]    sys_exec,
+</span></span><span style="display:flex;"><span>[SYS_fstat]   sys_fstat,
+</span></span><span style="display:flex;"><span>[SYS_chdir]   sys_chdir,
+</span></span><span style="display:flex;"><span>[SYS_dup]     sys_dup,
+</span></span><span style="display:flex;"><span>[SYS_getpid]  sys_getpid,
+</span></span><span style="display:flex;"><span>[SYS_sbrk]    sys_sbrk,
+</span></span><span style="display:flex;"><span>[SYS_sleep]   sys_sleep,
+</span></span><span style="display:flex;"><span>[SYS_uptime]  sys_uptime,
+</span></span><span style="display:flex;"><span>[SYS_open]    sys_open,
+</span></span><span style="display:flex;"><span>[SYS_write]   sys_write,
+</span></span><span style="display:flex;"><span>[SYS_mknod]   sys_mknod,
+</span></span><span style="display:flex;"><span>[SYS_unlink]  sys_unlink,
+</span></span><span style="display:flex;"><span>[SYS_link]    sys_link,
+</span></span><span style="display:flex;"><span>[SYS_mkdir]   sys_mkdir,
+</span></span><span style="display:flex;"><span>[SYS_close]   sys_close,
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><h2 id="pingpong">pingpong</h2>
+<p>使用 pipe 进行父进程和子进程之间的调用。注意管道 0, 1 的关闭。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab-1-utilities pingpong. Using the pipe syscall.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> buf[<span style="color:#ae81ff">8</span>];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>() {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> p[<span style="color:#ae81ff">2</span>];
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(p); <span style="color:#75715e">// using syscall to create pipe.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 1. child
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> id <span style="color:#f92672">=</span> <span style="color:#a6e22e">getpid</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">read</span>(p[<span style="color:#ae81ff">0</span>], buf, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d: received ping</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, id);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">write</span>(p[<span style="color:#ae81ff">1</span>], <span style="color:#e6db74">&#34;c&#34;</span>, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> { <span style="color:#75715e">// 2. parent
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> id <span style="color:#f92672">=</span> <span style="color:#a6e22e">getpid</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">write</span>(p[<span style="color:#ae81ff">1</span>], <span style="color:#e6db74">&#34;p&#34;</span>, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">read</span>(p[<span style="color:#ae81ff">0</span>], buf, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d: received pong</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, id);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="prime">prime</h2>
+<p>通过管道作为不同进程之间通信的渠道来进行多进程求解素数，实现素数筛。这里因为 XV6 的限制只能开 34 个进程。</p>
+<p>算法的具体流程非常的简单:</p>
+<ol>
+<li>
+<p>有管道 p_{0} 把数据(2-&gt;35)全都填入</p>
+</li>
+<li>
+<p>p_{0} 右端连接一个进程，这个进程筛去 p_{0} 中 <code>%2==0</code>的，将剩下的数传递给 p_{1} 管道。</p>
+</li>
+<li>
+<p>以此类推。</p>
+</li>
+</ol>
+<p>只需要注意两次管道的关闭就好了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief using concurrency to get primes.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">child</span>(<span style="color:#66d9ef">int</span> previous_pipe[<span style="color:#ae81ff">2</span>]) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> child_pipe[<span style="color:#ae81ff">2</span>];
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> prime;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">1</span>]); <span style="color:#75715e">// child do not need write data to previous pipe.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(previous_pipe[<span style="color:#ae81ff">0</span>], <span style="color:#f92672">&amp;</span>prime, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>len) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">0</span>]); <span style="color:#75715e">// no data need to read anymore.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(child_pipe);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;prime %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, prime);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> num;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">child</span>(child_pipe);
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(child_pipe[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(previous_pipe[<span style="color:#ae81ff">0</span>], <span style="color:#f92672">&amp;</span>num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (len <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (num <span style="color:#f92672">%</span> prime <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">write</span>(child_pipe[<span style="color:#ae81ff">1</span>], <span style="color:#f92672">&amp;</span>num, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(child_pipe[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>() {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> parent_pipe[<span style="color:#ae81ff">2</span>];
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(parent_pipe);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">child</span>(parent_pipe);
+</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(parent_pipe[<span style="color:#ae81ff">0</span>]); <span style="color:#75715e">// parent do not need to read data.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">36</span>; <span style="color:#f92672">++</span>i) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">write</span>(parent_pipe[<span style="color:#ae81ff">1</span>], <span style="color:#f92672">&amp;</span>i, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(parent_pipe[<span style="color:#ae81ff">1</span>]); <span style="color:#75715e">// parent do not need to write anymore.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// wait for child process done.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="find">find</h2>
+<p>基本上就是 XV6 中 <code>ls</code> 程序的改版。只不过判断是文件夹的话要递归。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab1-utilities find
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/fs.h&#34; // for file system. DIRSIZ, etc.</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> <span style="color:#a6e22e">fmtname</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>path) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (p <span style="color:#f92672">=</span> path <span style="color:#f92672">+</span> <span style="color:#a6e22e">strlen</span>(path); p <span style="color:#f92672">&gt;=</span> path <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#39;/&#39;</span>; <span style="color:#f92672">--</span>p);
+</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> p;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">find</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>directory, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>file_name) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">512</span>], <span style="color:#f92672">*</span>p;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> fd;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> dirent de;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> stat st;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// open file.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> ((fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(directory, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(<span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;find: cannot open %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, directory);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// get the state of this file
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fstat</span>(fd, <span style="color:#f92672">&amp;</span>st) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(<span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;find: cannot get stat of %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, directory);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(fd);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// find the correct type need to check.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 1. path-&gt; find if file_name is same.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 2. directory-&gt; run find func again.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 3. others(&#39;.&#39;, &#39;..&#39;)-&gt; skip.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">switch</span>(st.type) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> T_DEVICE:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> T_FILE:
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">strcmp</span>(file_name, <span style="color:#a6e22e">fmtname</span>(directory)) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, directory);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> T_DIR:
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">strcpy</span>(buf, directory);
+</span></span><span style="display:flex;"><span>      p <span style="color:#f92672">=</span> buf <span style="color:#f92672">+</span> <span style="color:#a6e22e">strlen</span>(buf);
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">*</span>p<span style="color:#f92672">++</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;/&#39;</span>;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">while</span>(<span style="color:#a6e22e">read</span>(fd, <span style="color:#f92672">&amp;</span>de, <span style="color:#66d9ef">sizeof</span>(de)) <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(de)) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (de.inum <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">strcmp</span>(de.name, <span style="color:#e6db74">&#34;..&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">strcmp</span>(de.name, <span style="color:#e6db74">&#34;.&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">continue</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">memmove</span>(p, de.name, DIRSIZ);
+</span></span><span style="display:flex;"><span>        p[DIRSIZ] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">find</span>(buf, file_name);
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">close</span>(fd);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">3</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ error ] find [directory] [&#39;name&#39;]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>); <span style="color:#75715e">// failure
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">find</span>(argv[<span style="color:#ae81ff">1</span>], argv[<span style="color:#ae81ff">2</span>]);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><h2 id="xargs">xargs</h2>
+<p>我想 XV6 这个实验主要是想考察 <code>exec</code> 的作用。<code>xargs</code> 从标准输入得到数据，然后对每一行数据重新填入 <code>argv</code> 再执行。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab1-utilities xargs.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">512</span>];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pass_argv[<span style="color:#ae81ff">64</span>];
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> argc; <span style="color:#f92672">++</span>i) {
+</span></span><span style="display:flex;"><span>    pass_argv[i] <span style="color:#f92672">=</span> argv[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>]; <span style="color:#75715e">// the terminate 0 is also moved.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (;;) {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// to read a line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span>(;;<span style="color:#f92672">++</span>i) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>buf[i], <span style="color:#ae81ff">1</span>); <span style="color:#75715e">// read from stdin.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#66d9ef">if</span> (len <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> buf[i] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;\n&#39;</span>) <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// exec a line
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    buf[i] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    pass_argv[argc <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> buf;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">exec</span>(pass_argv[<span style="color:#ae81ff">0</span>], pass_argv);
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div>
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/lecture/" rel="tag">Lecture</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Learning and developing Machine learning infrastructure now. Did some works in Computer Vision and Graphics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/tech/mlir_toy_1/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title"></p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+</body>
+</html>

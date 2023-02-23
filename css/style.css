@@ -36,14 +36,14 @@ section {
 
 /* Structure */
 html {
-	font-size: 100%;
+	font-size: 112%;
 	-ms-text-size-adjust: none;
 	-webkit-text-size-adjust: none;
 }
 
 body {
 	margin: 0;
-	font-family: "Open Sans", Helvetica, Arial, sans-serif;
+	font-family:  "Helvetica Neue", Helvetica,Arial, "Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi MicroHei",sans-serif;  /*"Open Sans", Helvetica, Arial, sans-serif*/
 	font-size: 14px;
 	font-size: .875rem;
 	line-height: 1.6;

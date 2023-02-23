@@ -55,7 +55,7 @@ Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，�
       <pubDate>Tue, 17 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/</guid>
-      <description>MapReduce OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
+      <description>OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
 go back to home
 Paper link
 什么是 MapReduce 在MapReduce原文中是这么说的

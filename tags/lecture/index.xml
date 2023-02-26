@@ -6,9 +6,24 @@
     <description>Recent content in Lecture on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 23 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/lecture/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 25 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/lecture/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>XV6 Lab: Xv6 and Unix utilities</title>
+      <title>XV6 Lab 2: syscall</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</link>
+      <pubDate>Sat, 25 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</guid>
+      <description>MIT 6.S081 Lab2 website
+为了完成 Syscall 作业，需要阅读:
+XV6-book, Chapter 2, Sections 4.3 and 4.4
+files: user/user.h, kernel/proc.c kernel/proc.h, kernel/syscall.c kernel/syscall.h
+system call tracing system call tracing 需要我们补充 kernel 中的一些程序，将某程序中指定的 system call 打印出来。当然，这需要我们新增一个 system_trace 系统调用函数。题中，给定的 tracing 程序以 trace [system-call-number] [cmd] 的方式运行。我们首先去看 user/trace.c 中的内容，看看 system call number 是怎么传入系统调用的。
+user/trace.c 的程序如下所示:
+int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &amp;lt; 3 || (argv[1][0] &amp;lt; &amp;#39;0&amp;#39; || argv[1][0] &amp;gt; &amp;#39;9&amp;#39;)){ fprintf(2, &amp;#34;Usage: %s mask command\n&amp;#34;, argv[0]); exit(1); } if (trace(atoi(argv[1])) &amp;lt; 0) { fprintf(2, &amp;#34;%s: trace failed\n&amp;#34;, argv[0]); exit(1); } for(i = 2; i &amp;lt; argc &amp;amp;&amp;amp; i &amp;lt; MAXARG; i++){ nargv[i-2] = argv[i]; } exec(nargv[0], nargv); exit(0); } 我们发现这个程序直接使用了 trace 系统调用来实现。所以接下来的任务是进行 trace 系统调用的实现。再次回顾 Lab 1 中的内容，在 Lab 1 中我们分析系统调用是通过在 usys.</description>
+    </item>
+    
+    <item>
+      <title>XV6 Lab 1: Xv6 and Unix utilities</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</link>
       <pubDate>Thu, 23 Feb 2023 00:00:00 +0000</pubDate>
       

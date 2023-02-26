@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>XV6 Lab 2: syscall - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="XV6 Lab 2: syscall" />
+<meta property="og:description" content="MIT 6.S081 Lab2 website
+为了完成 Syscall 作业，需要阅读:
+XV6-book, Chapter 2, Sections 4.3 and 4.4
+files: user/user.h, kernel/proc.c kernel/proc.h, kernel/syscall.c kernel/syscall.h
+system call tracing system call tracing 需要我们补充 kernel 中的一些程序，将某程序中指定的 system call 打印出来。当然，这需要我们新增一个 system_trace 系统调用函数。题中，给定的 tracing 程序以 trace [system-call-number] [cmd] 的方式运行。我们首先去看 user/trace.c 中的内容，看看 system call number 是怎么传入系统调用的。
+user/trace.c 的程序如下所示:
+int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &lt; 3 || (argv[1][0] &lt; &#39;0&#39; || argv[1][0] &gt; &#39;9&#39;)){ fprintf(2, &#34;Usage: %s mask command\n&#34;, argv[0]); exit(1); } if (trace(atoi(argv[1])) &lt; 0) { fprintf(2, &#34;%s: trace failed\n&#34;, argv[0]); exit(1); } for(i = 2; i &lt; argc &amp;&amp; i &lt; MAXARG; i&#43;&#43;){ nargv[i-2] = argv[i]; } exec(nargv[0], nargv); exit(0); } 我们发现这个程序直接使用了 trace 系统调用来实现。所以接下来的任务是进行 trace 系统调用的实现。再次回顾 Lab 1 中的内容，在 Lab 1 中我们分析系统调用是通过在 usys." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/" /><meta property="article:section" content="Tech" />
+<meta property="article:published_time" content="2023-02-25T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-02-25T00:00:00+00:00" />
+
+		<meta itemprop="name" content="XV6 Lab 2: syscall">
+<meta itemprop="description" content="MIT 6.S081 Lab2 website
+为了完成 Syscall 作业，需要阅读:
+XV6-book, Chapter 2, Sections 4.3 and 4.4
+files: user/user.h, kernel/proc.c kernel/proc.h, kernel/syscall.c kernel/syscall.h
+system call tracing system call tracing 需要我们补充 kernel 中的一些程序，将某程序中指定的 system call 打印出来。当然，这需要我们新增一个 system_trace 系统调用函数。题中，给定的 tracing 程序以 trace [system-call-number] [cmd] 的方式运行。我们首先去看 user/trace.c 中的内容，看看 system call number 是怎么传入系统调用的。
+user/trace.c 的程序如下所示:
+int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &lt; 3 || (argv[1][0] &lt; &#39;0&#39; || argv[1][0] &gt; &#39;9&#39;)){ fprintf(2, &#34;Usage: %s mask command\n&#34;, argv[0]); exit(1); } if (trace(atoi(argv[1])) &lt; 0) { fprintf(2, &#34;%s: trace failed\n&#34;, argv[0]); exit(1); } for(i = 2; i &lt; argc &amp;&amp; i &lt; MAXARG; i&#43;&#43;){ nargv[i-2] = argv[i]; } exec(nargv[0], nargv); exit(0); } 我们发现这个程序直接使用了 trace 系统调用来实现。所以接下来的任务是进行 trace 系统调用的实现。再次回顾 Lab 1 中的内容，在 Lab 1 中我们分析系统调用是通过在 usys."><meta itemprop="datePublished" content="2023-02-25T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-02-25T00:00:00+00:00" />
+<meta itemprop="wordCount" content="591">
+<meta itemprop="keywords" content="Lecture," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed">
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
+			<div class="logo__item logo__imagebox">
+					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
+				</div><div class="logo__item logo__text">
+					<div class="logo__title">Ubios Home</div>
+					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">XV6 Lab 2: syscall</h1>
+			<p class="post__lead">notes of MIT6.S081 Lab 2</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-02-25T00:00:00Z">2023-02-25</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+		</header>
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#system-call-tracing">system call tracing</a></li>
+    <li><a href="#sysinfo">sysinfo</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<p><a href="https://pdos.csail.mit.edu/6.S081/2022/labs/syscall.html">MIT 6.S081 Lab2 website</a></p>
+<p>为了完成 Syscall 作业，需要阅读:</p>
+<blockquote>
+<p>XV6-book, Chapter 2, Sections 4.3 and 4.4</p>
+<p>files: <code>user/user.h</code>, <code>kernel/proc.c kernel/proc.h</code>, <code>kernel/syscall.c kernel/syscall.h</code></p>
+</blockquote>
+<h2 id="system-call-tracing">system call tracing</h2>
+<p>system call tracing 需要我们补充 kernel 中的一些程序，将某程序中指定的 system call 打印出来。当然，这需要我们新增一个 <code>system_trace</code> 系统调用函数。题中，给定的 tracing 程序以 <code>trace [system-call-number] [cmd]</code> 的方式运行。我们首先去看 <code>user/trace.c</code> 中的内容，看看 <code>system call number</code> 是怎么传入系统调用的。</p>
+<p><code>user/trace.c</code> 的程序如下所示:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[])
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> i;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>nargv[MAXARG];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span>(argc <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">||</span> (argv[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">&lt;</span> <span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#f92672">||</span> argv[<span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">&gt;</span> <span style="color:#e6db74">&#39;9&#39;</span>)){
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(<span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;Usage: %s mask command</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, argv[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">trace</span>(<span style="color:#a6e22e">atoi</span>(argv[<span style="color:#ae81ff">1</span>])) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(<span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;%s: trace failed</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, argv[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span>(i <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>; i <span style="color:#f92672">&lt;</span> argc <span style="color:#f92672">&amp;&amp;</span> i <span style="color:#f92672">&lt;</span> MAXARG; i<span style="color:#f92672">++</span>){
+</span></span><span style="display:flex;"><span>    nargv[i<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> argv[i];
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exec</span>(nargv[<span style="color:#ae81ff">0</span>], nargv);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>我们发现这个程序直接使用了 trace 系统调用来实现。所以接下来的任务是进行 trace 系统调用的实现。再次回顾 Lab 1 中的内容，在 Lab 1 中我们分析系统调用是通过在 usys.S 的汇编程序中进入的，然后 ecall 到 kernel/syscall.c 中映射到的函数，最终执行。那么 trace 系统调用也是这个逻辑。</p>
+<blockquote>
+<p>在汇编中，是这样实现的:</p>
+<pre tabindex="0"><code>li a7, SYS_trace
+ecall
+ret
+</code></pre><p>这个 lab 使用的是 risc-v 汇编。<code>li a7, SYS_trace</code> 表示把 32 位的数据 <code>SYS_trace</code> 加载到指定的寄存器 <code>a7</code> 中。</p>
+<p><code>ecall</code> 将异常的类型写在 <code>a7</code> 寄存器中，参数写在 <code>a0-a5</code> 寄存器中。syscall 场景下，使用 <code>ecall</code> 会把处理器的特权级别由 User-Mode 转到 Supervisor-Mode。那 <code>ecall</code> 跳转的地址在哪里呢？在操作系统启动的时候，会把异常表地址绑定到 <code>stevc</code> 寄存器中。</p>
+</blockquote>
+<p>为了能够让每个进程知道需要打印出什么样的 syscall 调用，我们需要将 <code>trace</code> 调用传入的值传给进程？那如何将一个值传给进程，进程又该如何保存这个值呢？</p>
+<p>显然，我们需要修改进程的定义，在 <code>kernel/proc.h</code> 中修改进程的数据结构，加上一个 mask 项来存储需要跟踪的系统调用的数值。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> proc {
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">struct</span> spinlock lock;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">char</span> name[<span style="color:#ae81ff">16</span>];               <span style="color:#75715e">// Process name (debugging)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>   <span style="color:#66d9ef">int</span> mask;                    <span style="color:#75715e">// -- Modified -- Lab2, system call.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span> };
+</span></span></code></pre></div><p>接下来，我们需要考虑在哪个地方插入打印指令来打印出 trace 程序追踪的系统调用？是在 process 中加入吗？显然不能在进程中做到这一点。我们只能在 <code>syscall</code> 这个通用的系统调用函数里面加入处理代码。在文件 <code>kernel/syscall.c</code> 的函数 <code>syscall</code> 中加入打印代码:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">syscall</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(num <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> num <span style="color:#f92672">&lt;</span> <span style="color:#a6e22e">NELEM</span>(syscalls) <span style="color:#f92672">&amp;&amp;</span> syscalls[num]) {
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// -- modified --
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> ((<span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> num) <span style="color:#f92672">&amp;</span> p<span style="color:#f92672">-&gt;</span>mask) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d: syscall %s -&gt; %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, p<span style="color:#f92672">-&gt;</span>pid, sysname[num], p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a0);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    } <span style="color:#66d9ef">else</span> {
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在上述代码中，syscall 指令会将调用号(a7 寄存器)读取到 num 中，然后查找系统调用表并执行。我在这里定义了一个新的数组 <code>sysname</code> 来存放每个系统调用的名称。</p>
+<blockquote>
+<p>对于系统调用，<code>a0</code> 寄存器中保存的是返回值</p>
+</blockquote>
+<p>为了便利的增加新的系统调用，xv6 lab 实现了用 perl 脚本来生成 asm 的一段小程序。我们需要在 <code>user/usys.pl</code> 中加入:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-perl" data-lang="perl"><span style="display:flex;"><span>entry(<span style="color:#e6db74">&#34;trace&#34;</span>);
+</span></span></code></pre></div><p>在 make qemu 的过程中，它会自动生成对应的陷入系统调用的汇编如下:</p>
+<pre tabindex="0"><code>.global trace
+trace:
+ li a7, SYS_trace
+ ecall
+ ret
+</code></pre><p>接下来，我们还需要给 sys_trace 函数在内核中新加一段声明，修改 <code>kernel/syscall.c</code> 文件，加入</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">extern</span> uint64 <span style="color:#a6e22e">sys_trace</span>();
+</span></span></code></pre></div><p>然后在 <code>kernel/sysproc.c</code> 中实现系统调用:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sys_trace</span>() {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> mask;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">argint</span>(<span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>mask);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span>(mask <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>  
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">myproc</span>()<span style="color:#f92672">-&gt;</span>mask <span style="color:#f92672">=</span> mask;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>这里的 <code>argint</code> 函数会去调用 <code>argraw</code> 函数如下:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">argraw</span>(<span style="color:#66d9ef">int</span> n)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#a6e22e">myproc</span>();
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">switch</span> (n) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">0</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a0;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a1;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a2;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">3</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a3;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">4</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a4;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">case</span> <span style="color:#ae81ff">5</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a5;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">panic</span>(<span style="color:#e6db74">&#34;argraw&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>因为我们需要获得 mask 值，而 mask 值在 <code>trace()</code> 函数中是第一个，所以我们直接方位 <code>a0</code> 寄存器来得到 mask 的值。</p>
+<p>总结:</p>
+<p>在 xv6 中实现系统调用有如下的几步:</p>
+<ol>
+<li>user-mode 调用 <code>trace()</code>， <code>trace()</code> 的实现在 <code>usys.S</code> 的汇编中</li>
+<li><code>usys.S</code> 将 user-mode 中调用的系统调用代号填充到 <code>a7</code> 寄存器中</li>
+<li><code>ecall</code> 调用了 <code>kernel/syscall.c</code> 中的 <code>syscall()</code> 函数来执行系统调用，并切换到 supervisor-mode
+<ul>
+<li><code>syscall()</code> 函数本身没有定义输入，其从 <code>a7</code> 寄存器中找到系统调用函数的代号，然后再在函数表中查找。</li>
+</ul>
+</li>
+</ol>
+<p>Notes:</p>
+<p>为了过 <code>fork()</code> 测试样例，需要修改 <code>fork()</code> 函数，加入 <code>np-&gt;mask = p-&gt;mask;</code> 来继承 mask。</p>
+<h2 id="sysinfo">sysinfo</h2>
+<p>有了上面的例子，实现 <code>sysinfo()</code> 就非常的简单了。sysinfo 要求我们统计空闲进程的数量和空闲内存的数量。</p>
+<p>对于进程，xv6 使用了一个数组来存储了所有的进程，每个进程的状态都保存在一个结构体(PCB)中。如果要查询每个进程的状态，我们只需要遍历所有的进程，然后 check 是否是 UNUSED 状态就行了。</p>
+<p>每个进程的状态只能是下面的几种之一:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> procstate { UNUSED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+</span></span></code></pre></div><p>我们需要在 <code>kernel/proc.c</code> 中加入代码:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// -- modified --
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// To get the number of free processes.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">free_process_num</span>() {
+</span></span><span style="display:flex;"><span>uint64 res <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> proc<span style="color:#f92672">*</span> tmp;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (tmp <span style="color:#f92672">=</span> proc; tmp <span style="color:#f92672">&lt;</span> <span style="color:#f92672">&amp;</span>proc[NPROC]; tmp<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">acquire</span>(<span style="color:#f92672">&amp;</span>tmp<span style="color:#f92672">-&gt;</span>lock);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (tmp<span style="color:#f92672">-&gt;</span>state <span style="color:#f92672">!=</span> UNUSED) res<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>tmp<span style="color:#f92672">-&gt;</span>lock);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> res;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>需要注意的是: <strong>在统计状态的时候，必须对当前的 PCB 加锁，防止出现冲突(free_process_num)运行过程中变成了 UNUSED 或者其他</strong></p>
+<p>而可用空间判断则是在 <code>kernel/kalloc.c</code> 文件中定义了一个链表，每个链表都指向上一个可用空间，这个kmem就是一个保存最后链表的变量。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> run {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> run <span style="color:#f92672">*</span>next;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> spinlock lock;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> run <span style="color:#f92672">*</span>freelist;
+</span></span><span style="display:flex;"><span>} kmem;
+</span></span></code></pre></div><p><code>kmem.freelist</code> 永远指向最后一个可用页，那我们只要顺着这个链表往前走，直到 NULL 为止。</p>
+<p>在 <code>kernel/kalloc.c</code> 中加入代码:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">free_mem_num</span>() {
+</span></span><span style="display:flex;"><span>uint64 res <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> run <span style="color:#f92672">*</span>page <span style="color:#f92672">=</span> kmem.freelist;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span>(page <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    res <span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>    page <span style="color:#f92672">=</span> page<span style="color:#f92672">-&gt;</span>next;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> res <span style="color:#f92672">*</span> PGSIZE;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><strong>对于统计空闲内存和进程的代码，<code>kernel/def.h</code> 中声明。</strong> 之后，我们在 <code>kernel/sysproc.c</code> 中实现 <code>sysinfo()</code> 函数如下:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sys_sysinfo</span>() {
+</span></span><span style="display:flex;"><span>uint64 address;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> sysinfo info;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#a6e22e">myproc</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">argaddr</span>(<span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>address);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (address <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>info.freemem <span style="color:#f92672">=</span> <span style="color:#a6e22e">free_mem_num</span>();
+</span></span><span style="display:flex;"><span>info.nproc <span style="color:#f92672">=</span> <span style="color:#a6e22e">free_process_num</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">copyout</span>(p<span style="color:#f92672">-&gt;</span>pagetable, address, (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>info, <span style="color:#66d9ef">sizeof</span>(info)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>这里 copyout 是吧页表中的内容 copy 到 user-mode 的进程信息中去。我们通过 <code>argaddr(0, &amp;address);</code> 拿到 <code>info</code> 的地址，把内核态的内存 copy 到用户态去。</p>
+
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/lecture/" rel="tag">Lecture</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Learning and developing Machine learning infrastructure now. Did some works in Computer Vision and Graphics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/tech/xv6_lab1_utility/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">XV6 Lab 1: Xv6 and Unix utilities</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+</body>
+</html>

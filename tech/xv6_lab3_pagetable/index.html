@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>XV6 Lab 3: Page Table - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="XV6 Lab 3: Page Table" />
+<meta property="og:description" content="MIT 6.S081 Lab3 website
+做 Lab 3 需要提前阅读 XV6 book，了解 RISC-V SR39 的地址格式，并且实验中大量用到了页表的准换函数，需要查阅 XV6 手册。不过，熟记 RISC-V 的地址说实在的没有什么用处，通过这个实验理解页表的工作方式并且 hands on 才是真的。
+Speed up system calls 目前有很多的操作系统(Linux)在用户区和内核区之间共享一块数据(Read-Only for user)，这样用户在进行系统调用的时候就不需要陷入内核态后，由内核态拷贝数据进用户态，而是将数据写在这个共享的区块内。这样可以加快操作系统的运行速度(毕竟大部分系统调用需要的内存消耗是很小的，内存的消耗在当今已经不是问题)。
+在本实验中我们需要使用 ugetpid() 来进行加速获得进程的 pid。
+首先就是为每一个进程创建一个页表作为共享内存区块。我们发现在 kernel\memlayout.h 中已经为我们定义好了需要的数据结构:
+struct usyscall { int pid; // Process ID }; 那么我们只需要在 kernel/proc.c /proc.h 中加入代码，来实现进程创建时创建页表，销毁时销毁页表的动作就行了。
+在 proc.h 中，我们需要在进程的 PCB 中加入新的数据结构:
+struct proc { ... struct usyscall *usyscall; // using read only shared data to accelerate. ... } 为了让进程的正常创建和释放，我们需要向进程创建和销毁函数中加入对应的页表操作代码。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/" /><meta property="article:section" content="Tech" />
+<meta property="article:published_time" content="2023-03-02T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-03-02T00:00:00+00:00" />
+
+		<meta itemprop="name" content="XV6 Lab 3: Page Table">
+<meta itemprop="description" content="MIT 6.S081 Lab3 website
+做 Lab 3 需要提前阅读 XV6 book，了解 RISC-V SR39 的地址格式，并且实验中大量用到了页表的准换函数，需要查阅 XV6 手册。不过，熟记 RISC-V 的地址说实在的没有什么用处，通过这个实验理解页表的工作方式并且 hands on 才是真的。
+Speed up system calls 目前有很多的操作系统(Linux)在用户区和内核区之间共享一块数据(Read-Only for user)，这样用户在进行系统调用的时候就不需要陷入内核态后，由内核态拷贝数据进用户态，而是将数据写在这个共享的区块内。这样可以加快操作系统的运行速度(毕竟大部分系统调用需要的内存消耗是很小的，内存的消耗在当今已经不是问题)。
+在本实验中我们需要使用 ugetpid() 来进行加速获得进程的 pid。
+首先就是为每一个进程创建一个页表作为共享内存区块。我们发现在 kernel\memlayout.h 中已经为我们定义好了需要的数据结构:
+struct usyscall { int pid; // Process ID }; 那么我们只需要在 kernel/proc.c /proc.h 中加入代码，来实现进程创建时创建页表，销毁时销毁页表的动作就行了。
+在 proc.h 中，我们需要在进程的 PCB 中加入新的数据结构:
+struct proc { ... struct usyscall *usyscall; // using read only shared data to accelerate. ... } 为了让进程的正常创建和释放，我们需要向进程创建和销毁函数中加入对应的页表操作代码。"><meta itemprop="datePublished" content="2023-03-02T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-03-02T00:00:00+00:00" />
+<meta itemprop="wordCount" content="529">
+<meta itemprop="keywords" content="Lecture," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed">
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
+			<div class="logo__item logo__imagebox">
+					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
+				</div><div class="logo__item logo__text">
+					<div class="logo__title">Ubios Home</div>
+					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">XV6 Lab 3: Page Table</h1>
+			<p class="post__lead">notes of MIT6.S081 Lab 3</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-03-02T00:00:00Z">2023-03-02</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+		</header>
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#speed-up-system-calls">Speed up system calls</a></li>
+    <li><a href="#print-a-page-table">Print a page table</a></li>
+    <li><a href="#detecting-which-pages-have-been-accessed">Detecting which pages have been accessed</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<p><a href="https://pdos.csail.mit.edu/6.S081/2022/labs/pgtbl.html">MIT 6.S081 Lab3 website</a></p>
+<p>做 Lab 3 需要提前阅读 XV6 book，了解 RISC-V SR39 的地址格式，并且实验中大量用到了页表的准换函数，需要查阅 XV6 手册。不过，熟记 RISC-V 的地址说实在的没有什么用处，通过这个实验理解页表的工作方式并且 hands on 才是真的。</p>
+<h2 id="speed-up-system-calls">Speed up system calls</h2>
+<p>目前有很多的操作系统(Linux)在用户区和内核区之间<strong>共享一块数据(Read-Only for user)</strong>，这样用户在进行系统调用的时候就不需要陷入内核态后，由内核态拷贝数据进用户态，而是将数据写在这个共享的区块内。这样可以加快操作系统的运行速度(毕竟大部分系统调用需要的内存消耗是很小的，内存的消耗在当今已经不是问题)。</p>
+<p>在本实验中我们需要使用 <code>ugetpid()</code> 来进行加速获得进程的 <code>pid</code>。</p>
+<p>首先就是为每一个进程创建一个页表作为共享内存区块。我们发现在 <code>kernel\memlayout.h</code> 中已经为我们定义好了需要的数据结构:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> usyscall
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> pid;  <span style="color:#75715e">// Process ID
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>};
+</span></span></code></pre></div><p>那么我们只需要在 <code>kernel/proc.c /proc.h</code> 中加入代码，来实现进程创建时创建页表，销毁时销毁页表的动作就行了。</p>
+<p>在 <code>proc.h</code> 中，我们需要在进程的 <code>PCB</code> 中加入新的数据结构:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> proc
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> usyscall <span style="color:#f92672">*</span>usyscall; <span style="color:#75715e">// using read only shared data to accelerate.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>为了让进程的正常创建和释放，我们需要向进程创建和销毁函数中加入对应的页表操作代码。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span> 
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">allocproc</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    found:
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// -- Modified --
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// To alloc a mem for usyscall_page
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    p<span style="color:#f92672">-&gt;</span>usyscall_page <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> usyscall <span style="color:#f92672">*</span>)<span style="color:#a6e22e">kalloc</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>usyscall_page <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">freeproc</span>(p);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>p<span style="color:#f92672">-&gt;</span>lock);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// -- Modified --
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// Init the syscall pid
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    p<span style="color:#f92672">-&gt;</span>usyscall_page<span style="color:#f92672">-&gt;</span>pid <span style="color:#f92672">=</span> p<span style="color:#f92672">-&gt;</span>pid;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> p;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">freeproc</span>(<span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// -- Modified --
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// free usyscall page
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>usyscall_page) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">kfree</span>((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)p<span style="color:#f92672">-&gt;</span>usyscall_page);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">-&gt;</span>usyscall_page <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>因为用户态寻址的时候都要经过页表硬件的翻译，所以 <code>usyscall</code> 也要映射在进程的 <code>pagetable</code> 上。我们需要修改映射函数和释放映射的函数。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">pagetable_t</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">proc_pagetable</span>(<span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">mappages</span>(pagetable, USYSCALL, PGSIZE, (uint64)(p<span style="color:#f92672">-&gt;</span>usyscall_page), PTE_R <span style="color:#f92672">|</span> PTE_U) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">uvmunmap</span>(pagetable, TRAMPOLINE, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">uvmunmap</span>(pagetable, TRAPFRAME, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">uvmfree</span>(pagetable, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>   ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">proc_freepagetable</span>(<span style="color:#66d9ef">pagetable_t</span> pagetable, uint64 sz)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">uvmunmap</span>(pagetable, TRAMPOLINE, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">uvmunmap</span>(pagetable, TRAPFRAME, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// -- Modified --
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#75715e">// free mapping of usyscall page
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">uvmunmap</span>(pagetable, USYSCALL, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">uvmfree</span>(pagetable, sz);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>总结：</p>
+<ul>
+<li>
+<p>先使用 kalloc(kernel malloc) 在系统的页表中申请到一块空间，初始化。</p>
+</li>
+<li>
+<p>然后把这块空间的地址翻译到用户空间对应的页表中去，页表中对应着 <code>USYSCALL</code>，在 <code>kernel\memlayout.h</code> 中是这样定义的</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#define USYSCALL (TRAPFRAME - PGSIZE)
+</span></span></span></code></pre></div><p>可以看到这是紧挨着 <code>TRAPFRAME</code> 的。</p>
+</li>
+<li>
+<p>当应用程序调用了 <code>ugetpid()</code> 指令的时候，只需要去 <code>USYSCALL</code> 页表找到对应的内容就可以了。而 <code>USYCALL</code> 页表的内容实际上是 <code>proc.c</code> 中调用 <code>kalloc()</code> 后获得的实际物理地址的引用。</p>
+</li>
+</ul>
+<h2 id="print-a-page-table">Print a page table</h2>
+<p>按照一定格式打印出页表的信息，这个非常的简单，只要递归的调用就行了。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// Lab 3. Not visiable to user.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">k_vmprint_recur</span>(<span style="color:#66d9ef">pagetable_t</span> pgt, <span style="color:#66d9ef">int</span> blank) {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">512</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pte_t</span> pte <span style="color:#f92672">=</span> pgt[i];
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (pte <span style="color:#f92672">&amp;</span> PTE_V) {
+</span></span><span style="display:flex;"><span>        uint64 child <span style="color:#f92672">=</span> <span style="color:#a6e22e">PTE2PA</span>(pte);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; j <span style="color:#f92672">&lt;</span> blank; j<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34; ..&#34;</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d: pte %p pa %p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, i, pte, child);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> ((pte <span style="color:#f92672">&amp;</span> (PTE_R<span style="color:#f92672">|</span>PTE_W<span style="color:#f92672">|</span>PTE_X)) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">k_vmprint_recur</span>((<span style="color:#66d9ef">pagetable_t</span>)child, blank<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Lab 3
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vmprint</span>(<span style="color:#66d9ef">pagetable_t</span> pgt) {
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// recursively print the three level page.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;page table %p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, pgt);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">k_vmprint_recur</span>(pgt, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="detecting-which-pages-have-been-accessed">Detecting which pages have been accessed</h2>
+<p>一些 GC(garbage cllector) 可以从有关哪些页面已被访问（读取或写入）的信息中获益。 在实验的这一部分，我们将向 xv6 添加一项新功能，通过检查 RISC-V 页表中的访问位来检测此信息并将其报告给用户空间。每当解决 TLB 未命中时，RISC-V 硬件页面遍历器都会在 PTE 中标记这些位。</p>
+<p>首先要在 <code>kernel/sysproc.c</code> 中加入系统调用的实现</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">#ifdef LAB_PGTBL
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sys_pgaccess</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// lab pgtbl: your code here.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    uint64 buffer, ans;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> number;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">argaddr</span>(<span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>buffer), buffer <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">argint</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>number), number <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">argaddr</span>(<span style="color:#ae81ff">2</span>, <span style="color:#f92672">&amp;</span>ans), ans <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">pgaccess</span>((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)buffer, number, (<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)ans);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
+</span></span></span></code></pre></div><p>然后着手实现 <code>pgacess</code> 的实现，这个实现需要添加头文件定义，并且在 <code>kernel/proc.c</code> 中添加实现:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pgaccess</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>pg, <span style="color:#66d9ef">int</span> number, <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>store) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#a6e22e">myproc</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (p <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ans <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pagetable_t</span> pagetable <span style="color:#f92672">=</span> p<span style="color:#f92672">-&gt;</span>pagetable;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> number <span style="color:#f92672">&amp;&amp;</span> i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">32</span>; i<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pte_t</span> <span style="color:#f92672">*</span>pte;
+</span></span><span style="display:flex;"><span>        pte <span style="color:#f92672">=</span> <span style="color:#a6e22e">walk</span>(pagetable, (uint64)pg <span style="color:#f92672">+</span> (uint64)PGSIZE <span style="color:#f92672">*</span> i, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (pte <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> ((<span style="color:#f92672">*</span>pte) <span style="color:#f92672">&amp;</span> PTE_A)) {
+</span></span><span style="display:flex;"><span>        ans <span style="color:#f92672">|=</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> i;
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">*</span>pte <span style="color:#f92672">^=</span> PTE_A; <span style="color:#75715e">//clear PTE_A
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// copy the value to user page.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">copyout</span>(pagetable, (uint64)store, (<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>)<span style="color:#f92672">&amp;</span>ans, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>这个实现是这样的，通过遍历指定的页表之后的 n 个 page，访问每个 page 的 PTE_A bit，如果这个 bit 是 1，就使用 bit map 来记录他。最终别忘了把这个 int 类型的 ans 返回给用户态。</p>
+<p>对于 PTE_A，需要在 <code>kernel\risc.h</code> 中进行添加，查阅 XV6 手册得知，改 PTE_A 位于第 6 位，故为 <code>1 &lt;&lt; 6</code>。</p>
+
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/lecture/" rel="tag">Lecture</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Learning and developing Machine learning infrastructure now. Did some works in Computer Vision and Graphics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">XV6 Lab 2: syscall</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+</body>
+</html>

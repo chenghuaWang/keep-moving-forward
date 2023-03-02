@@ -6,7 +6,23 @@
     <description>Recent content in Teches on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sat, 25 Feb 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 02 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>XV6 Lab 3: Page Table</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</link>
+      <pubDate>Thu, 02 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</guid>
+      <description>MIT 6.S081 Lab3 website
+做 Lab 3 需要提前阅读 XV6 book，了解 RISC-V SR39 的地址格式，并且实验中大量用到了页表的准换函数，需要查阅 XV6 手册。不过，熟记 RISC-V 的地址说实在的没有什么用处，通过这个实验理解页表的工作方式并且 hands on 才是真的。
+Speed up system calls 目前有很多的操作系统(Linux)在用户区和内核区之间共享一块数据(Read-Only for user)，这样用户在进行系统调用的时候就不需要陷入内核态后，由内核态拷贝数据进用户态，而是将数据写在这个共享的区块内。这样可以加快操作系统的运行速度(毕竟大部分系统调用需要的内存消耗是很小的，内存的消耗在当今已经不是问题)。
+在本实验中我们需要使用 ugetpid() 来进行加速获得进程的 pid。
+首先就是为每一个进程创建一个页表作为共享内存区块。我们发现在 kernel\memlayout.h 中已经为我们定义好了需要的数据结构:
+struct usyscall { int pid; // Process ID }; 那么我们只需要在 kernel/proc.c /proc.h 中加入代码，来实现进程创建时创建页表，销毁时销毁页表的动作就行了。
+在 proc.h 中，我们需要在进程的 PCB 中加入新的数据结构:
+struct proc { ... struct usyscall *usyscall; // using read only shared data to accelerate. ... } 为了让进程的正常创建和释放，我们需要向进程创建和销毁函数中加入对应的页表操作代码。</description>
+    </item>
+    
     <item>
       <title>XV6 Lab 2: syscall</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</link>
@@ -41,6 +57,15 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_overall/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_overall/</guid>
       <description></description>
     </item>
     

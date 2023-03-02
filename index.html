@@ -82,6 +82,36 @@
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/tech/xv6_lab3_pagetable/" rel="bookmark">
+			XV6 Lab 3: Page Table
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of MIT6.S081 Lab 3</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-03-02T00:00:00Z">2023-03-02</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		MIT 6.S081 Lab3 website
+做 Lab 3 需要提前阅读 XV6 book，了解 RISC-V SR39 的地址格式，并且实验中大量用到了页表的准换函数，需要查阅 XV6 手册。不过，熟记 RISC-V 的地址说实在的没有什么用处，通过这个实验理解页表的工作方式并且 hands on 才是真的。
+Speed up system calls 目前有很多的操作系统(Linux)在用户区和内核区之间共享一块数据(Read-Only for user)，这样用户在进行系统调用的时候就不需要陷入内核态后，由内核态拷贝数据进用户态，而是将数据写在这个共享的区块内。这样可以加快操作系统的运行速度(毕竟大部分系统调用需要的内存消耗是很小的，内存的消耗在当今已经不是问题)。
+在本实验中我们需要使用 ugetpid() 来进行加速获得进程的 pid。
+首先就是为每一个进程创建一个页表作为共享内存区块。我们发现在 kernel\memlayout.h 中已经为我们定义好了需要的数据结构:
+struct usyscall { int pid; // Process ID }; 那么我们只需要在 kernel/proc.c /proc.h 中加入代码，来实现进程创建时创建页表，销毁时销毁页表的动作就行了。
+在 proc.h 中，我们需要在进程的 PCB 中加入新的数据结构:
+struct proc { ... struct usyscall *usyscall; // using read only shared data to accelerate. ... } 为了让进程的正常创建和释放，我们需要向进程创建和销毁函数中加入对应的页表操作代码。
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/tech/xv6_lab2_syscall/" rel="bookmark">
 			XV6 Lab 2: syscall
 			</a>
@@ -252,7 +282,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 </div></div>
 	</header>
 	<div class="content list__excerpt post__content clearfix">
-		TODO, contact me: chenghua.wang.edu@gmail.com
+		
 	</div>
 </article><article class="list__item post">
 	
@@ -294,6 +324,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 	<div class="content list__excerpt post__content clearfix">
 		2023-02-23, XV6 lab 1 Utilities, link
 2023-02-25, XV6 lab 2 syscall, link
+2023-03-02, XV6 lab 2 syscall, link
 	</div>
 </article><article class="list__item post">
 	
@@ -313,6 +344,10 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 </article>
 </main>
 
+<div class="pagination">
+	<span class="pagination__item pagination__item--current">1/2</span>
+	<a class="pagination__item pagination__item--next btn" href="/keep-moving-forward/page/2/">»</a>
+</div>
 
 			</div>
 			<aside class="sidebar"><div class="widget-search widget">
@@ -328,6 +363,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/">XV6 Lab 2: syscall</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab1_utility/">XV6 Lab 1: Xv6 and Unix utilities</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/ft-vm/">The Design of a Practical System for Fault-Tolerant Virtual Machines</a></li>
@@ -335,7 +371,6 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mapreduce/">MapReduce</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/about/">About</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/paper_posts/">Paper-Posts</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/tech_posts/">Tech-Posts</a></li>
 		</ul>
 	</div>
 </div>
@@ -349,7 +384,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/operating-system/">Operating system</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">2</span>
+				<span class="widget__counter widget__counter--bubble">3</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/trivial/">trivial</a>&nbsp;
@@ -361,7 +396,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (2)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (3)</a>
 	</div>
 </div>
 <div class="widget-social widget">

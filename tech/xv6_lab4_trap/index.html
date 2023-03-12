@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>XV6 Lab 4: Traps - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="XV6 Lab 4: Traps" />
+<meta property="og:description" content="RISC-V assembly Which registers contain arguments to functions? For example, which register holds 13 in main&rsquo;s call to printf?
+Register: a0, a1, a2&hellip;, a7 for integer arguments. Register fa0, fa1, fa2&hellip;, fa7 for float arguments.
+Register a2 holds 13 when we call printf().
+Where is the call to function f in the assembly code for main? Where is the call to g? (Hint: the compiler may inline functions.)
+Compiler inlined f(8) and g() in printf() function." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/" /><meta property="article:section" content="Tech" />
+<meta property="article:published_time" content="2023-03-05T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-03-05T00:00:00+00:00" />
+
+		<meta itemprop="name" content="XV6 Lab 4: Traps">
+<meta itemprop="description" content="RISC-V assembly Which registers contain arguments to functions? For example, which register holds 13 in main&rsquo;s call to printf?
+Register: a0, a1, a2&hellip;, a7 for integer arguments. Register fa0, fa1, fa2&hellip;, fa7 for float arguments.
+Register a2 holds 13 when we call printf().
+Where is the call to function f in the assembly code for main? Where is the call to g? (Hint: the compiler may inline functions.)
+Compiler inlined f(8) and g() in printf() function."><meta itemprop="datePublished" content="2023-03-05T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-03-05T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1276">
+<meta itemprop="keywords" content="Lecture," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed">
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
+			<div class="logo__item logo__imagebox">
+					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
+				</div><div class="logo__item logo__text">
+					<div class="logo__title">Ubios Home</div>
+					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">XV6 Lab 4: Traps</h1>
+			<p class="post__lead">notes of MIT6.S081 Lab 4</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-03-05T00:00:00Z">2023-03-05</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+		</header>
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#risc-v-assembly">RISC-V assembly</a></li>
+    <li><a href="#backtrace">Backtrace</a></li>
+    <li><a href="#alarm">Alarm</a>
+      <ul>
+        <li><a href="#test-0">test 0</a></li>
+        <li><a href="#test-123">test 1/2/3</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<h2 id="risc-v-assembly">RISC-V assembly</h2>
+<ol>
+<li>
+<p>Which registers contain arguments to functions? For example, which register holds 13 in main&rsquo;s call to printf?</p>
+<p>Register: a0, a1, a2&hellip;, a7 for integer arguments. Register fa0, fa1, fa2&hellip;, fa7 for float arguments.</p>
+<p>Register a2 holds 13 when we call printf().</p>
+</li>
+<li>
+<p>Where is the call to function f in the assembly code for main? Where is the call to g? (Hint: the compiler may inline functions.)</p>
+<p>Compiler inlined <code>f(8)</code> and <code>g()</code> in printf() function. And in assembly code it just pass a immediate 12 to register a1.</p>
+<p>Howerver, we can set -O0 to disable advanced optimization and get the call address of function f and g.</p>
+</li>
+<li>
+<p>At what address is the function printf located?</p>
+<p>The auipc instruction get the PC address and load it to register ra. jalr instruction will combine 1562(0x61A) to 0x30 to get the final result.</p>
+<p>0x30 is 0011 0000 0000 0000 0000</p>
+<p>0x61A is 0110 0001 1010</p>
+<p>And the final result is 0x64A</p>
+</li>
+<li>
+<p>What value is in the register ra just after the jalr to printf in main?</p>
+<p>The PC will reset to the main function(the address called printf() + 1) after printf returned. ra = 0x38.</p>
+</li>
+<li>
+<p>Output is <code>He110 World</code>, there is no need to change var i when risc-v processors set to big-endian.</p>
+</li>
+<li>
+<p>The x=3, and y depends on the register setting. (Mostly like a random number).</p>
+</li>
+</ol>
+<h2 id="backtrace">Backtrace</h2>
+<p>As mentioned in the question, the compiler will set the frame pointer to register <code>s0</code>. We need to add a piece of code in <code>kernel/riscv.h</code> to get the value of <code>s0</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">inline</span> uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">r_fp</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    uint64 x;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">asm</span> <span style="color:#66d9ef">volatile</span>(<span style="color:#e6db74">&#34;mv %0, s0&#34;</span> <span style="color:#f92672">:</span> <span style="color:#e6db74">&#34;=r&#34;</span>(x));
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x;       
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Form hints, we knows that:</p>
+<ol>
+<li>
+<p>The return address lives at a fixed offset (-8) from the frame pointer of a stackframe, and that the saved frame pointer lives at fixed offset (-16) from the frame pointer.</p>
+<p>These <a href="https://pdos.csail.mit.edu/6.1810/2022/lec/l-riscv.txt">lecture nots</a> have a picture of layouts of stack frames.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-plain" data-lang="plain"><span style="display:flex;"><span>    Stack
+</span></span><span style="display:flex;"><span>                 .
+</span></span><span style="display:flex;"><span>                 .
+</span></span><span style="display:flex;"><span>    +-&gt;          .
+</span></span><span style="display:flex;"><span>    |   +-----------------+   |
+</span></span><span style="display:flex;"><span>    |   | return address  |   |
+</span></span><span style="display:flex;"><span>    |   |   previous fp ------+
+</span></span><span style="display:flex;"><span>    |   | saved registers |
+</span></span><span style="display:flex;"><span>    |   | local variables |
+</span></span><span style="display:flex;"><span>    |   |       ...       | &lt;-+
+</span></span><span style="display:flex;"><span>    |   +-----------------+   |
+</span></span><span style="display:flex;"><span>    |   | return address  |   |
+</span></span><span style="display:flex;"><span>    +------ previous fp   |   |
+</span></span><span style="display:flex;"><span>        | saved registers |   |
+</span></span><span style="display:flex;"><span>        | local variables |   |
+</span></span><span style="display:flex;"><span>    +-&gt; |       ...       |   |
+</span></span><span style="display:flex;"><span>    |   +-----------------+   |
+</span></span><span style="display:flex;"><span>    |   | return address  |   |
+</span></span><span style="display:flex;"><span>    |   |   previous fp ------+
+</span></span><span style="display:flex;"><span>    |   | saved registers |
+</span></span><span style="display:flex;"><span>    |   | local variables |
+</span></span><span style="display:flex;"><span>    |   |       ...       | &lt;-+
+</span></span><span style="display:flex;"><span>    |   +-----------------+   |
+</span></span><span style="display:flex;"><span>    |   | return address  |   |
+</span></span><span style="display:flex;"><span>    +------ previous fp   |   |
+</span></span><span style="display:flex;"><span>        | saved registers |   |
+</span></span><span style="display:flex;"><span>        | local variables |   |
+</span></span><span style="display:flex;"><span>$fp --&gt; |       ...       |   |
+</span></span><span style="display:flex;"><span>        +-----------------+   |
+</span></span><span style="display:flex;"><span>        | return address  |   |
+</span></span><span style="display:flex;"><span>        |   previous fp ------+
+</span></span><span style="display:flex;"><span>        | saved registers |
+</span></span><span style="display:flex;"><span>$sp --&gt; | local variables |
+</span></span><span style="display:flex;"><span>        +-----------------+
+</span></span></code></pre></div><p>In that case, if we want to get the live address, we need to add -8 to s0. To get the previous fp, add -16 to s0;</p>
+<p>The fp is the top of one frame.</p>
+</li>
+<li>
+<p>You can use PGROUNDDOWN(fp) (see kernel/riscv.h) to identify the page that a frame pointer refers to. But what we need to use is PGROUNDUP(fp) here.</p>
+</li>
+</ol>
+<p>In <code>./kernel/printf.c</code>, we neded to impl backtrace function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">backtrace</span>() {
+</span></span><span style="display:flex;"><span>    uint64 fp <span style="color:#f92672">=</span> <span style="color:#a6e22e">r_fp</span>();
+</span></span><span style="display:flex;"><span>    uint64 bound_high <span style="color:#f92672">=</span> <span style="color:#a6e22e">PGROUNDUP</span>(fp); <span style="color:#75715e">// the page frame pointer ref to.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span>(fp <span style="color:#f92672">&lt;</span> bound_high) {
+</span></span><span style="display:flex;"><span>        uint64 tmp <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(uint64<span style="color:#f92672">*</span>)(fp <span style="color:#f92672">-</span> <span style="color:#ae81ff">8</span>);
+</span></span><span style="display:flex;"><span>        fp <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(uint64<span style="color:#f92672">*</span>)(fp <span style="color:#f92672">-</span> <span style="color:#ae81ff">16</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%p</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, tmp);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="alarm">Alarm</h2>
+<p>In this exercise we need to add a feature to xv6 that periodically alerts a process as it uses CPU time. This might be useful for compute-bound processes that want to limit how much CPU time they chew up, or for processes that want to compute but also want to take some periodic action.</p>
+<p>We should add a new <code>sigalarm(interval, handler)</code> system call. If an application calls <code>sigalarm(n, fn)</code>, then after every <code>n</code> &ldquo;ticks&rdquo; of CPU time that the program consumes, the kernel should cause application function <code>fn</code> to be called. When <code>fn</code> returns, the application should <strong>resume where it left off</strong>. A tick is a fairly arbitrary unit of time in xv6, determined by how often a hardware timer generates interrupts. If an application calls <code>sigalarm(0, 0)</code>, the kernel should stop generating periodic alarm calls.</p>
+<h3 id="test-0">test 0</h3>
+<p>In oerder to let system knows what function need to execute when a process&rsquo;s alarm interval expires, we need to add some structs to <code>proc</code>. First, we need to store the alarm interval and functions pointer. Second, we need to backup the trapframe for user/kernel switch.</p>
+<p>The figure shown below illuminate the workflow of <code>sigalarm</code> and <code>sigreturn</code>:</p>
+<div align="center"> 
+<img src="/keep-moving-forward/imgs/xv6_lab4.jpg" width = "80%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">Fig 1. workflow</div>
+</div>
+<p>In <code>./kernel/proc.h</code>, we need to add some infomation to let process know the state of current sigalarm/sigreturn.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> proc {
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> alarm_interval; <span style="color:#75715e">// n ticks per action
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> alarm_ticks_left; <span style="color:#75715e">// how many times has timer intrupt
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span>alarm_handler)(); <span style="color:#75715e">// the function pointer for exec
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">struct</span> trapframe <span style="color:#f92672">*</span>trapframe_bk; <span style="color:#75715e">// backup, for user/trap switch
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Also, we need to modified alloc and free functions for process. In <code>./kernel/proc.c</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">allocproc</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> ((p<span style="color:#f92672">-&gt;</span>trapframe_bk <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> trapframe <span style="color:#f92672">*</span>)<span style="color:#a6e22e">kalloc</span>()) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">freeproc</span>(p);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>p<span style="color:#f92672">-&gt;</span>lock);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">-&gt;</span>alarm_interval <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">-&gt;</span>alarm_handler <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">-&gt;</span>alarm_ticks_left <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">freeproc</span>(<span style="color:#66d9ef">struct</span> proc<span style="color:#f92672">*</span> p) {
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(p<span style="color:#f92672">-&gt;</span>trapframe_bk)
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">kfree</span>((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)p<span style="color:#f92672">-&gt;</span>trapframe_bk);
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">-&gt;</span>alarm_interval <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">-&gt;</span>alarm_handler <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>    p<span style="color:#f92672">-&gt;</span>alarm_ticks_left <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>And we need to register this two system-call&rsquo;s definitions in the <code>./user/usys.pl</code> to let it generate the trap entries(it&rsquo;s exactly same as previous lab).</p>
+<p>Then we need to handle the timer interupt. In <code>./kernel/trap.c</code>, we need to impl the logic when <code>which_dev==2</code>. First, we need to judge if <code>alarm_interval</code> is zero or not. Then, increase the <code>alarm_ticks_left</code> and compare it with <code>alarm_interval</code>. If timer interupts times equles to <code>n</code> tick, execute the <code>alarm_handler</code> user passed in.</p>
+<p>Note that, if we want to execute the <code>alarm_handler</code>, the <code>pc</code> should point to code section in user process. So, we need to figure the <code>epc</code> register manually. <strong>When executing <code>alarm_handler</code>, registers may changed.</strong> So we need to back up current trapframe before calling <code>alarm_handler</code>. After <code>alarm_handler</code> returned, we can use this backuped trapframe to restore the register state.</p>
+<p>In <code>./kernel/trap.c</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">usertrap</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// give up the CPU if this is a timer interrupt.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span>(which_dev <span style="color:#f92672">==</span> <span style="color:#ae81ff">2</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (p<span style="color:#f92672">-&gt;</span>alarm_interval) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">++</span>p<span style="color:#f92672">-&gt;</span>alarm_ticks_left <span style="color:#f92672">==</span> p<span style="color:#f92672">-&gt;</span>alarm_interval) {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">*</span>p<span style="color:#f92672">-&gt;</span>trapframe_bk <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>p<span style="color:#f92672">-&gt;</span>trapframe;
+</span></span><span style="display:flex;"><span>            p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>epc <span style="color:#f92672">=</span> (uint64)p<span style="color:#f92672">-&gt;</span>alarm_handler;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">yield</span>();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Then, let us impl the <code>sigalarm</code> and <code>sigreturn</code> functions in <code>./kernel/sysproc.c</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sigalarm</span>(<span style="color:#66d9ef">int</span> ticks, <span style="color:#66d9ef">void</span> (<span style="color:#f92672">*</span> handler)()) {
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#a6e22e">myproc</span>();
+</span></span><span style="display:flex;"><span>   p<span style="color:#f92672">-&gt;</span>alarm_interval <span style="color:#f92672">=</span> ticks;
+</span></span><span style="display:flex;"><span>   p<span style="color:#f92672">-&gt;</span>alarm_handler <span style="color:#f92672">=</span> handler;
+</span></span><span style="display:flex;"><span>   p<span style="color:#f92672">-&gt;</span>alarm_ticks_left <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sys_sigalarm</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> ticks;
+</span></span><span style="display:flex;"><span>    uint64 func_ptr;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">argint</span>(<span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>ticks), ticks <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">argaddr</span>(<span style="color:#ae81ff">1</span>, <span style="color:#f92672">&amp;</span>func_ptr), func_ptr <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">sigalarm</span>(ticks, (<span style="color:#66d9ef">void</span>(<span style="color:#f92672">*</span>)())func_ptr);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sigreturn</span>() {
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">struct</span> proc <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#a6e22e">myproc</span>();
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">*</span>p<span style="color:#f92672">-&gt;</span>trapframe <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>p<span style="color:#f92672">-&gt;</span>trapframe_bk;
+</span></span><span style="display:flex;"><span>   p<span style="color:#f92672">-&gt;</span>alarm_ticks_left <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>   <span style="color:#66d9ef">return</span> p<span style="color:#f92672">-&gt;</span>trapframe<span style="color:#f92672">-&gt;</span>a0;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>uint64
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sys_sigreturn</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">sigreturn</span>();
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="test-123">test 1/2/3</h3>
+<p>The code is shown in previous section.</p>
+<ul>
+<li>
+<p>If <code>alarm_handler</code> is still running while timer interupt <code>n</code> ticks. We need to make sure there is only one <code>alarm_handler</code> running in the system emitted by sigalarm.</p>
+<p>In order to impl this, we can add a lock-like flag to record the state(<code>alarm_handler</code> is running or not)</p>
+<p>However, we can reset the <code>alarm_ticks_left</code> to zero in the <code>sigreturn</code> instead of in the function <code>usertrap</code>. The <code>alarm_handler</code> will not be called util user calls <code>sigreturn</code>.</p>
+</li>
+<li>
+<p>The return value of sigreturn is stored in the <code>a0</code> register, which is not the behavior we expected. This value may cover the original <code>a0</code> register. So, just return <code>p-&gt;trapfraame-&gt;a0</code> is ok. It will set the <code>a0</code> register to previous value. It&rsquo;s tricky but useful.</p>
+</li>
+</ul>
+
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/lecture/" rel="tag">Lecture</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Learning and developing Machine learning infrastructure now. Did some works in Computer Vision and Graphics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">XV6 Lab 3: Page Table</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+</body>
+</html>

@@ -6,7 +6,20 @@
     <description>Recent content in Lecture on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 02 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/lecture/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 05 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/lecture/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>XV6 Lab 4: Traps</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</link>
+      <pubDate>Sun, 05 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</guid>
+      <description>RISC-V assembly Which registers contain arguments to functions? For example, which register holds 13 in main&amp;rsquo;s call to printf?
+Register: a0, a1, a2&amp;hellip;, a7 for integer arguments. Register fa0, fa1, fa2&amp;hellip;, fa7 for float arguments.
+Register a2 holds 13 when we call printf().
+Where is the call to function f in the assembly code for main? Where is the call to g? (Hint: the compiler may inline functions.)
+Compiler inlined f(8) and g() in printf() function.</description>
+    </item>
+    
     <item>
       <title>XV6 Lab 3: Page Table</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</link>

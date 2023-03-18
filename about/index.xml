@@ -13,7 +13,9 @@
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/about/</guid>
-      <description></description>
+      <description>Hi👋, I&amp;rsquo;m Chenghua Wang, currently a Junior student in ZJGSU.
+I&amp;rsquo;m currently preparing for the entrance examination for postgraduate. I&amp;rsquo;m interested in machine learning system, distributed system and database. Currently learning distributed system, Golang and OS. Reading &amp;lsquo;Operating System Three Easy Pieces&amp;rsquo; and tons of papers(MLSys) I&amp;rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.wang.edu@gmail.com
+Research Interests Machine Learning Infrastructure(*)</description>
     </item>
     
     <item>
@@ -22,7 +24,7 @@
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description>2023-01-17, MapReduce, link
+      <description>distributed system 2023-01-17, MapReduce, link
 2023-01-18, Google File System(GFS), link
 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link</description>
     </item>
@@ -33,10 +35,11 @@
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</guid>
-      <description>2023-02-23, XV6 lab 1 Utilities, link
+      <description>MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities, link
 2023-02-25, XV6 lab 2 syscall, link
 2023-03-02, XV6 lab 3 page table, link
-2023-03-12， XV6 lab 4 traps, link</description>
+2023-03-12, XV6 lab 4 traps, link
+2023-03-17, XV6 lab 5 copy on write, link</description>
     </item>
     
   </channel>

@@ -83,6 +83,35 @@
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/tech/xv6_lab5_cow/" rel="bookmark">
+			XV6 Lab 5: Copy On Write
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of MIT6.S081 Lab 5</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-03-17T00:00:00Z">2023-03-17</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		xv6 中的 fork() 系统调用将父进程的所有用户空间内存复制到子进程中。如果父进程很大，复制可能需要很长的时间。更糟糕的是，这项工作通常是无用的：fork() 之后通常是子进程的 exec()，它放弃了复制的内存，没有使用复制过来的大部分内存。如果父代和子代都使用了复制的页面，并且其中一个或两个都写了它，那么这个复制才是真正需要的。
+所以写时复制(copy on write, cow) 这个技术变得十分的重要。在这个 lab 中，我们需要实现一个写时复制的 fork()。我们需要修改原本的 fork() 程序中做内存申请的模块，同时我们还需要实现 usertrap 来在写时(在实际写的时候碰到 cow flag，抛出分页错误)的时候处理这个 trap。
+因为一个程序很可能被 fork() 了很多的分支，所以我们需要一个计数器来确定这个 page 是要被释放还是保留。
+一般来说，一个正常运行的程序在写时复制的时候会有下面几个流程:
+fork() 出一个子进程 child。 child 拥有父进程的页的引用，并且页的 flag 有 cow 标识。 并且要把 页 引用 ++ child 需要向自己的页中写入新的数据. 此时需要重新分配内存，页引用 &ndash;。 当 child 返回的时候，可能有内存需要由 kernel 转换到 user。 当父进程销毁的时候，如果计数器为 0，则销毁，反之，不变。 每一页都需要一个计数器来进行计数，所以我们需要在 kernel 中加入一个数组来记录，查阅 xv6 book，我们发现有如下的图:
+Fig 1. memlayout我们需要在 kernel data 之后的区域内申请一块内存来作为计数器存储的数组。我们可以在 kalloc.c 中实现。
+// ./kernel/kalloc.c struct { struct spinlock lock; struct run *freelist; // lab 5 uint* ref_cnt; struct spinlock ref_cnt_lock; char * pa_start; } kmem; 在这个 kmem 结构体中加入了一个 ref_cnt_lock 来保证计数器的正确引用。一个 ref_cnt pointer 来指示 ref array 的起始位置，使用 pa_start 来表示实际的 free memory 的起始位置。我们还需要修改初始化程序来正确的申请计数器数组，并且对 free memory 填充上一个初始值。
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/xv6_lab5_cow/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/tech/xv6_lab4_trap/" rel="bookmark">
 			XV6 Lab 4: Traps
 			</a>
@@ -241,6 +270,7 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/">XV6 Lab 2: syscall</a></li>
@@ -248,7 +278,6 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/ft-vm/">The Design of a Practical System for Fault-Tolerant Virtual Machines</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/gfs/">Google File System(GFS)</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mapreduce/">MapReduce</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/about/">About</a></li>
 		</ul>
 	</div>
 </div>
@@ -262,7 +291,7 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/operating-system/">Operating system</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">4</span>
+				<span class="widget__counter widget__counter--bubble">5</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/trivial/">trivial</a>&nbsp;
@@ -274,7 +303,7 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (4)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
 	</div>
 </div>
 <div class="widget-social widget">

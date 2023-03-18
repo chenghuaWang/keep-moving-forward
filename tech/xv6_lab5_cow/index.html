@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>XV6 Lab 5: Copy On Write - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="XV6 Lab 5: Copy On Write" />
+<meta property="og:description" content="xv6 中的 fork() 系统调用将父进程的所有用户空间内存复制到子进程中。如果父进程很大，复制可能需要很长的时间。更糟糕的是，这项工作通常是无用的：fork() 之后通常是子进程的 exec()，它放弃了复制的内存，没有使用复制过来的大部分内存。如果父代和子代都使用了复制的页面，并且其中一个或两个都写了它，那么这个复制才是真正需要的。
+所以写时复制(copy on write, cow) 这个技术变得十分的重要。在这个 lab 中，我们需要实现一个写时复制的 fork()。我们需要修改原本的 fork() 程序中做内存申请的模块，同时我们还需要实现 usertrap 来在写时(在实际写的时候碰到 cow flag，抛出分页错误)的时候处理这个 trap。
+因为一个程序很可能被 fork() 了很多的分支，所以我们需要一个计数器来确定这个 page 是要被释放还是保留。
+一般来说，一个正常运行的程序在写时复制的时候会有下面几个流程:
+fork() 出一个子进程 child。 child 拥有父进程的页的引用，并且页的 flag 有 cow 标识。 并且要把 页 引用 &#43;&#43; child 需要向自己的页中写入新的数据. 此时需要重新分配内存，页引用 &ndash;。 当 child 返回的时候，可能有内存需要由 kernel 转换到 user。 当父进程销毁的时候，如果计数器为 0，则销毁，反之，不变。 每一页都需要一个计数器来进行计数，所以我们需要在 kernel 中加入一个数组来记录，查阅 xv6 book，我们发现有如下的图:
+Fig 1. memlayout我们需要在 kernel data 之后的区域内申请一块内存来作为计数器存储的数组。我们可以在 kalloc.c 中实现。
+// ./kernel/kalloc.c struct { struct spinlock lock; struct run *freelist; // lab 5 uint* ref_cnt; struct spinlock ref_cnt_lock; char * pa_start; } kmem; 在这个 kmem 结构体中加入了一个 ref_cnt_lock 来保证计数器的正确引用。一个 ref_cnt pointer 来指示 ref array 的起始位置，使用 pa_start 来表示实际的 free memory 的起始位置。我们还需要修改初始化程序来正确的申请计数器数组，并且对 free memory 填充上一个初始值。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/" /><meta property="article:section" content="Tech" />
+<meta property="article:published_time" content="2023-03-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-03-17T00:00:00+00:00" />
+
+		<meta itemprop="name" content="XV6 Lab 5: Copy On Write">
+<meta itemprop="description" content="xv6 中的 fork() 系统调用将父进程的所有用户空间内存复制到子进程中。如果父进程很大，复制可能需要很长的时间。更糟糕的是，这项工作通常是无用的：fork() 之后通常是子进程的 exec()，它放弃了复制的内存，没有使用复制过来的大部分内存。如果父代和子代都使用了复制的页面，并且其中一个或两个都写了它，那么这个复制才是真正需要的。
+所以写时复制(copy on write, cow) 这个技术变得十分的重要。在这个 lab 中，我们需要实现一个写时复制的 fork()。我们需要修改原本的 fork() 程序中做内存申请的模块，同时我们还需要实现 usertrap 来在写时(在实际写的时候碰到 cow flag，抛出分页错误)的时候处理这个 trap。
+因为一个程序很可能被 fork() 了很多的分支，所以我们需要一个计数器来确定这个 page 是要被释放还是保留。
+一般来说，一个正常运行的程序在写时复制的时候会有下面几个流程:
+fork() 出一个子进程 child。 child 拥有父进程的页的引用，并且页的 flag 有 cow 标识。 并且要把 页 引用 &#43;&#43; child 需要向自己的页中写入新的数据. 此时需要重新分配内存，页引用 &ndash;。 当 child 返回的时候，可能有内存需要由 kernel 转换到 user。 当父进程销毁的时候，如果计数器为 0，则销毁，反之，不变。 每一页都需要一个计数器来进行计数，所以我们需要在 kernel 中加入一个数组来记录，查阅 xv6 book，我们发现有如下的图:
+Fig 1. memlayout我们需要在 kernel data 之后的区域内申请一块内存来作为计数器存储的数组。我们可以在 kalloc.c 中实现。
+// ./kernel/kalloc.c struct { struct spinlock lock; struct run *freelist; // lab 5 uint* ref_cnt; struct spinlock ref_cnt_lock; char * pa_start; } kmem; 在这个 kmem 结构体中加入了一个 ref_cnt_lock 来保证计数器的正确引用。一个 ref_cnt pointer 来指示 ref array 的起始位置，使用 pa_start 来表示实际的 free memory 的起始位置。我们还需要修改初始化程序来正确的申请计数器数组，并且对 free memory 填充上一个初始值。"><meta itemprop="datePublished" content="2023-03-17T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-03-17T00:00:00+00:00" />
+<meta itemprop="wordCount" content="639">
+<meta itemprop="keywords" content="Lecture," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed">
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
+			<div class="logo__item logo__imagebox">
+					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
+				</div><div class="logo__item logo__text">
+					<div class="logo__title">Ubios Home</div>
+					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">XV6 Lab 5: Copy On Write</h1>
+			<p class="post__lead">notes of MIT6.S081 Lab 5</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-03-17T00:00:00Z">2023-03-17</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+		</header>
+		<div class="content post__content clearfix">
+			<p>xv6 中的 fork() 系统调用将父进程的所有用户空间内存复制到子进程中。如果父进程很大，复制可能需要很长的时间。更糟糕的是，这项工作通常是无用的：fork() 之后通常是子进程的 exec()，它放弃了复制的内存，没有使用复制过来的大部分内存。如果父代和子代都使用了复制的页面，并且其中一个或两个都写了它，那么这个复制才是真正需要的。</p>
+<p>所以写时复制(copy on write, cow) 这个技术变得十分的重要。在这个 lab 中，我们需要实现一个写时复制的 fork()。我们需要修改原本的 fork() 程序中做内存申请的模块，同时我们还需要实现 usertrap 来在写时(在实际写的时候碰到 cow flag，抛出分页错误)的时候处理这个 trap。</p>
+<p>因为一个程序很可能被 fork() 了很多的分支，所以我们需要一个计数器来确定这个 page 是要被释放还是保留。</p>
+<p>一般来说，一个正常运行的程序在写时复制的时候会有下面几个流程:</p>
+<ul>
+<li>fork() 出一个子进程 child。 child 拥有父进程的页的引用，并且页的 flag 有 cow 标识。
+<ul>
+<li>并且要把 页 引用 ++</li>
+</ul>
+</li>
+<li>child 需要向自己的页中写入新的数据. 此时需要重新分配内存，页引用 &ndash;。</li>
+<li>当 child 返回的时候，可能有内存需要由 kernel 转换到 user。</li>
+<li>当父进程销毁的时候，如果计数器为 0，则销毁，反之，不变。</li>
+</ul>
+<p>每一页都需要一个计数器来进行计数，所以我们需要在 kernel 中加入一个数组来记录，查阅 xv6 book，我们发现有如下的图:</p>
+<div align="center"> 
+<img src="/keep-moving-forward/imgs/memlayout.png" width = "60%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">Fig 1. memlayout</div>
+</div>
+<p>我们需要在 kernel data 之后的区域内申请一块内存来作为计数器存储的数组。我们可以在 kalloc.c 中实现。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// ./kernel/kalloc.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> spinlock lock;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> run <span style="color:#f92672">*</span>freelist;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// lab 5
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  uint<span style="color:#f92672">*</span> ref_cnt;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> spinlock ref_cnt_lock;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span> pa_start;
+</span></span><span style="display:flex;"><span>} kmem;
+</span></span></code></pre></div><p>在这个 kmem 结构体中加入了一个 ref_cnt_lock 来保证计数器的正确引用。一个 ref_cnt pointer 来指示 ref array 的起始位置，使用 pa_start 来表示实际的 free memory 的起始位置。我们还需要修改初始化程序来正确的申请计数器数组，并且对 free memory 填充上一个初始值。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// ./kernel/kalloc.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">kinit</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">initlock</span>(<span style="color:#f92672">&amp;</span>kmem.lock, <span style="color:#e6db74">&#34;kmem&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// lab 5
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#a6e22e">initlock</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock, <span style="color:#e6db74">&#34;kmemrefcnt&#34;</span>);
+</span></span><span style="display:flex;"><span>  uint64 pg_size <span style="color:#f92672">=</span> (((PHYSTOP <span style="color:#f92672">-</span> (uint64)end)) <span style="color:#f92672">&gt;&gt;</span> PGSHIFT) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>; <span style="color:#75715e">// get the page size
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  uint64 ref_array_size <span style="color:#f92672">=</span> ((pg_size <span style="color:#f92672">*</span> <span style="color:#66d9ef">sizeof</span>(uint)) <span style="color:#f92672">&gt;&gt;</span> PGSHIFT) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>; <span style="color:#75715e">// caculate how many page wes need to store ref cnt.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  kmem.ref_cnt <span style="color:#f92672">=</span> (uint<span style="color:#f92672">*</span>)end; <span style="color:#75715e">// the start of ref cnt array
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  kmem.pa_start <span style="color:#f92672">=</span> end <span style="color:#f92672">+</span> (ref_array_size <span style="color:#f92672">&lt;&lt;</span> PGSHIFT); <span style="color:#75715e">// the start of user memory space.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p;
+</span></span><span style="display:flex;"><span>  p <span style="color:#f92672">=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)<span style="color:#a6e22e">PGROUNDUP</span>((uint64)kmem.pa_start);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (; p <span style="color:#f92672">+</span> PGSIZE <span style="color:#f92672">&lt;=</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)PHYSTOP; p<span style="color:#f92672">+=</span> PGSIZE) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">acquire</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock);
+</span></span><span style="display:flex;"><span>    uint64 idx <span style="color:#f92672">=</span> (uint64)((<span style="color:#a6e22e">PGROUNDDOWN</span>((uint64)p) <span style="color:#f92672">-</span> <span style="color:#a6e22e">PGROUNDUP</span>((uint64)kmem.pa_start)) <span style="color:#f92672">/</span> PGSIZE);
+</span></span><span style="display:flex;"><span>    kmem.ref_cnt[idx] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>; <span style="color:#75715e">// set to 1, force freerange(.., ...) function to remove all mem in start-&gt;end scope.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">freerange</span>((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)kmem.pa_start, (<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)PHYSTOP); <span style="color:#75715e">// free memory in those scope.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>PGSHIFT, PHYSTOP 是定义在 riscv.h 中便于使用的 macro。下面是 kfree 的代码，需要在 ref &gt; 1 的时候减少引用，在 ref == 1 的时候释放这块内存，并且把计数器的引用次数置成 0。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">kfree</span>(<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>pa)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> run <span style="color:#f92672">*</span>r;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// lab 5
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// If ref is not 0
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#a6e22e">acquire</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// get the ref cnt location of pa in ref cnt array
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  uint64 idx <span style="color:#f92672">=</span> (uint64)((<span style="color:#a6e22e">PGROUNDDOWN</span>((uint64)pa) <span style="color:#f92672">-</span> <span style="color:#a6e22e">PGROUNDUP</span>((uint64)kmem.pa_start)) <span style="color:#f92672">/</span> PGSIZE);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (kmem.ref_cnt[idx] <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">1</span>) {
+</span></span><span style="display:flex;"><span>    kmem.ref_cnt[idx] <span style="color:#f92672">--</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// If ref is 1;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span>(((uint64)pa <span style="color:#f92672">%</span> PGSIZE) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)pa <span style="color:#f92672">&lt;</span> end <span style="color:#f92672">||</span> (uint64)pa <span style="color:#f92672">&gt;=</span> PHYSTOP)
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">panic</span>(<span style="color:#e6db74">&#34;kfree&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Fill with junk to catch dangling refs.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#a6e22e">memset</span>(pa, <span style="color:#ae81ff">1</span>, PGSIZE);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// lab 5
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  kmem.ref_cnt[idx] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  r <span style="color:#f92672">=</span> (<span style="color:#66d9ef">struct</span> run<span style="color:#f92672">*</span>)pa;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">acquire</span>(<span style="color:#f92672">&amp;</span>kmem.lock);
+</span></span><span style="display:flex;"><span>  r<span style="color:#f92672">-&gt;</span>next <span style="color:#f92672">=</span> kmem.freelist;
+</span></span><span style="display:flex;"><span>  kmem.freelist <span style="color:#f92672">=</span> r;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>kmem.lock);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在申请内存的同时，也要加上计数器:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">kalloc</span>(<span style="color:#66d9ef">void</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> run <span style="color:#f92672">*</span>r;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">acquire</span>(<span style="color:#f92672">&amp;</span>kmem.lock);
+</span></span><span style="display:flex;"><span>  r <span style="color:#f92672">=</span> kmem.freelist;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span>(r)
+</span></span><span style="display:flex;"><span>    kmem.freelist <span style="color:#f92672">=</span> r<span style="color:#f92672">-&gt;</span>next;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>kmem.lock);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// lab 5
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (r) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">acquire</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock);
+</span></span><span style="display:flex;"><span>    uint64 idx <span style="color:#f92672">=</span> (uint64)((<span style="color:#a6e22e">PGROUNDDOWN</span>((uint64)r) <span style="color:#f92672">-</span> <span style="color:#a6e22e">PGROUNDUP</span>((uint64)kmem.pa_start)) <span style="color:#f92672">/</span> PGSIZE);
+</span></span><span style="display:flex;"><span>    kmem.ref_cnt[idx] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">release</span>(<span style="color:#f92672">&amp;</span>kmem.ref_cnt_lock);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span>(r)
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memset</span>((<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)r, <span style="color:#ae81ff">5</span>, PGSIZE); <span style="color:#75715e">// fill with junk
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">return</span> (<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)r;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在 vm.c 中我们需要修改 uvmcopy 函数，在这个函数中，我们要注释掉原来的内存申请的代码，然后使用 cow 策略来“申请”内存</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> sz; i <span style="color:#f92672">+=</span> PGSIZE) {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ((pte <span style="color:#f92672">=</span> <span style="color:#a6e22e">walk</span>(old, i, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">panic</span>(<span style="color:#e6db74">&#34;uvmcopy: pte should exist&#34;</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ((<span style="color:#f92672">*</span>pte <span style="color:#f92672">&amp;</span> PTE_V) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">panic</span>(<span style="color:#e6db74">&#34;uvmcopy: page not present&#34;</span>);
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  pa <span style="color:#f92672">=</span> <span style="color:#a6e22e">PTE2PA</span>(<span style="color:#f92672">*</span>pte);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// clear write flag and add read flag.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#f92672">*</span>pte <span style="color:#f92672">=</span> ((<span style="color:#f92672">*</span>pte) <span style="color:#f92672">&amp;</span> (<span style="color:#f92672">~</span>PTE_W)) <span style="color:#f92672">|</span> PTE_COW;
+</span></span><span style="display:flex;"><span>  flags <span style="color:#f92672">=</span> <span style="color:#a6e22e">PTE_FLAGS</span>(<span style="color:#f92672">*</span>pte);
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// Map to child process&#39;s pagetable directly. Make both read-only.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">mappages</span>(new, i, PGSIZE, pa, flags) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">goto</span> err;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// increase ref of page old.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#a6e22e">kincre_ref</span>(pa);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span></code></pre></div><p>在上面的这段代码中，我将 flag 由原来的可写转变成了 cow(PTE_COW 需要在 reiscv.h 中定义)，然后将页共享，如果共享成功，则将 reference ++。</p>
+<p>当用户需要写内存的时候，会触发一个 trap，同上一个实验，我们需要在 usertrap 中加入代码来处理这个 trap。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">else</span> <span style="color:#a6e22e">if</span> (<span style="color:#a6e22e">r_scause</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">15</span>) {
+</span></span><span style="display:flex;"><span>     uint64 va <span style="color:#f92672">=</span> <span style="color:#a6e22e">r_stval</span>();
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">if</span> (va <span style="color:#f92672">&gt;</span> p<span style="color:#f92672">-&gt;</span>sz) p<span style="color:#f92672">-&gt;</span>killed <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>     <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">kalloc_cow</span>(p<span style="color:#f92672">-&gt;</span>pagetable, va) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) p<span style="color:#f92672">-&gt;</span>killed <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>   }
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">kalloc_cow</span>(<span style="color:#66d9ef">pagetable_t</span> pagetable, uint64 va) {
+</span></span><span style="display:flex;"><span>  va <span style="color:#f92672">=</span> <span style="color:#a6e22e">PGROUNDDOWN</span>(va);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (va <span style="color:#f92672">&gt;=</span> MAXVA) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">pte_t</span> <span style="color:#f92672">*</span>pte <span style="color:#f92672">=</span> <span style="color:#a6e22e">walk</span>(pagetable, va, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pte) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>  uint64 pa <span style="color:#f92672">=</span> <span style="color:#a6e22e">PTE2PA</span>(<span style="color:#f92672">*</span>pte);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>pa) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>  uint64 flags <span style="color:#f92672">=</span> <span style="color:#a6e22e">PTE_FLAGS</span>(<span style="color:#f92672">*</span>pte);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (flags <span style="color:#f92672">&amp;</span> PTE_COW) {
+</span></span><span style="display:flex;"><span>    uint64 mem <span style="color:#f92672">=</span> (uint64)<span style="color:#a6e22e">kalloc</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>mem) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memmove</span>((<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)mem, (<span style="color:#66d9ef">char</span><span style="color:#f92672">*</span>)pa, PGSIZE);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">uvmunmap</span>(pagetable, va, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>    flags <span style="color:#f92672">=</span> (flags <span style="color:#f92672">|</span> PTE_W) <span style="color:#f92672">&amp;</span> (<span style="color:#f92672">~</span>PTE_COW);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">mappages</span>(pagetable, va, PGSIZE, mem, flags) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">kfree</span>((<span style="color:#66d9ef">void</span><span style="color:#f92672">*</span>)mem);
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>当用户所访问的内存需要写时复制的时候，由 trap 处理程序来进行处理，kalloc_cow 程序负责申请出与原来的内存区块相同大小的区间，然后把内存 copy 过去，并且把 flag 改为可写而不是 cow。</p>
+<p>当 kernel 需要把内存交换到 user 区时，也需要对 cow 特殊对待。在 copyout 函数中，需要加入下述代码:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">kalloc_cow</span>(pagetable, va0) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>;
+</span></span></code></pre></div>
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/lecture/" rel="tag">Lecture</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Learning and developing Machine learning infrastructure now. Did some works in Computer Vision and Graphics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/tech/xv6_lab4_trap/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">XV6 Lab 4: Traps</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2023 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+</body>
+</html>

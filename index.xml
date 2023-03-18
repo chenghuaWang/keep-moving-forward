@@ -6,7 +6,22 @@
     <description>Recent content on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 05 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 17 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>XV6 Lab 5: Copy On Write</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</link>
+      <pubDate>Fri, 17 Mar 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</guid>
+      <description>xv6 中的 fork() 系统调用将父进程的所有用户空间内存复制到子进程中。如果父进程很大，复制可能需要很长的时间。更糟糕的是，这项工作通常是无用的：fork() 之后通常是子进程的 exec()，它放弃了复制的内存，没有使用复制过来的大部分内存。如果父代和子代都使用了复制的页面，并且其中一个或两个都写了它，那么这个复制才是真正需要的。
+所以写时复制(copy on write, cow) 这个技术变得十分的重要。在这个 lab 中，我们需要实现一个写时复制的 fork()。我们需要修改原本的 fork() 程序中做内存申请的模块，同时我们还需要实现 usertrap 来在写时(在实际写的时候碰到 cow flag，抛出分页错误)的时候处理这个 trap。
+因为一个程序很可能被 fork() 了很多的分支，所以我们需要一个计数器来确定这个 page 是要被释放还是保留。
+一般来说，一个正常运行的程序在写时复制的时候会有下面几个流程:
+fork() 出一个子进程 child。 child 拥有父进程的页的引用，并且页的 flag 有 cow 标识。 并且要把 页 引用 ++ child 需要向自己的页中写入新的数据. 此时需要重新分配内存，页引用 &amp;ndash;。 当 child 返回的时候，可能有内存需要由 kernel 转换到 user。 当父进程销毁的时候，如果计数器为 0，则销毁，反之，不变。 每一页都需要一个计数器来进行计数，所以我们需要在 kernel 中加入一个数组来记录，查阅 xv6 book，我们发现有如下的图:
+Fig 1. memlayout我们需要在 kernel data 之后的区域内申请一块内存来作为计数器存储的数组。我们可以在 kalloc.c 中实现。
+// ./kernel/kalloc.c struct { struct spinlock lock; struct run *freelist; // lab 5 uint* ref_cnt; struct spinlock ref_cnt_lock; char * pa_start; } kmem; 在这个 kmem 结构体中加入了一个 ref_cnt_lock 来保证计数器的正确引用。一个 ref_cnt pointer 来指示 ref array 的起始位置，使用 pa_start 来表示实际的 free memory 的起始位置。我们还需要修改初始化程序来正确的申请计数器数组，并且对 free memory 填充上一个初始值。</description>
+    </item>
+    
     <item>
       <title>XV6 Lab 4: Traps</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</link>
@@ -129,7 +144,9 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/about/</guid>
-      <description></description>
+      <description>Hi👋, I&amp;rsquo;m Chenghua Wang, currently a Junior student in ZJGSU.
+I&amp;rsquo;m currently preparing for the entrance examination for postgraduate. I&amp;rsquo;m interested in machine learning system, distributed system and database. Currently learning distributed system, Golang and OS. Reading &amp;lsquo;Operating System Three Easy Pieces&amp;rsquo; and tons of papers(MLSys) I&amp;rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.wang.edu@gmail.com
+Research Interests Machine Learning Infrastructure(*)</description>
     </item>
     
     <item>
@@ -138,7 +155,7 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description>2023-01-17, MapReduce, link
+      <description>distributed system 2023-01-17, MapReduce, link
 2023-01-18, Google File System(GFS), link
 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link</description>
     </item>
@@ -149,10 +166,11 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</guid>
-      <description>2023-02-23, XV6 lab 1 Utilities, link
+      <description>MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities, link
 2023-02-25, XV6 lab 2 syscall, link
 2023-03-02, XV6 lab 3 page table, link
-2023-03-12， XV6 lab 4 traps, link</description>
+2023-03-12, XV6 lab 4 traps, link
+2023-03-17, XV6 lab 5 copy on write, link</description>
     </item>
     
     <item>

@@ -6,7 +6,33 @@
     <description>Recent content on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 17 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 18 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CUDA: NSight System</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</link>
+      <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</guid>
+      <description>NSight System Document
+WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 WSL2 User guide 。
+1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：
+NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC).</description>
+    </item>
+    
+    <item>
+      <title>HPC &amp; AI 入坑</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/</link>
+      <pubDate>Sun, 02 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/</guid>
+      <description>1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
+1.1 Course 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
+Spring 2023 Homepage
+并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
+1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
+1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System </description>
+    </item>
+    
     <item>
       <title>XV6 Lab 5: Copy On Write</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</link>
@@ -150,7 +176,7 @@ Research Interests Machine Learning Infrastructure(*)</description>
     </item>
     
     <item>
-      <title>Paper-Posts</title>
+      <title>Paper-Notes</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
@@ -170,7 +196,8 @@ Research Interests Machine Learning Infrastructure(*)</description>
 2023-02-25, XV6 lab 2 syscall, link
 2023-03-02, XV6 lab 3 page table, link
 2023-03-12, XV6 lab 4 traps, link
-2023-03-17, XV6 lab 5 copy on write, link</description>
+2023-03-17, XV6 lab 5 copy on write, link
+Tools 2023-04-18, CUDA: NSight System, link </description>
     </item>
     
     <item>
@@ -180,6 +207,17 @@ Research Interests Machine Learning Infrastructure(*)</description>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</guid>
       <description></description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/raft_cpp_impl/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/raft_cpp_impl/</guid>
+      <description>Try to implement a raft algorithm in c++. And binding python interface on it.
+In this artical:
+The original raft algorithm. Paper analyze. The cpp impl of raft. What&amp;rsquo;s new in my impl. Python binding, and wheel to official python libs(On both windows and debian linux). API reference. That&amp;rsquo;s quite a large project. Taking almost 9 month to finish it !!! Just do it.</description>
     </item>
     
     <item>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>HPC&#43;AI Tools on Ubios Home</title>
+    <link>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai-tools/</link>
+    <description>Recent content in HPC&#43;AI Tools on Ubios Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Tue, 18 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/hpc+ai-tools/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CUDA: NSight System</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</link>
+      <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</guid>
+      <description>NSight System Document
+WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 WSL2 User guide 。
+1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：
+NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC).</description>
+    </item>
+    
+  </channel>
+</rss>

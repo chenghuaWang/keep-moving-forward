@@ -6,7 +6,19 @@
     <description>Recent content in Teches on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 17 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 18 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CUDA: NSight System</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</link>
+      <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</guid>
+      <description>NSight System Document
+WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 WSL2 User guide 。
+1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：
+NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC).</description>
+    </item>
+    
     <item>
       <title>XV6 Lab 5: Copy On Write</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</link>
@@ -86,6 +98,17 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</guid>
       <description></description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/raft_cpp_impl/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/raft_cpp_impl/</guid>
+      <description>Try to implement a raft algorithm in c++. And binding python interface on it.
+In this artical:
+The original raft algorithm. Paper analyze. The cpp impl of raft. What&amp;rsquo;s new in my impl. Python binding, and wheel to official python libs(On both windows and debian linux). API reference. That&amp;rsquo;s quite a large project. Taking almost 9 month to finish it !!! Just do it.</description>
     </item>
     
     <item>

@@ -23,7 +23,7 @@ WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 
 1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：
 NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC)."><meta itemprop="datePublished" content="2023-04-18T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-04-18T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1194">
+<meta itemprop="wordCount" content="1190">
 <meta itemprop="keywords" content="CUDA," />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -160,7 +160,7 @@ NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to 
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">Fig 1. NSight System Project Settings.</div>
+    padding: 2px;">Fig 2. 1 Stream.</div>
 </div>
 <p>比如在 BGR 2 YUV 的第一个例子中(上图，只使用单个Stream)，从时间轴上可以看到并行性并没有起来，我们可以多开几个 Stream 让数据传输和计算并行起来。通让每个 Stream 做不同的工作(数据搬运，计算)，来最大化并行。如下图所示:</p>
 <div align="center"> 
@@ -169,7 +169,7 @@ NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to 
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">Fig 1. NSight System Project Settings.</div>
+    padding: 2px;">Fig 3. 16 streams.</div>
 </div>
 <hr>
 <p><strong>code:</strong></p>
@@ -464,7 +464,7 @@ NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to 
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div></details>
 <hr>
-<p><strong>Reference:</strong><br />[1] <a href="https://zhuanlan.zhihu.com/p/51402722">CUDA随笔之Stream的使用</a></p>
+<p><strong>Reference:</strong><code>&lt;br /&gt;</code>[1] <a href="https://zhuanlan.zhihu.com/p/51402722">CUDA随笔之Stream的使用</a></p>
 
 		</div>
 		<footer class="post__footer">

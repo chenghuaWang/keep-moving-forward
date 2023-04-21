@@ -3,24 +3,27 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/</loc>
-    <lastmod>2023-04-18T00:00:00+00:00</lastmod>
+    <lastmod>2023-04-21T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/cuda/</loc>
-    <lastmod>2023-04-18T00:00:00+00:00</lastmod>
+    <lastmod>2023-04-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</loc>
-    <lastmod>2023-04-18T00:00:00+00:00</lastmod>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/how_to_optimize_convlution/</loc>
+    <lastmod>2023-04-21T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai-tools/</loc>
-    <lastmod>2023-04-18T00:00:00+00:00</lastmod>
+    <lastmod>2023-04-21T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
-    <lastmod>2023-04-18T00:00:00+00:00</lastmod>
+    <lastmod>2023-04-21T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
-    <lastmod>2023-04-18T00:00:00+00:00</lastmod>
+    <lastmod>2023-04-21T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
+    <lastmod>2023-04-21T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</loc>
     <lastmod>2023-04-18T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/about/</loc>
@@ -80,6 +83,8 @@
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</loc>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/raft_cpp_impl/</loc>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/tensordock_interface_design/</loc>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_overall/</loc>
   </url>

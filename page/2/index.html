@@ -89,6 +89,37 @@
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/papers/mapreduce/" rel="bookmark">
+			MapReduce
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of paper, OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-17T00:00:00Z">2023-01-17</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/distributed-sys/" rel="category">distributed sys</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		OSDI'04: 6th Symposium on Operating Systems Design and Implementation
+go back to home
+Paper link
+什么是 MapReduce 在MapReduce原文中是这么说的
+MapReduce is a programming model and an associated implementation for processing and generating large data sets. [1]
+这是一个较为简单的处理大型问题的分布式编程模型。其产生的原因是因为 google 想要让普通的程序员也能够通过一套简单的编程模型来编写分布式应用程序，以此来处理 google 内部的大数据。然后著名的 Jeff Dean 和 Sanjay Ghemawat 出马搞定了这个问题(在知乎上关于Jeff Dean的轶事:-))。MapReduce 在 google 内部运行很长的时间并且处理了很多业务，但是目前也败下阵来，具体原因参见 MapReduce 缺陷章节(MR早在2004年就出来了，其实是古早的技术了，其没有在性能上做文章，主要在可扩展性上)。
+MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框架，思路也非常的直白。MapReduce 背后的核心思想是将数据集映射到一个 &lt;key, value&gt; pair的集合中，然后使用相同的键对所有pair进行整合。 整体概念很简单，但是如果你设想下下面的情况，MR实际上非常有用: 基本上所有的数据都能被映射到一个 &lt;key, value&gt; 对中，并且key和value可以是任意类型。
+在论文中MR使用的样例是在超大的文件里做单词统计。这个框架还可以用来做：
+分布式的排序 分布式的搜索 Web链接图遍历 &hellip; Fig 1.
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/papers/mapreduce/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/about/about/" rel="bookmark">
 			About
 			</a>
@@ -190,6 +221,21 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/tech/tensordock_interface_design/" rel="bookmark">
+			
+			</a>
+		</h2>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/tech/xv6_overall/" rel="bookmark">
 			
 			</a>
@@ -223,6 +269,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
@@ -230,7 +277,6 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/">XV6 Lab 2: syscall</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab1_utility/">XV6 Lab 1: Xv6 and Unix utilities</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/ft-vm/">The Design of a Practical System for Fault-Tolerant Virtual Machines</a></li>
 		</ul>
 	</div>
 </div>
@@ -244,7 +290,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">1</span>
+				<span class="widget__counter widget__counter--bubble">2</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/operating-system/">Operating system</a>&nbsp;
@@ -260,7 +306,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
 	</div>
 </div>

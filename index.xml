@@ -6,7 +6,19 @@
     <description>Recent content on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 18 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 21 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>How to Optimize Convolution</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/how_to_optimize_convlution/</link>
+      <pubDate>Fri, 21 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/how_to_optimize_convlution/</guid>
+      <description>1. Algorithms 1.0 naive 首先，先祭出 [4] CS231n 中包浆的图，对于 naive 的做法，就是按照卷积的原理来做，不做任何的优化。
+Conv from CS231n[4]. 1.1 img2col &amp;amp; img2row 1.2 Winograd 1.2.x winograd impl in NCNN 1.3 Conv on mobile device 2. Handcraft kernel impl 2.0 Data Layout 一般 4D-Tensor 数据布局的形式是 NCHW 和 NHWC，其中 N 表示 Batch size，C 表示 Channel，H 表示 Height，W 表示 Width。本文中所有的例子都是 NCHW 的 4D-Tensor。
+NCHW Datalayout[5]. 使用上述图像 [5] 来展示数据排布。对于 NCHW 排列方法来说：
+2.1 naive 2.2 img2col &amp;amp; img2row 2.2.1 On CPU 2.</description>
+    </item>
+    
     <item>
       <title>CUDA: NSight System</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</link>
@@ -218,6 +230,15 @@ Tools 2023-04-18, CUDA: NSight System, link </description>
       <description>Try to implement a raft algorithm in c++. And binding python interface on it.
 In this artical:
 The original raft algorithm. Paper analyze. The cpp impl of raft. What&amp;rsquo;s new in my impl. Python binding, and wheel to official python libs(On both windows and debian linux). API reference. That&amp;rsquo;s quite a large project. Taking almost 9 month to finish it !!! Just do it.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/tensordock_interface_design/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/tensordock_interface_design/</guid>
+      <description></description>
     </item>
     
     <item>

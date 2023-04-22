@@ -45,7 +45,7 @@ body {
 	margin: 0;
 	font-family:  "Helvetica Neue", Helvetica,Arial, "Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi MicroHei",sans-serif;  /*"Open Sans", Helvetica, Arial, sans-serif*/
 	font-size: 14px;
-	font-size: .875rem;
+	font-size: .875rem; /*original is .875 TODO*/
 	line-height: 1.6;
 	word-wrap: break-word;
 	background: #f7f7f7;
@@ -91,6 +91,7 @@ body {
 	margin: 0 0 0 2.5%;
 }
 
+
 .sidebar--left {
 	-webkit-order: 0;
 	order: 0;
@@ -111,6 +112,7 @@ body {
 	visibility: hidden;
 	content: "";
 }
+
 
 input,
 button,
@@ -959,6 +961,7 @@ img {
 	max-width: 100%;
 	height: auto;
 	vertical-align: bottom;
+	box-shadow: 0 0 15px 5px rgba(0, 0, 0, .28);
 }
 
 iframe,
@@ -1320,4 +1323,59 @@ textarea {
 		font-size: 11px;
 		font-size: .6875rem;
 	}
+}
+
+/* Modified TODO */
+.card {
+    width:200px;
+    margin:0px auto;
+    background-color:white;
+    box-shadow:0px 5px 20px #999;
+}
+.card a {
+    color:#333;
+    text-decoration:none;
+}
+.card:hover .card-image img {
+    width:160%;
+    filter:grayscale(0);
+}
+
+.card-image {
+    height:250px;
+    position:relative;
+    overflow:hidden;
+}
+
+.card-image img {
+    width:150%;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    filter:grayscale(0.8);
+    transition-property:filter width;
+    transition-duration:.3s;
+    transition-timing-function:ease;
+}
+
+.card-body {
+    text-align:center;
+    padding: 15px 20px;
+    box-sizing: border-box;
+}
+
+.card-date {
+    font-family: 'Source Sans Pro', sans-serif;
+}
+.card-title, .card-excerpt {
+    font-family: 'Playfair Display', serif;
+}
+.card-date, .card-title {
+    text-align:center;
+    text-transform:uppercase;
+    font-weight: bold;
+}
+.card-date, .card-excerpt {
+    color: #777;
 }

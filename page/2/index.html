@@ -89,6 +89,41 @@
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/papers/gfs/" rel="bookmark">
+			Google File System(GFS)
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of paper, Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp. 20-43</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-18T00:00:00Z">2023-01-18</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/distributed-sys/" rel="category">distributed sys</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		go back to home
+Paper link
+Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp. 20-43
+Last Edit: Jan 18, 2023
+GFS 有非常多的东西，这里只写了一些重要的部分。像是snapshot，文件删除，高可用机制，Replica管理等没有具体提及。
+Introduction GFS是google提出的一个可扩展分布式文件系统，为大型分布式数据密集型应用提供服务。可以在大规模的消费级机器集群上提供不错的容错能力。GFS在设计的时候主要依据6个假设(观察得出的):
+节点失效经常发生。系统由非常多的消费级机器组成，大量用户同时进行访问，这使得节点很容易因为程序bug、磁盘故障、内存故障等原因失效。 存储以大文件为主。每个文件通常100MB或几GB。系统需要支持小文件，但不需要对其进行特殊的优化。 大容量连续读，小容量随机读取是文件系统中的常态。 写入也已大容量为主，小容量无需特殊优化。 支持原子的文件追加操作。使得大量用户可以并行追加文件，而不需要额外的加锁机制。 高吞吐量比低延时更重要 为什么设计一个优秀的分布式存储系统非常的困难:
+Performance. 当数据量非常大的时候，数据分片(Sharding)是非常重要的。 Fault Tolerance. 但是由于数据在多台服务器上分片。由于多台服务器，整个系统出现故障的概率会大很多。因此需要容错机制 Replication. 复制数据副本到多台服务器上，但是为了用户能够拿到一致的数据，需要考虑一致性 Consistency. 为了一致性，不得不使用网络(极慢的数据交互方式)进行确认和同步。这又会影响性能(Performance)!!! 世界因此变成了一个美妙的环。:-)。这也是分布式的挑战之处。
+GFS讨论了上述的这些主题和在实际生产场景中的应用。
+Architecture Fig 1. GFS Arch[1] 一个GFS集群由一个Master节点和若干个Chunk Server节点组成。每个Chunk Server可以被许多个Client访问。GFS Chunk Server作为用户级进程在Linux服务器中运行，并且文件系统本身使用的就是Linux系统的那套。(所以文中说，没有特地的为GFS Chunk Server加入cache功能，因为Linux文件系统已经干了这件事)
+Chunk: GFS中的文件在存储的时候会被分割成多个Chunk，每个Chunk的大小为64MB。在Chunk分配的时候，Master会分配一个Handle给Chunk，类似于指针。Chunk在google的实现中，使用3份副本。
+Master: 维护元数据，记录文件被分割为哪些Chunk、以及这些Chunk的存储位置；它还负责Chunk的迁移、重新平衡(rebalancing)和垃圾回收；此外，Master通过心跳机制与ChunkServer通信，向其传递指令(是的，也是通过心跳机制)，并收集状态；
+Client: 首先向Master询问该文件的Chunk在哪里，Chunk Server位置，再从 Chunk Server获取数据。Client并不会每次都向Master发送数据进行询问，它会cache一部分的数据(不是Chunk的，是某个文件对应的Chunk Server的位置，即Chunk的地址)，并且保持一定的时间。
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/papers/gfs/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/papers/mapreduce/" rel="bookmark">
 			MapReduce
 			</a>
@@ -269,6 +304,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
@@ -276,7 +312,6 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/">XV6 Lab 2: syscall</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab1_utility/">XV6 Lab 1: Xv6 and Unix utilities</a></li>
 		</ul>
 	</div>
 </div>
@@ -287,6 +322,10 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/distributed-sys/">distributed sys</a>&nbsp;
 				<span class="widget__counter widget__counter--bubble">3</span>
+				</li>
+			<li class="widget__item">
+				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
+				<span class="widget__counter widget__counter--bubble">1</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -307,6 +346,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
 	</div>
 </div>

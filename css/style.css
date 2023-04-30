@@ -41,12 +41,14 @@ html {
 	-webkit-text-size-adjust: none;
 }
 
+/* TODO Changed font-size */
+
 body {
 	margin: 0;
-	font-family:  "Helvetica Neue", Helvetica,Arial, "Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi MicroHei",sans-serif;  /*"Open Sans", Helvetica, Arial, sans-serif*/
+	font-family:  "Microsoft Yahei", "Helvetica Neue", Helvetica, Arial,"Hiragino Sans GB","Heiti SC","WenQuanYi MicroHei",sans-serif;  /*"Open Sans", Helvetica, Arial, sans-serif*/
 	font-size: 14px;
-	font-size: .875rem; /*original is .875 TODO*/
-	line-height: 1.6;
+	font-size: .925rem; /*original is .875 TODO*/
+	line-height: 1.8;
 	word-wrap: break-word;
 	background: #f7f7f7;
 	-webkit-font-smoothing: antialiased;
@@ -830,6 +832,17 @@ button:not(:-moz-focusring):focus > .menu__btn-title {
 
 .toc__menu a:hover {
 	text-decoration: underline;
+}
+
+/* TODO modified */
+
+.toc__block_div {
+	position: -webkit-sticky; /* safari 浏览器 */
+    position: sticky; /* 其他浏览器 */
+    top: 20px;
+    font-size: .875rem; /*original is .875 TODO*/
+    overflow: auto;
+    height: 45em;
 }
 
 /* Author Box */

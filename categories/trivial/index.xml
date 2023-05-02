@@ -18,7 +18,7 @@
 Spring 2023 Homepage
 并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
 1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System </description>
+1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link </description>
     </item>
     
     <item>
@@ -30,6 +30,15 @@ Spring 2023 Homepage
       <description>Hi👋, I&amp;rsquo;m Chenghua Wang, currently a Junior student in ZJGSU.
 I&amp;rsquo;m currently preparing for the entrance examination for postgraduate. I&amp;rsquo;m interested in machine learning system, distributed system and database. Currently learning distributed system, Golang and OS. Reading &amp;lsquo;Operating System Three Easy Pieces&amp;rsquo; and tons of papers(MLSys) I&amp;rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.wang.edu@gmail.com
 Research Interests Machine Learning Infrastructure(*)</description>
+    </item>
+    
+    <item>
+      <title>Lecture-Notes</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/about/lecture_notes/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/about/lecture_notes/</guid>
+      <description>Principles of Compiler 2023-05-03, 编译原理通关攻略, link </description>
     </item>
     
     <item>
@@ -54,7 +63,7 @@ Research Interests Machine Learning Infrastructure(*)</description>
 2023-03-02, XV6 lab 3 page table, link
 2023-03-12, XV6 lab 4 traps, link
 2023-03-17, XV6 lab 5 copy on write, link
-Tools 2023-04-18, CUDA: NSight System, link </description>
+Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link </description>
     </item>
     
   </channel>

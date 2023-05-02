@@ -6,11 +6,11 @@
     <description>Recent content in Teches on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 28 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 02 May 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>浅析机器学习中的并行模型和自动并行方法</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</link>
-      <pubDate>Fri, 28 Apr 2023 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 02 May 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</guid>
       <description>人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。
@@ -31,10 +31,10 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
       <pubDate>Fri, 21 Apr 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/how_to_optimize_convlution/</guid>
-      <description>1. Algorithms 1.0 naive 首先，先祭出 [4] CS231n 中包浆的图，对于 naive 的做法，就是按照卷积的原理来做，不做任何的优化。
-Conv from CS231n[4]. 1.1 img2col &amp;amp; img2row 1.2 Winograd 1.2.x winograd impl in NCNN 1.3 Conv on mobile device 2. Handcraft kernel impl 2.0 Data Layout 一般 4D-Tensor 数据布局的形式是 NCHW 和 NHWC，其中 N 表示 Batch size，C 表示 Channel，H 表示 Height，W 表示 Width。本文中所有的例子都是 NCHW 的 4D-Tensor。
-NCHW Datalayout[5]. 使用上述图像 [5] 来展示数据排布。对于 NCHW 排列方法来说：
-2.1 naive 2.2 img2col &amp;amp; img2row 2.2.1 On CPU 2.</description>
+      <description>此篇文章记录了一个个人项目(NNCV，面向计算机视觉的神经网络编译推理框架) 中的 Conv 实现和加速过程
+1. Algorithms 1.0 naive 首先，先祭出 [4] CS231n 中包浆的图，对于 naive 的做法，就是按照卷积的原理来做，不做任何的优化。
+Conv from CS231n[4]. 1.1 img2col &amp;amp; img2row 1.2 Winograd 1.2.x winograd impl in NCNN 1.3 Conv on mobile device 1.4 Depth Wise Conv 2. Handcraft kernel impl 2.0 Data Layout 一般 4D-Tensor 数据布局的形式是 NCHW 和 NHWC，其中 N 表示 Batch size，C 表示 Channel，H 表示 Height，W 表示 Width。本文中所有的例子都是 NCHW 的 4D-Tensor。
+NCHW Datalayout[5]. 使用上述图像 [5] 来展示数据排布。对于 NCHW 排列方法来说：</description>
     </item>
     
     <item>
@@ -127,6 +127,15 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/nv-archs-introduction/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/nv-archs-introduction/</guid>
       <description></description>
     </item>
     

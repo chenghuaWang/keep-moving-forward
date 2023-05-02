@@ -78,6 +78,13 @@ int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &lt; 3 ||
 			</a>
 		</li>
 		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
+				
+				<span class="menu__text">Lecture-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
 			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
 				
 				<span class="menu__text">Paper-Notes</span>
@@ -376,6 +383,22 @@ trace:
 	</div>
 <script async defer src="/keep-moving-forward/js/menu.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { fonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+</script>
 </body>
 </html>

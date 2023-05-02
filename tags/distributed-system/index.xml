@@ -6,11 +6,11 @@
     <description>Recent content in Distributed System on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 28 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 02 May 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>浅析机器学习中的并行模型和自动并行方法</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</link>
-      <pubDate>Fri, 28 Apr 2023 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 02 May 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</guid>
       <description>人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。

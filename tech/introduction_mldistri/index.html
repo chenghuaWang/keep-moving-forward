@@ -20,8 +20,8 @@ TODO on working 不同的并行技术将训练过程划分为不同的维度，�
 TODO on working Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/" /><meta property="article:section" content="Tech" />
-<meta property="article:published_time" content="2023-04-28T00:00:00+00:00" />
-<meta property="article:modified_time" content="2023-04-28T00:00:00+00:00" />
+<meta property="article:published_time" content="2023-05-02T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-05-02T00:00:00+00:00" />
 
 		<meta itemprop="name" content="浅析机器学习中的并行模型和自动并行方法">
 <meta itemprop="description" content="人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。
@@ -33,9 +33,9 @@ TODO on working 不同的并行技术将训练过程划分为不同的维度，�
 在 Pytorch 中提供了DP（Data Parallel）、DDP（Distributed Data Parallel）、FSDP（Fully Shared Data Parallel）三种不同的数据并行方法。
 1.1.1 DP（Data Parallel）Parameter Server DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。
 [点击折叠] 李沐老师的 PS 讲解 Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。
-TODO on working Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。"><meta itemprop="datePublished" content="2023-04-28T00:00:00+00:00" />
-<meta itemprop="dateModified" content="2023-04-28T00:00:00+00:00" />
-<meta itemprop="wordCount" content="372">
+TODO on working Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。"><meta itemprop="datePublished" content="2023-05-02T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-05-02T00:00:00+00:00" />
+<meta itemprop="wordCount" content="489">
 <meta itemprop="keywords" content="Distributed System," />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -84,6 +84,13 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
 			</a>
 		</li>
 		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
+				
+				<span class="menu__text">Lecture-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
 			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
 				
 				<span class="menu__text">Paper-Notes</span>
@@ -116,7 +123,7 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
 <div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-04-28T00:00:00Z">2023-04-28</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai/" rel="category">HPC&#43;AI</a>
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-05-02T00:00:00Z">2023-05-02</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai/" rel="category">HPC&#43;AI</a>
 	</span>
 </div></div>
 		</header>
@@ -141,7 +148,11 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
         <li><a href="#14-混合并行mixture-of-experts">1.4 混合并行（Mixture-of-Experts）</a></li>
       </ul>
     </li>
-    <li><a href="#2-自动并行方法">2. 自动并行方法</a></li>
+    <li><a href="#2-自动并行方法">2. 自动并行方法</a>
+      <ul>
+        <li><a href="#21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
 	</div>
@@ -149,7 +160,7 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
 			<p>人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。</p>
 <p>乍一看，这些并行技术令人生畏，但只需对计算结构进行一些假设，这些技术就会变得清晰：从某些角度来看，这也只是从 A 到 B 传递并不透明的位，就像数据包在网络交换机之间传递一样。</p>
 <div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled.png" width = "60%"/>
+<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled.png" width = "100%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -187,7 +198,7 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
 </details>
 <p>Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。</p>
 <div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%201.png" width = "60%"/>
+<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%201.png" width = "80%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
@@ -286,46 +297,82 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
 </table>
 </blockquote>
 <h3 id="113-fsdpfully-shared-data-parallel">1.1.3 FSDP（Fully Shared Data Parallel）</h3>
-<p>DDP 用起来简单方便，<strong>但是要求整个模型能加载一个GPU上</strong>，这使得大模型的训练需要使用额外复杂的设置进行模型拆分。Pytorch 的 FSDP 从 DeepSpeed ZeRO 以及 FairScale 的 FSDP 中获取灵感，<strong>打破模型分片的障碍</strong>（包括模型参数，梯度，优化器状态），同时仍然保持了数据并行的简单性。</p>
+<p>DDP 用起来简单方便，<strong>但是要求整个模型能加载一个GPU上</strong>，这使得大模型的训练需要使用额外复杂的设置进行模型拆分。Pytorch 的 FSDP 从 DeepSpeed ZeRO [8] 以及 FairScale 的 FSDP 中获取灵感，<strong>打破模型分片的障碍</strong>（包括模型参数，梯度，优化器状态），同时仍然保持了数据并行的简单性。</p>
 <p>FSDP 是对模型参数、优化器状态和梯度进行分片，可以选择将部分模型参数卸载到 CPU 中。FSDP 是在 DDP 的基础上，将 All-Reduce 操作分解为独立的 Reduce-Scatter 和 All-gather 的操作这种方式能够使得每个工作节点仅需存储一个参数和优化器状态的分片。FSDP 非常类似于 <strong>ZeRO-3</strong>。</p>
 <div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%208.png" width = "60%"/>
+<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%208.png" width = "100%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">TODO on working</div>
+    padding: 2px;">FSDP workflow [3]</div>
 </div>
 <p>如 FSDP 完全流程图所示，通过 All-gather 操作可以从其他工作节点获取模型权重来进行前向传播和反向传播。Reduce-Scatter 操作聚合局部梯度，并在各工作的节点上分片，还可以选择将梯度卸载到CPU 中，等需要时再从 CPU 中加载回来。</p>
 <div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%209.png" width = "60%"/>
+<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%209.png" width = "80%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">TODO on working</div>
+    padding: 2px;">Reduce-Scatter and All-gather</div>
 </div>
 <p>原本的 All-Reduce 操作可以拆分成 Reduce-Scatter 和 All-gather 操作。在进行Reduce-Scatter 时，gradients 在相同块的各个 ranks 中被加起来，在进行 All-gather 时，每个 Worker 上可用的聚合梯度分片的部分可供所有 Worker 使用。</p>
 <h2 id="12-流水并行pipeline-parallesim">1.2 流水并行（Pipeline Parallesim）</h2>
+<p>通过流水线机制进行并行训练，我们将模型的参数分配到GPU上。每个GPU只持有一部分参数，因此，同一个模型在每个GPU上消耗的内存成比例减小。</p>
+<p>将大模型分为若干份连续的layer很简单。然而，各层的输入和输出之间存在着顺序上的依赖性，所以一个简单的实现会导致大量的GPU空闲时间，因为 Worker 在等待前一个 Worker 的输出来用作其输入。这些等待时间块被称为 <strong>&ldquo;气泡(bubble)&rdquo;</strong>，而在这些等待的过程中，空闲的机器本可以继续进行计算。。</p>
 <div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%2010.png" width = "60%"/>
+<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%2010.png" width = "100%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">TODO on working</div>
+    padding: 2px;">Naive way for Streaming [1]</div>
 </div>
+<p>为了减少气泡的开销，我们可以重用数据并行的思想，通过让每个 Worker 一次只处理一个数据元素的子集，使我们能够巧妙地将新的计算与等待时间重叠(overlapping)起来。核心思想是将一个批次分成多个微批(microbatches)；每个微批的处理速度应该是成比例的，每个 Worker 在下一个微批可用时就开始工作，从而加速流的执行。有了足够的微批，Worker 可以在大部分时间内被利用，在进程的开始和结束时，气泡最小。梯度是跨微批的平均数，只有在所有微批完成后才会对参数进行更新。</p>
+<p>模型被分割的节点数的数量通常被称为流水线深度(Pipline depth)。</p>
+<p>在前向传递期间，Worker 只需要将其 Layer 的输出（称为激活）发送给下一个 Worker；在反向传递期间，它只将这些激活的梯度发送给前一个 Worker 。如何安排这些传递以及如何在微批中聚集梯度，有很大的设计空间。 GPipe让每个工作者连续处理前向和反向的传递，然后在最后同步聚合来自多个微批的梯度。而 PipeDream 则安排每个 Worker 交替地处理前向和反向 Stream。</p>
 <div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%2011.png" width = "60%"/>
+<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%2011.png" width = "100%"/>
 <br>
     <div style="color:orange; border-bottom: 1px solid #d9d9d9;
     display: inline-block;
     color: #999;
-    padding: 2px;">TODO on working</div>
+    padding: 2px;">GPipe and PipeDream [1]</div>
 </div>
 <h2 id="13-模型并行tensor-parallesim">1.3 模型并行（Tensor Parallesim）</h2>
+<p>流水并行将一个模型按层“垂直”拆分。也可以在一个 layer 内 “水平” 分割某些操作，这通常被称为模型并行训练。对于许多现代模型（如Transformer）来说，计算的瓶颈是将激活值与大的权重矩阵相乘。矩阵乘法可以被认为是成对的行和列之间的点积：有可能在不同的GPU上计算独立的点积，或者在不同的GPU上计算每个点积的一部分，然后将结果相加。无论采用哪种策略，我们都可以将权重矩阵切成大小均匀的 “块(Shards)”，将每个块放在不同的GPU上。要得到完整矩阵的结果，需要进行通信将不同部分的结果进行整合。</p>
+<p>一个例子是 <a href="https://nv-adlr.github.io/MegatronLM">Megatron-LM</a>，它在 Transformer 的 自注意 和 MLP层内并行化矩阵乘法。 <a href="https://arxiv.org/abs/2104.04473">PTD-P</a> 同时使用张量、数据和流水线并行；它的流水线并行将多个不连续的 layer 分配到单设备上运行，以更多网络通信为代价来减少气泡开销。</p>
+<p>有时，网络的输入可以在一个维度上进行并行化，相对于交叉通信来说，并行计算的程度很高。 <a href="https://arxiv.org/abs/2205.05198">序列并行</a>就是这样一个想法，一个输入序列在不同时间被分割成多个子集，通过在更细粒度的子集上进行计算，峰值内存消耗可以成比例地减少。</p>
 <h2 id="14-混合并行mixture-of-experts">1.4 混合并行（Mixture-of-Experts）</h2>
+<p><a href="https://arxiv.org/abs/1701.06538">混合专家（MoE）</a>方法，对于任何一个输入，只有一部分网络被用来计算输出。在有许多套权重的情况下，网络可以在推理时通过门控机制选择使用哪一套。这样就可以在不增加计算成本的情况下增加许多参数。每组权重被称为 &ldquo;专家(experts)&quot;，希望网络能够学会将专门的计算任务分配给每个专家。不同的专家可以托管在不同的GPU上，这也为扩大模型使用的GPU数量提供了一个明确的方法。</p>
+<div align="center"> 
+<img src="/keep-moving-forward/imgs/introduction_distributed_ml/moe.svg" width = "100%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">混合专家（MoE）Illustration of a mixture-of-experts (MoE) layer. Only 2 out of the n experts are selected by the gating network. (Image adapted from: [Shazeer et al., 2017](https://arxiv.org/abs/1701.06538))[1]</div>
+</div>
+<p><a href="https://arxiv.org/abs/2006.16668">GShard</a>将 MoE Transformer 的规模扩大到6000亿个参数，其中MoE layers被拆分到多个TPU上，其他layers是完全重复的。 <a href="https://arxiv.org/abs/2101.03961">Switch Transformer</a> 通过将一个输入只路由到一个专家，将模型规模扩展到数万亿的参数，甚至有更高的稀疏度。</p>
+<blockquote>
+<p>难点：</p>
+<ul>
+<li>
+<p>现在的设备，比如GPU，比较擅长做运算，不擅长做分支。</p>
+</li>
+<li>
+<p>大批量是训练模型的必须，但是这种方式下会导致每个小模型的样本数较少，无法训练得到好的模型。</p>
+</li>
+<li>
+<p>为了控制稀疏性，可能需要在loss上去做些改进，来保障小模型上的均衡负载。</p>
+</li>
+</ul>
+<p><a href="https://github.com/davidmrau/mixture-of-experts">Moe Github, code</a></p>
+</blockquote>
 <h1 id="2-自动并行方法">2. 自动并行方法</h1>
+<h2 id="21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]</h2>
+<p><a href="https://link.zhihu.com/?target=https%3A//cs.stanford.edu/~zhihao/papers/icml18.pdf">Get This Paper</a></p>
+<p>这篇文章勾勒了自动并行的基本框架，很多解决自动并行的工作都是这样一个流程。</p>
 <hr>
 <p><strong>Reference:</strong></p>
 <p>[1] <a href="https://openai.com/research/techniques-for-training-large-neural-networks">Techniques for training large neural networks (openai.com)</a></p>
@@ -336,6 +383,7 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
 <p>[6] <a href="https://towardsdatascience.com/visual-intuition-on-ring-allreduce-for-distributed-deep-learning-d1f34b4911da">Visual intuition on ring-Allreduce for distributed Deep Learning | by Edir Garcia Lazo | Towards Data Science</a></p>
 <p>[7] <a href="https://zhuanlan.zhihu.com/p/485208899#:~:text=Pytorch%20%E7%9A%84FSDP%E6%98%AF%E4%B8%80%E7%A7%8D%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%E7%9A%84%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95%EF%BC%8C,%E5%AE%83%E5%AE%9E%E9%99%85%E4%B8%8A%E5%B0%B1%E6%98%AFZeRO-3%20%EF%BC%8C%E4%BC%A0%E7%BB%9F%E7%9A%84%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8C%E4%BC%9A%E5%9C%A8%E6%AF%8F%E4%B8%AAGPU%E4%B8%8A%E7%BB%B4%E6%8A%A4%E4%B8%80%E4%BB%BD%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%EF%BC%8C%E6%A2%AF%E5%BA%A6%EF%BC%8C%E4%BC%98%E5%8C%96%E5%99%A8%E7%8A%B6%E6%80%81%E7%9A%84%E5%89%AF%E6%9C%AC%EF%BC%8C%E4%BD%86%E6%98%AFFSDP%E5%B0%86%E8%BF%99%E4%BA%9B%E7%8A%B6%E6%80%81%E5%88%86%E7%89%87%E5%88%B0%E6%89%80%E6%9C%89%E7%9A%84%E6%95%B0%E6%8D%AE%E5%B9%B6%E8%A1%8Cworker%E4%B8%AD%EF%BC%8C%20%E5%B9%B6%E4%B8%94%E5%8F%AF%E4%BB%A5%E9%80%89%E6%8B%A9%E5%B0%86%E5%88%86%E7%89%87%E7%9A%84%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0%E5%8D%B8%E8%BD%BD%E5%88%B0CPU%E4%B8%8A%E3%80%82">数据并行Deep-dive: 从DP 到 Fully Sharded Data Parallel （FSDP）完全分片数据并行 - 知乎 (zhihu.com)</a></p>
 <p>[8] <a href="https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-model-training-for-everyone/">DeepSpeed: Extreme-scale model training for everyone - Microsoft Research</a></p>
+<p>[9] <a href="https://link.zhihu.com/?target=https%3A//cs.stanford.edu/~zhihao/papers/icml18.pdf">Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks</a></p>
 
 		</div>
 		<footer class="post__footer">
@@ -426,7 +474,11 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
         <li><a href="#14-混合并行mixture-of-experts">1.4 混合并行（Mixture-of-Experts）</a></li>
       </ul>
     </li>
-    <li><a href="#2-自动并行方法">2. 自动并行方法</a></li>
+    <li><a href="#2-自动并行方法">2. 自动并行方法</a>
+      <ul>
+        <li><a href="#21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
 	</div>
@@ -446,6 +498,22 @@ TODO on working Worker 节点的主要功能是各自保存部分训练数据，
 	</div>
 <script async defer src="/keep-moving-forward/js/menu.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async></script>
+
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { fonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+</script>
 </body>
 </html>

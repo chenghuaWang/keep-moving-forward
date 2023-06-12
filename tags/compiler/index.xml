@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Compiler on Ubios Home</title>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tags/compiler/</link>
+    <description>Recent content in Compiler on Ubios Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Mon, 12 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/compiler/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>浅析 IREE</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</link>
+      <pubDate>Mon, 12 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</guid>
+      <description>最近在编写 NNCV(nerual network inference and comile framework for computer vision, 这是一个以工程驱动的学习 MLSys 的项目，可能作为一些课程作业/毕设使用。至于为什么是 for computer vision，只能说：时间有限，优先能跑起来 resnet 就行了) 的过程中在不断的调研各种推理框架和深度学习编译器的设计逻辑，算法实现等。我发现我在 NNCV 中的设计逻辑和 IREE 非常的相似，可能这个框架的形态大家都是这么想的吧，其实整个类型的框架设计是非常显然的。都是使用编译技术来对计算图做深层的优化，做 CodeGen，Schedule，等。最终生成目标平台的机器码和 vm(也可以说是 runtime)上的字节码。主要克服的难点仍然是 CodeGen，动态 Shape，Auto Schedule 上。
+IREE 是什么？ 一如既往的，我们先来看下设计 iree 的团队对其作品的定义[1]：
+IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to-end compiler and runtime that lowers Machine Learning (ML) models to a unified IR that scales up to meet the needs of the datacenter and down to satisfy the constraints and special considerations of mobile and edge deployments.</description>
+    </item>
+    
+  </channel>
+</rss>

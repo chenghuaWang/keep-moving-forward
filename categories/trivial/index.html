@@ -28,7 +28,8 @@
 </head>
 <body class="body">
 	<div class="container container--outer">
-		<header class="header">
+		
+<header class="header">
 	<div class="container header__container">
 		
 	<div class="logo logo--mixed">
@@ -111,11 +112,16 @@
 	</header>
 	<div class="content list__excerpt post__content clearfix">
 		1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
-1.1 Course 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
+1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
 Spring 2023 Homepage
 并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
 1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link 
+1.1.3 Stanford 143: Compilers Homepage
+现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
+1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/about/hpc_ai/">Read more…</a>
 	</div>
 </article><article class="list__item post">
 	
@@ -203,7 +209,7 @@ Research Interests Machine Learning Infrastructure(*)
 2023-03-02, XV6 lab 3 page table, link
 2023-03-12, XV6 lab 4 traps, link
 2023-03-17, XV6 lab 5 copy on write, link
-Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link 
+Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler 2023-06-12, 浅析 IREE, link 
 	</div>
 </article>
 </main>
@@ -224,6 +230,7 @@ Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
@@ -231,7 +238,6 @@ Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/">XV6 Lab 2: syscall</a></li>
 		</ul>
 	</div>
 </div>
@@ -245,7 +251,7 @@ Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">1</span>
+				<span class="widget__counter widget__counter--bubble">2</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -265,8 +271,9 @@ Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
 	</div>
 </div>

@@ -29,7 +29,8 @@
 </head>
 <body class="body">
 	<div class="container container--outer">
-		<header class="header">
+		
+<header class="header">
 	<div class="container header__container">
 		
 	<div class="logo logo--mixed">
@@ -93,6 +94,41 @@
 			
 <main class="main list" role="main">
 	<article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/papers/ft-vm/" rel="bookmark">
+			The Design of a Practical System for Fault-Tolerant Virtual Machines
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of paper, ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-19T00:00:00Z">2023-01-19</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/distributed-sys/" rel="category">distributed sys</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		go back to home
+Paper link
+ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.
+Last Edit: Jan 19, 2023
+Introduction 是的，这节内容还是 FT(fault-tolerance)。现在做 FT 主要有两种手段[2]：
+State transfer Primary用来执行所有的任务，Primary发送该机器的所有状态(所有的内存变动，所有的磁盘变动，等)给Replica。State Transfer 虽然听起来非常的简单(实际上做起来也是的，相对于Replicated state machine)，但是需要占用非常大量的网络带宽来实现。
+尽管如此(占用大量的网络资源，导致传输缓慢)，State Transfer是对多处理器友好的一种方式，而Replicated state machine则不是。
+Replicated state machine Client 向 Primary 发送操作和数据(inputs)。Primary把这些操作和数据发送给Replicas，Replicas和Primary都会执行这些指令，都会受到这些数据(inputs)，所有的指令都以同样的顺序执行，只要Primary和Replicas初始的状态是一致的，那么二者就一直保持着同步(也意味着deterministic)。
+在并行化的应用中，State transfer 是首选，毕竟在并行的时候，并行顺序对于Replicated state machine来说是异常难同步的。
+主从复制时的挑战[2]：
+要复制什么状态 primary需要等待backup吗 什么时候需要切换到backup 切换的时候异常情况是否能看到 如何提高创建新backup的速度 VM-FT使用的就是Replicated state machine的方法。为了能够捕获数据，并且做出一些软件中断，Primary和Backup都是在VM上运行的，由hypervisor来管理他们。
+Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-FT主要依赖于 Deterministic replay(确定性重放)。VM-FT 通过确定性重放来产生相关的日志条目，但不将日志写入磁盘，而是通过 logging channel 发送给backup(这里指备用机)。backup实时重放日志项。
+因为一切都是在 logging channel 上做同步的。为了容错，必须在 logging channel 上实现严格的容错协议，有以下要求：
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/papers/ft-vm/">Read more…</a>
+	</div>
+</article><article class="list__item post">
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
@@ -244,7 +280,7 @@ Research Interests Machine Learning Infrastructure(*)
 2023-03-02, XV6 lab 3 page table, link
 2023-03-12, XV6 lab 4 traps, link
 2023-03-17, XV6 lab 5 copy on write, link
-Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link 
+Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler 2023-06-12, 浅析 IREE, link 
 	</div>
 </article><article class="list__item post">
 	
@@ -293,21 +329,6 @@ Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学
 In this artical:
 The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s new in my impl. Python binding, and wheel to official python libs(On both windows and debian linux). API reference. That&rsquo;s quite a large project. Taking almost 9 month to finish it !!! Just do it.
 	</div>
-</article><article class="list__item post">
-	
-	<header class="list__header">
-		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/tensordock_interface_design/" rel="bookmark">
-			
-			</a>
-		</h2>
-		<div class="list__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
-</div></div>
-	</header>
-	<div class="content list__excerpt post__content clearfix">
-		
-	</div>
 </article>
 </main>
 
@@ -331,6 +352,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
@@ -338,7 +360,6 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/">XV6 Lab 2: syscall</a></li>
 		</ul>
 	</div>
 </div>
@@ -352,7 +373,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">1</span>
+				<span class="widget__counter widget__counter--bubble">2</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -372,8 +393,9 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
 	</div>
 </div>

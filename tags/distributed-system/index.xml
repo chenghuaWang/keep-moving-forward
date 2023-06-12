@@ -6,7 +6,18 @@
     <description>Recent content in Distributed System on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 02 May 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 12 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>浅析 IREE</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</link>
+      <pubDate>Mon, 12 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</guid>
+      <description>最近在编写 NNCV(nerual network inference and comile framework for computer vision, 这是一个以工程驱动的学习 MLSys 的项目，可能作为一些课程作业/毕设使用。至于为什么是 for computer vision，只能说：时间有限，优先能跑起来 resnet 就行了) 的过程中在不断的调研各种推理框架和深度学习编译器的设计逻辑，算法实现等。我发现我在 NNCV 中的设计逻辑和 IREE 非常的相似，可能这个框架的形态大家都是这么想的吧，其实整个类型的框架设计是非常显然的。都是使用编译技术来对计算图做深层的优化，做 CodeGen，Schedule，等。最终生成目标平台的机器码和 vm(也可以说是 runtime)上的字节码。主要克服的难点仍然是 CodeGen，动态 Shape，Auto Schedule 上。
+IREE 是什么？ 一如既往的，我们先来看下设计 iree 的团队对其作品的定义[1]：
+IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to-end compiler and runtime that lowers Machine Learning (ML) models to a unified IR that scales up to meet the needs of the datacenter and down to satisfy the constraints and special considerations of mobile and edge deployments.</description>
+    </item>
+    
     <item>
       <title>浅析机器学习中的并行模型和自动并行方法</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</link>
@@ -15,14 +26,14 @@
       <guid>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</guid>
       <description>人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。
 乍一看，这些并行技术令人生畏，但只需对计算结构进行一些假设，这些技术就会变得清晰：从某些角度来看，这也只是从 A 到 B 传递并不透明的位，就像数据包在网络交换机之间传递一样。
-TODO on working 不同的并行技术将训练过程划分为不同的维度，包括：
+各种 Parallel 模型 不同的并行技术将训练过程划分为不同的维度，包括：
 数据并行（Data Parallelism）在不同的GPU上运行同一批数据的不同子集 DP（Data Parallel） DDP（Distributed Data Parallel） FSDP（Fully Shared Data Parallel） 流水并行（Pipeline Parallelism）在不同的GPU上运行模型的不同层 模型并行（Tensor Parallelism）将单个数学运算（如矩阵乘法）拆分到不同的GPU上运行 专家混合（Mixture-of-Experts）只用模型每一层中的一小部分来处理数据。 Note：Tensor Parallelism 翻译成模型并行可能并不是非常的恰当🤣
 1. 并行模型 1.1 数据并行 （Data Parallesim） 数据并行是指将相同的参数复制到多个工作节点上，并为每个工作节点分配不同的数据子集同时进行处理。每个工作节点拥有完整的神经网络模型，每次训练仅将一批数据输入模型，进行前向传播、计算误差、反向传播，最后进行参数的更新。储了参数的更新，其余的操作都是互相独立的，所以可以在多个节点上进行并发的执行。
 每个工作节点都有自己的模型和输入，当属于自己的模型参数推理完成后（产生了梯度参数），所有的工作节点会把参数（梯度参数）发给一个 Master，这个 Master 会把所有节点传进来的参数做融合，通过这些梯度参数更新生成新的模型参数，然后把这个模型的参数再发送给每个工作节点，拱他们进行下一轮的计算。
 在 Pytorch 中提供了DP（Data Parallel）、DDP（Distributed Data Parallel）、FSDP（Fully Shared Data Parallel）三种不同的数据并行方法。
 1.1.1 DP（Data Parallel）Parameter Server DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。
 [点击折叠] 李沐老师的 PS 讲解 Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。
-TODO on working Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。</description>
+Parameter Server Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。</description>
     </item>
     
   </channel>

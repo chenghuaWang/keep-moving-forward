@@ -29,7 +29,8 @@
 </head>
 <body class="body">
 	<div class="container container--outer">
-		<header class="header">
+		
+<header class="header">
 	<div class="container header__container">
 		
 	<div class="logo logo--mixed">
@@ -96,6 +97,31 @@
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/tech/intro_to_iree/" rel="bookmark">
+			浅析 IREE
+			</a>
+		</h2>
+		<p class="list__lead post__lead">最近设计 NNCV 时，从 IREE 获得的启发</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-06-12T00:00:00Z">2023-06-12</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai/" rel="category">HPC&#43;AI</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		最近在编写 NNCV(nerual network inference and comile framework for computer vision, 这是一个以工程驱动的学习 MLSys 的项目，可能作为一些课程作业/毕设使用。至于为什么是 for computer vision，只能说：时间有限，优先能跑起来 resnet 就行了) 的过程中在不断的调研各种推理框架和深度学习编译器的设计逻辑，算法实现等。我发现我在 NNCV 中的设计逻辑和 IREE 非常的相似，可能这个框架的形态大家都是这么想的吧，其实整个类型的框架设计是非常显然的。都是使用编译技术来对计算图做深层的优化，做 CodeGen，Schedule，等。最终生成目标平台的机器码和 vm(也可以说是 runtime)上的字节码。主要克服的难点仍然是 CodeGen，动态 Shape，Auto Schedule 上。
+IREE 是什么？ 一如既往的，我们先来看下设计 iree 的团队对其作品的定义[1]：
+IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to-end compiler and runtime that lowers Machine Learning (ML) models to a unified IR that scales up to meet the needs of the datacenter and down to satisfy the constraints and special considerations of mobile and edge deployments.
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/intro_to_iree/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/tech/introduction_mldistri/" rel="bookmark">
 			浅析机器学习中的并行模型和自动并行方法
 			</a>
@@ -112,14 +138,14 @@
 	<div class="content list__excerpt post__content clearfix">
 		人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。
 乍一看，这些并行技术令人生畏，但只需对计算结构进行一些假设，这些技术就会变得清晰：从某些角度来看，这也只是从 A 到 B 传递并不透明的位，就像数据包在网络交换机之间传递一样。
-TODO on working 不同的并行技术将训练过程划分为不同的维度，包括：
+各种 Parallel 模型 不同的并行技术将训练过程划分为不同的维度，包括：
 数据并行（Data Parallelism）在不同的GPU上运行同一批数据的不同子集 DP（Data Parallel） DDP（Distributed Data Parallel） FSDP（Fully Shared Data Parallel） 流水并行（Pipeline Parallelism）在不同的GPU上运行模型的不同层 模型并行（Tensor Parallelism）将单个数学运算（如矩阵乘法）拆分到不同的GPU上运行 专家混合（Mixture-of-Experts）只用模型每一层中的一小部分来处理数据。 Note：Tensor Parallelism 翻译成模型并行可能并不是非常的恰当🤣
 1. 并行模型 1.1 数据并行 （Data Parallesim） 数据并行是指将相同的参数复制到多个工作节点上，并为每个工作节点分配不同的数据子集同时进行处理。每个工作节点拥有完整的神经网络模型，每次训练仅将一批数据输入模型，进行前向传播、计算误差、反向传播，最后进行参数的更新。储了参数的更新，其余的操作都是互相独立的，所以可以在多个节点上进行并发的执行。
 每个工作节点都有自己的模型和输入，当属于自己的模型参数推理完成后（产生了梯度参数），所有的工作节点会把参数（梯度参数）发给一个 Master，这个 Master 会把所有节点传进来的参数做融合，通过这些梯度参数更新生成新的模型参数，然后把这个模型的参数再发送给每个工作节点，拱他们进行下一轮的计算。
 在 Pytorch 中提供了DP（Data Parallel）、DDP（Distributed Data Parallel）、FSDP（Fully Shared Data Parallel）三种不同的数据并行方法。
 1.1.1 DP（Data Parallel）Parameter Server DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。
 [点击折叠] 李沐老师的 PS 讲解 Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。
-TODO on working Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。
+Parameter Server Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。
 	</div>
 	<div class="list__footer clearfix">
 		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/introduction_mldistri/">Read more…</a>
@@ -194,11 +220,16 @@ NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to 
 	</header>
 	<div class="content list__excerpt post__content clearfix">
 		1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
-1.1 Course 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
+1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
 Spring 2023 Homepage
 并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
 1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link 
+1.1.3 Stanford 143: Compilers Homepage
+现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
+1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/about/hpc_ai/">Read more…</a>
 	</div>
 </article><article class="list__item post">
 	
@@ -342,41 +373,6 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 	<div class="list__footer clearfix">
 		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/xv6_lab1_utility/">Read more…</a>
 	</div>
-</article><article class="list__item post">
-	
-	<header class="list__header">
-		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/papers/ft-vm/" rel="bookmark">
-			The Design of a Practical System for Fault-Tolerant Virtual Machines
-			</a>
-		</h2>
-		<p class="list__lead post__lead">notes of paper, ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.</p>
-		<div class="list__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
-</div>
-<div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-19T00:00:00Z">2023-01-19</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/distributed-sys/" rel="category">distributed sys</a>
-	</span>
-</div></div>
-	</header>
-	<div class="content list__excerpt post__content clearfix">
-		go back to home
-Paper link
-ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.
-Last Edit: Jan 19, 2023
-Introduction 是的，这节内容还是 FT(fault-tolerance)。现在做 FT 主要有两种手段[2]：
-State transfer Primary用来执行所有的任务，Primary发送该机器的所有状态(所有的内存变动，所有的磁盘变动，等)给Replica。State Transfer 虽然听起来非常的简单(实际上做起来也是的，相对于Replicated state machine)，但是需要占用非常大量的网络带宽来实现。
-尽管如此(占用大量的网络资源，导致传输缓慢)，State Transfer是对多处理器友好的一种方式，而Replicated state machine则不是。
-Replicated state machine Client 向 Primary 发送操作和数据(inputs)。Primary把这些操作和数据发送给Replicas，Replicas和Primary都会执行这些指令，都会受到这些数据(inputs)，所有的指令都以同样的顺序执行，只要Primary和Replicas初始的状态是一致的，那么二者就一直保持着同步(也意味着deterministic)。
-在并行化的应用中，State transfer 是首选，毕竟在并行的时候，并行顺序对于Replicated state machine来说是异常难同步的。
-主从复制时的挑战[2]：
-要复制什么状态 primary需要等待backup吗 什么时候需要切换到backup 切换的时候异常情况是否能看到 如何提高创建新backup的速度 VM-FT使用的就是Replicated state machine的方法。为了能够捕获数据，并且做出一些软件中断，Primary和Backup都是在VM上运行的，由hypervisor来管理他们。
-Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-FT主要依赖于 Deterministic replay(确定性重放)。VM-FT 通过确定性重放来产生相关的日志条目，但不将日志写入磁盘，而是通过 logging channel 发送给backup(这里指备用机)。backup实时重放日志项。
-因为一切都是在 logging channel 上做同步的。为了容错，必须在 logging channel 上实现严格的容错协议，有以下要求：
-	</div>
-	<div class="list__footer clearfix">
-		<a class="list__footer-readmore btn" href="/keep-moving-forward/papers/ft-vm/">Read more…</a>
-	</div>
 </article>
 </main>
 
@@ -399,6 +395,7 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
@@ -406,7 +403,6 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/">XV6 Lab 2: syscall</a></li>
 		</ul>
 	</div>
 </div>
@@ -420,7 +416,7 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">1</span>
+				<span class="widget__counter widget__counter--bubble">2</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -440,8 +436,9 @@ Arch VM-FT 总体的结构较为简单，论文中是一主一从的结构。VM-
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
 	</div>
 </div>

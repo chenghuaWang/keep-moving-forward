@@ -630,6 +630,10 @@ button:not(:-moz-focusring):focus > .menu__btn-title {
 	margin: 0;
 }
 
+.post__content {
+	text-align: justify;
+}
+
 .post__meta {
 	padding: 5px 0;
 	margin-top: 10px;

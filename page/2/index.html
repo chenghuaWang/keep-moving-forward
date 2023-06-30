@@ -33,13 +33,12 @@
 <header class="header">
 	<div class="container header__container">
 		
-	<div class="logo logo--mixed">
-		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
-			<div class="logo__item logo__imagebox">
-					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
-				</div><div class="logo__item logo__text">
-					<div class="logo__title">Ubios Home</div>
-					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
+	<div class="logo logo--mixed" >
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
+			
+			<div class="logo__item logo__text" >
+					<div class="logo__title" >Ubios Home</div>
+					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
 				</div>
 		</a>
 	</div>
@@ -84,6 +83,20 @@
 				
 			</a>
 		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
+				
+				<span class="menu__text">Thinking</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/news/">
+				
+				<span class="menu__text">🎉News🎉</span>
+				
+			</a>
+		</li>
 	</ul>
 </nav>
 
@@ -94,6 +107,33 @@
 			
 <main class="main list" role="main">
 	<article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/tech/xv6_lab1_utility/" rel="bookmark">
+			XV6 Lab 1: Xv6 and Unix utilities
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of MIT6.S081 Lab 1</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-02-23T00:00:00Z">2023-02-23</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		MIT 6.S081 Lab1 website
+本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
+阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
+sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
+/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/xv6_lab1_utility/">Read more…</a>
+	</div>
+</article><article class="list__item post">
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
@@ -198,6 +238,25 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/about/news/" rel="bookmark">
+			🎉News🎉
+			</a>
+		</h2>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-01T00:00:00Z">2023-01-01</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/trivial/" rel="category">trivial</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/about/about/" rel="bookmark">
 			About
 			</a>
@@ -286,48 +345,20 @@ Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/mlir_toy_1/" rel="bookmark">
-			
+			<a href="/keep-moving-forward/about/thinking/" rel="bookmark">
+			Thinking
 			</a>
 		</h2>
 		<div class="list__meta meta"><div class="meta__item-author meta__item">
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-01-01T00:00:00Z">2023-01-01</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/trivial/" rel="category">trivial</a>
+	</span>
 </div></div>
 	</header>
 	<div class="content list__excerpt post__content clearfix">
 		
-	</div>
-</article><article class="list__item post">
-	
-	<header class="list__header">
-		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/nv-archs-introduction/" rel="bookmark">
-			
-			</a>
-		</h2>
-		<div class="list__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
-</div></div>
-	</header>
-	<div class="content list__excerpt post__content clearfix">
-		
-	</div>
-</article><article class="list__item post">
-	
-	<header class="list__header">
-		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/raft_cpp_impl/" rel="bookmark">
-			
-			</a>
-		</h2>
-		<div class="list__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
-</div></div>
-	</header>
-	<div class="content list__excerpt post__content clearfix">
-		Try to implement a raft algorithm in c++. And binding python interface on it.
-In this artical:
-The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s new in my impl. Python binding, and wheel to official python libs(On both windows and debian linux). API reference. That&rsquo;s quite a large project. Taking almost 9 month to finish it !!! Just do it.
 	</div>
 </article>
 </main>
@@ -352,6 +383,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/dl_compiler_survey/">[Notes] The Deep Learning Compiler: A Comprehensive Survey</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
@@ -359,7 +391,6 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 		</ul>
 	</div>
 </div>
@@ -373,7 +404,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">2</span>
+				<span class="widget__counter widget__counter--bubble">3</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -385,7 +416,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/trivial/">trivial</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">5</span>
+				<span class="widget__counter widget__counter--bubble">7</span>
 				</li>
 		</ul>
 	</div>
@@ -393,7 +424,7 @@ The original raft algorithm. Paper analyze. The cpp impl of raft. What&rsquo;s n
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>

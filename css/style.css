@@ -403,7 +403,7 @@ select {
 }
 
 .logo__text {
-	text-transform: uppercase;
+	word-wrap:break-word;
 }
 
 .logo--mixed .logo__item {
@@ -432,9 +432,9 @@ select {
 	padding-top: 10px;
 	margin-top: 10px;
 	font-size: 14px;
-	font-size: .875rem;
+	font-size: .985rem;
 	font-weight: 700;
-	line-height: 1;
+	line-height: 1.5;
 	color: #76b900;
 	border-top: 1px solid #ebebeb;
 }

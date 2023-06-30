@@ -24,6 +24,15 @@ Spring 2023 Homepage
     </item>
     
     <item>
+      <title>🎉News🎉</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/about/news/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/about/news/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>About</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/about/about/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
@@ -66,6 +75,15 @@ Research Interests Machine Learning Infrastructure(*)</description>
 2023-03-12, XV6 lab 4 traps, link
 2023-03-17, XV6 lab 5 copy on write, link
 Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler 2023-06-12, 浅析 IREE, link </description>
+    </item>
+    
+    <item>
+      <title>Thinking</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/about/thinking/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/about/thinking/</guid>
+      <description></description>
     </item>
     
   </channel>

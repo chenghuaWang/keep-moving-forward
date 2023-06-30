@@ -6,7 +6,18 @@
     <description>Recent content in HPC&#43;AI on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 12 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/hpc+ai/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 14 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/hpc+ai/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Notes] The Deep Learning Compiler: A Comprehensive Survey</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</link>
+      <pubDate>Wed, 14 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</guid>
+      <description>Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
+简介
+1. 介绍 2. 相关工作 2.1 深度学习框架 2.2 深度学习硬件 3. 主流的深度学习编译器的设计 4. 深度学习编译器的主要模块 4.1 High-Level IR 4.2 Low-Level IR 4.3 前端优化 4.4 后端优化 5. 深度学习编译器的分类 6. 验证 7. 总结和未来方向的讨论 Li M, Liu Y, Liu X, et al. The deep learning compiler: A comprehensive survey[J]. IEEE Transactions on Parallel and Distributed Systems, 2020, 32(3): 708-727.</description>
+    </item>
+    
     <item>
       <title>浅析 IREE</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</link>

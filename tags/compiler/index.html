@@ -32,13 +32,12 @@
 <header class="header">
 	<div class="container header__container">
 		
-	<div class="logo logo--mixed">
-		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home">
-			<div class="logo__item logo__imagebox">
-					<img class="logo__img" src="/keep-moving-forward/img/inspace.gif">
-				</div><div class="logo__item logo__text">
-					<div class="logo__title">Ubios Home</div>
-					<div class="logo__tagline">Whomst has summoned the almighty one?</div>
+	<div class="logo logo--mixed" >
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
+			
+			<div class="logo__item logo__text" >
+					<div class="logo__title" >Ubios Home</div>
+					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
 				</div>
 		</a>
 	</div>
@@ -83,6 +82,20 @@
 				
 			</a>
 		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
+				
+				<span class="menu__text">Thinking</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/news/">
+				
+				<span class="menu__text">🎉News🎉</span>
+				
+			</a>
+		</li>
 	</ul>
 </nav>
 
@@ -95,6 +108,31 @@
 	<header class="main__header">
 		<h1 class="main__title">Compiler</h1>
 	</header><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/papers/dl_compiler_survey/" rel="bookmark">
+			[Notes] The Deep Learning Compiler: A Comprehensive Survey
+			</a>
+		</h2>
+		<p class="list__lead post__lead">notes of paper, deep learning compiler, survey.</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-06-14T00:00:00Z">2023-06-14</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai/" rel="category">HPC&#43;AI</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
+简介
+1. 介绍 2. 相关工作 2.1 深度学习框架 2.2 深度学习硬件 3. 主流的深度学习编译器的设计 4. 深度学习编译器的主要模块 4.1 High-Level IR 4.2 Low-Level IR 4.3 前端优化 4.4 后端优化 5. 深度学习编译器的分类 6. 验证 7. 总结和未来方向的讨论 Li M, Liu Y, Liu X, et al. The deep learning compiler: A comprehensive survey[J]. IEEE Transactions on Parallel and Distributed Systems, 2020, 32(3): 708-727.
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/papers/dl_compiler_survey/">Read more…</a>
+	</div>
+</article><article class="list__item post">
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
@@ -138,6 +176,7 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/dl_compiler_survey/">[Notes] The Deep Learning Compiler: A Comprehensive Survey</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
@@ -145,7 +184,6 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 		</ul>
 	</div>
 </div>
@@ -159,7 +197,7 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">2</span>
+				<span class="widget__counter widget__counter--bubble">3</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -171,7 +209,7 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/trivial/">trivial</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">5</span>
+				<span class="widget__counter widget__counter--bubble">7</span>
 				</li>
 		</ul>
 	</div>
@@ -179,7 +217,7 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>

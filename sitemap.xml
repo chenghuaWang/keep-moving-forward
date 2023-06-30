@@ -2,25 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</loc>
+    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/</loc>
-    <lastmod>2023-06-12T00:00:00+00:00</lastmod>
+    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/compiler/</loc>
-    <lastmod>2023-06-12T00:00:00+00:00</lastmod>
+    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai/</loc>
+    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/</loc>
+    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
+    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
+    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/distributed-system/</loc>
     <lastmod>2023-06-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai/</loc>
-    <lastmod>2023-06-12T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
-    <lastmod>2023-06-12T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
-    <lastmod>2023-06-12T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
     <lastmod>2023-06-12T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</loc>
@@ -74,9 +80,6 @@
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/</loc>
     <lastmod>2023-01-19T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/</loc>
-    <lastmod>2023-01-19T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/</loc>
     <lastmod>2023-01-19T00:00:00+00:00</lastmod>
   </url><url>
@@ -85,6 +88,9 @@
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/</loc>
     <lastmod>2023-01-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/news/</loc>
+    <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/about/about/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
@@ -96,6 +102,9 @@
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</loc>
+    <lastmod>2023-01-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/thinking/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</loc>

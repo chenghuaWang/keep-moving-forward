@@ -10,7 +10,11 @@
 		<meta property="og:title" content="[Notes] The Deep Learning Compiler: A Comprehensive Survey" />
 <meta property="og:description" content="Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
 简介
-1. 介绍 2. 相关工作 2.1 深度学习框架 2.2 深度学习硬件 3. 主流的深度学习编译器的设计 4. 深度学习编译器的主要模块 4.1 High-Level IR 4.2 Low-Level IR 4.3 前端优化 4.4 后端优化 5. 深度学习编译器的分类 6. 验证 7. 总结和未来方向的讨论 Li M, Liu Y, Liu X, et al. The deep learning compiler: A comprehensive survey[J]. IEEE Transactions on Parallel and Distributed Systems, 2020, 32(3): 708-727." />
+在不同的深度学习硬件上部署各种深度学习模型的困难，促进了社区内深度学习编译器的研究和开发。工业界和学术界都提出了一些深度学习编译器，如 Tensorflow XLA 和 TVM。同样，深度学习编译器将不同深度学习框架中描述的深度学习模型作为输入，然后为不同的深度学习硬件生成特定的优化代码作为输出。然而，现有的综述都没有全面地分析深度学习编译器的独特设计架构。在本文中，作者们对现有的深度学习编译器进行了全面的调查，详细剖析了普遍采用的设计，重点是面向深度学习的多级IR，以及前端/后端优化。作者对多级 IR 的设计进行了详细的分析，并说明了普遍采用的优化技术。最后，作者强调了深度学习编译器的几个潜在研究方向。这是第一篇关注深度学习编译器设计架构的综述论文，希望它能为未来的深度学习编译器研究铺平道路。
+1. 介绍 深度学习(DL)的发展已经对各个科学领域产生了深远的影响。它不仅在人工智能，如自然语言处理(NLP) 2 和计算机视觉(CV) 3 中表现出令人惊讶的价值，而且在更广泛的领域也取得了巨大成功。诸如电子商务 4 、智能城市 5 和药物探索 6 等更广泛的应用中取得了巨大成功。随着多种类的深度学习模型出现，如卷积神经网络(CNN) 7 、递归神经网络(RNN) 8 、长短时记忆网络(LSTM) 9 和生成对抗网络(GAN) 10 ，深度学习进一步成为一种时代的趋势。为了能够使它们被广泛应用，简化各种深度学习模型是至关重要的。
+随着工业界和学术界的不断努力，几个流行的深度学习框架已被提出，如 TensorFlow 11 、PyTorch 12 、MXNet 13 和 CNTK 14 ，这些框架简化了深度学习模型的实现。尽管每个框架因为自生的设计做了一些 tradeoffs，这使得每个框架都各有优劣。但在支持新兴的深度学习模型和现有的深度学习模型时，互操作性对于减少冗余的工作量变得非常重要。为了提供互操作性，ONNX 15 被提出，它定义了一个深度学习模型的统一格式，以促进不同DL框架之间的模型转换。
+补充:
+虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/" /><meta property="article:section" content="Papers" />
 <meta property="article:published_time" content="2023-06-14T00:00:00+00:00" />
@@ -19,9 +23,13 @@
 		<meta itemprop="name" content="[Notes] The Deep Learning Compiler: A Comprehensive Survey">
 <meta itemprop="description" content="Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
 简介
-1. 介绍 2. 相关工作 2.1 深度学习框架 2.2 深度学习硬件 3. 主流的深度学习编译器的设计 4. 深度学习编译器的主要模块 4.1 High-Level IR 4.2 Low-Level IR 4.3 前端优化 4.4 后端优化 5. 深度学习编译器的分类 6. 验证 7. 总结和未来方向的讨论 Li M, Liu Y, Liu X, et al. The deep learning compiler: A comprehensive survey[J]. IEEE Transactions on Parallel and Distributed Systems, 2020, 32(3): 708-727."><meta itemprop="datePublished" content="2023-06-14T00:00:00+00:00" />
+在不同的深度学习硬件上部署各种深度学习模型的困难，促进了社区内深度学习编译器的研究和开发。工业界和学术界都提出了一些深度学习编译器，如 Tensorflow XLA 和 TVM。同样，深度学习编译器将不同深度学习框架中描述的深度学习模型作为输入，然后为不同的深度学习硬件生成特定的优化代码作为输出。然而，现有的综述都没有全面地分析深度学习编译器的独特设计架构。在本文中，作者们对现有的深度学习编译器进行了全面的调查，详细剖析了普遍采用的设计，重点是面向深度学习的多级IR，以及前端/后端优化。作者对多级 IR 的设计进行了详细的分析，并说明了普遍采用的优化技术。最后，作者强调了深度学习编译器的几个潜在研究方向。这是第一篇关注深度学习编译器设计架构的综述论文，希望它能为未来的深度学习编译器研究铺平道路。
+1. 介绍 深度学习(DL)的发展已经对各个科学领域产生了深远的影响。它不仅在人工智能，如自然语言处理(NLP) 2 和计算机视觉(CV) 3 中表现出令人惊讶的价值，而且在更广泛的领域也取得了巨大成功。诸如电子商务 4 、智能城市 5 和药物探索 6 等更广泛的应用中取得了巨大成功。随着多种类的深度学习模型出现，如卷积神经网络(CNN) 7 、递归神经网络(RNN) 8 、长短时记忆网络(LSTM) 9 和生成对抗网络(GAN) 10 ，深度学习进一步成为一种时代的趋势。为了能够使它们被广泛应用，简化各种深度学习模型是至关重要的。
+随着工业界和学术界的不断努力，几个流行的深度学习框架已被提出，如 TensorFlow 11 、PyTorch 12 、MXNet 13 和 CNTK 14 ，这些框架简化了深度学习模型的实现。尽管每个框架因为自生的设计做了一些 tradeoffs，这使得每个框架都各有优劣。但在支持新兴的深度学习模型和现有的深度学习模型时，互操作性对于减少冗余的工作量变得非常重要。为了提供互操作性，ONNX 15 被提出，它定义了一个深度学习模型的统一格式，以促进不同DL框架之间的模型转换。
+补充:
+虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。"><meta itemprop="datePublished" content="2023-06-14T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-06-14T00:00:00+00:00" />
-<meta itemprop="wordCount" content="71">
+<meta itemprop="wordCount" content="1022">
 <meta itemprop="keywords" content="Compiler," />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -180,8 +188,34 @@ text-transform: uppercase;
 <p>这篇笔记记录了 Deep Learning Compiler Survey <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup> 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。</p>
 <p><strong>简介</strong></p>
 <blockquote>
+<p>在不同的深度学习硬件上部署各种深度学习模型的困难，促进了社区内深度学习编译器的研究和开发。工业界和学术界都提出了一些深度学习编译器，如 Tensorflow XLA 和 TVM。同样，深度学习编译器将不同深度学习框架中描述的深度学习模型作为输入，然后为不同的深度学习硬件生成特定的优化代码作为输出。然而，现有的综述都没有全面地分析深度学习编译器的独特设计架构。在本文中，作者们对现有的深度学习编译器进行了全面的调查，详细剖析了普遍采用的设计，重点是面向深度学习的多级IR，以及前端/后端优化。作者对多级 IR 的设计进行了详细的分析，并说明了普遍采用的优化技术。最后，作者强调了深度学习编译器的几个潜在研究方向。这是第一篇关注深度学习编译器设计架构的综述论文，希望它能为未来的深度学习编译器研究铺平道路。</p>
 </blockquote>
 <h2 id="1-介绍">1. 介绍</h2>
+<p>深度学习(DL)的发展已经对各个科学领域产生了深远的影响。它不仅在人工智能，如自然语言处理(NLP) <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> 和计算机视觉(CV) <sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> 中表现出令人惊讶的价值，而且在更广泛的领域也取得了巨大成功。诸如电子商务 <sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> 、智能城市 <sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup> 和药物探索 <sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup> 等更广泛的应用中取得了巨大成功。随着多种类的深度学习模型出现，如卷积神经网络(CNN) <sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup> 、递归神经网络(RNN) <sup id="fnref:8"><a href="#fn:8" class="footnote-ref" role="doc-noteref">8</a></sup> 、长短时记忆网络(LSTM) <sup id="fnref:9"><a href="#fn:9" class="footnote-ref" role="doc-noteref">9</a></sup> 和生成对抗网络(GAN) <sup id="fnref:10"><a href="#fn:10" class="footnote-ref" role="doc-noteref">10</a></sup> ，深度学习进一步成为一种时代的趋势。为了能够使它们被广泛应用，简化各种深度学习模型是至关重要的。</p>
+<p>随着工业界和学术界的不断努力，几个流行的深度学习框架已被提出，如 TensorFlow <sup id="fnref:11"><a href="#fn:11" class="footnote-ref" role="doc-noteref">11</a></sup> 、PyTorch <sup id="fnref:12"><a href="#fn:12" class="footnote-ref" role="doc-noteref">12</a></sup> 、MXNet <sup id="fnref:13"><a href="#fn:13" class="footnote-ref" role="doc-noteref">13</a></sup> 和 CNTK <sup id="fnref:14"><a href="#fn:14" class="footnote-ref" role="doc-noteref">14</a></sup> ，这些框架简化了深度学习模型的实现。尽管每个框架因为自生的设计做了一些 tradeoffs，这使得每个框架都各有优劣。但在支持新兴的深度学习模型和现有的深度学习模型时，互操作性对于减少冗余的工作量变得非常重要。为了提供互操作性，ONNX <sup id="fnref:15"><a href="#fn:15" class="footnote-ref" role="doc-noteref">15</a></sup> 被提出，它定义了一个深度学习模型的统一格式，以促进不同DL框架之间的模型转换。</p>
+<blockquote>
+<p><strong>补充:</strong></p>
+<p>虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。</p>
+</blockquote>
+<p>与此同时，矩阵乘法等独特的计算特性也让芯片设计师有了更大的兴趣去设计特定的深度学习加速器，这让一些深度学习相关的计算有了更高的效率。互联网科技巨头(如谷歌TPU <sup id="fnref:16"><a href="#fn:16" class="footnote-ref" role="doc-noteref">16</a></sup> 、海思NPU <sup id="fnref:17"><a href="#fn:17" class="footnote-ref" role="doc-noteref">17</a></sup> 、苹果Bonic <sup id="fnref:18"><a href="#fn:18" class="footnote-ref" role="doc-noteref">18</a></sup> )、处理器供应商(如英伟达图灵 <sup id="fnref:19"><a href="#fn:19" class="footnote-ref" role="doc-noteref">19</a></sup> 、英特尔 NNP <sup id="fnref:20"><a href="#fn:20" class="footnote-ref" role="doc-noteref">20</a></sup> )、服务提供商(如 亚马逊Inferentia <sup id="fnref:21"><a href="#fn:21" class="footnote-ref" role="doc-noteref">21</a></sup> ，阿里巴巴 Hanguang <sup id="fnref:22"><a href="#fn:22" class="footnote-ref" role="doc-noteref">22</a></sup> )，甚至创业公司(如 Cambricon <sup id="fnref:23"><a href="#fn:23" class="footnote-ref" role="doc-noteref">23</a></sup> ，Graphcore <sup id="fnref:24"><a href="#fn:24" class="footnote-ref" role="doc-noteref">24</a></sup> )都在投入巨大的人力和资金开发来开发深度学习芯片，以提高深度学习模型的性能。一般来说，深度学习硬件可以分为以下几类：<em>(1)</em> 具有软硬件协同设计的通用硬件，<em>(2)</em> 为深度学习模型完全定制的专用硬件 和 <em>(3)</em> 受生物脑科学启发的神经仿生硬件。例如，通用硬件(如 CPU、GPU)增加了特殊的硬件组件，如 AVX512 向量单元(CPU) 和 TensorCore(CUDA) 来加速深度学习模型。而对于专用硬件，如谷歌 TPU，特定应用的集成电路(如矩阵乘法引擎和高带宽内存)可以将性能和能耗比提升到极致。在可预见的未来，深度学习硬件的设计将变得更加多样化。</p>
+<p>为了拥抱硬件的多样性，将 Operator 有效地映射到深度学习硬件上是很重要的。在通用硬件上，高度优化的线性代数库，如基本线性代数(BLAS)程序库(如 MKL 和 cuBLAS)，是一些深度学习模型高效计算的基石。以卷积操作为例，深度学习框架可以将卷积转换成矩阵乘法(img2col, winograd)，然后调用BLAS 库中的 GEMM 函数。此外，硬件供应商已经发布了专门为深度学习优化的库(如 MKL-DNN 和cuDN )，包括前向和后向计算，包括卷积、池化、归一化和激活函数等算子。更多先进的工具也被开发出来，以进一步加快深度学习的计算。例如，TensorRT <sup id="fnref:25"><a href="#fn:25" class="footnote-ref" role="doc-noteref">25</a></sup> 支持图优化(例如，Layer fusion)和低位量化，有大量高度优化的 GPU kernel。在专用的深度学习硬件上，也提供了类似的库 <sup id="fnref1:24"><a href="#fn:24" class="footnote-ref" role="doc-noteref">24</a></sup> <sup id="fnref1:23"><a href="#fn:23" class="footnote-ref" role="doc-noteref">23</a></sup> 。然而，依赖库的缺点是，它们通常落后于深度学习模型的快速发展，因此不能有效地利用深度学习芯片。</p>
+<p>为了解决深度学习基础库和工具的缺点，以及减轻在每个深度学习硬件上手动优化深度学习模型的负担，深度学习社区将一部分的精力转移到了<strong>特定领域编译器上</strong>。迅速地，工业界和学术界都提出了几个流行的DL编译器，如 TVM <sup id="fnref:26"><a href="#fn:26" class="footnote-ref" role="doc-noteref">26</a></sup> 、Tensor Comprehension <sup id="fnref:27"><a href="#fn:27" class="footnote-ref" role="doc-noteref">27</a></sup> 、Glow <sup id="fnref:28"><a href="#fn:28" class="footnote-ref" role="doc-noteref">28</a></sup> 、nGraph <sup id="fnref:29"><a href="#fn:29" class="footnote-ref" role="doc-noteref">29</a></sup> 和 XLA <sup id="fnref:30"><a href="#fn:30" class="footnote-ref" role="doc-noteref">30</a></sup> 。深度学习编译器将深度学习框架中描述的模型定义作为输入，并在各种深度学习硬件上生成高效的代码实现作为输出。模型定义和具体代码实现之间的转换是针对模型规范和硬件进行了高度优化的。具体来说，它们包含了面向深度学习的优化，如 layer 和 operator 的融合，这使得生成的代码更加高效。此外，现有的DL编译器还利用了通用编译器(如LLVM<sup id="fnref:31"><a href="#fn:31" class="footnote-ref" role="doc-noteref">31</a></sup>)的成熟的工具链，从而对于不同的硬件架构上提供了更好的移植性。与传统编译器类似，深度学习编译器也采用分层设计，包括前端、中间表示(IR)和后端。然而，深度学习编译器的独特之处在于多层IR的设计和特定的优化。</p>
+<p>在本文中，作者对现有的深度学习编译器进行了全面的调查，将编译器的设计分解为前端、多级IR和后端，特别强调了IR设计和优化方法。这是第一篇提供关于深度学习编译器设计的 survey。具体来说，本文有以下几点贡献：</p>
+<ul>
+<li>
+<p>剖析了现有深度学习编译器普遍采用的设计架构，并对多级IR、前端优化(包括节点级、块级和数据流级优化)和后端优化(包括硬件特定优化、auto-tunning 和优化内核库)等关键设计组件进行了详细分析。</p>
+</li>
+<li>
+<p>从各个方面对现有的深度学习编译器进行了全面的分类。这个分类法的目的是为从业人员提供选择深度学习编译器的指南，考虑他们的要求，同时也为研究人员提供深度学习编译器的全面总结。</p>
+</li>
+<li>
+<p>提供了深度学习编译器在 CNN模 型上的量化性能比较，包括完整的模型和轻量级的模型。比较了端到端和每层(卷积层，因为它们在推理时间中占主导地位)的性能，以显示优化的有效性。<a href="https://github.com/buaa-hipo/dlcompiler-comparison">评估脚本和结果是公开的，供参考</a>。</p>
+</li>
+<li>
+<p>强调了深度学习编译器未来发展的几个方向，包括动态形状和前/后处理、高级自动调整(advanced auto-tuning)、多面体模型、子图分区、量化、统一优化(unified optimizations)、可微编程(differentiable programming)和隐私保护。希望这能促进深度学习编译器社区的研究。</p>
+</li>
+</ul>
+<p>本文的其余部分组织如下。第2节介绍了深度学习编译器的背景，包括框架、硬件，以及硬件(FPGA)特定的深度学习代码生成器。第3节描述了深度学习编译器的通用设计架构。第4节讨论了深度学习编译器的关键组件，包括多级 IR、前端优化和后端优化。优化。第5节提出了一个全面的分类法。第6节提供了定量的性能比较。第7节强调了深度学习编译器研究的未来方向。</p>
 <h2 id="2-相关工作">2. 相关工作</h2>
 <h3 id="21-深度学习框架">2.1 深度学习框架</h3>
 <h3 id="22-深度学习硬件">2.2 深度学习硬件</h3>
@@ -199,6 +233,96 @@ text-transform: uppercase;
 <ol>
 <li id="fn:1">
 <p><a href="https://arxiv.org/pdf/2002.03794.pdf">Li M, Liu Y, Liu X, et al. The deep learning compiler: A comprehensive survey[J]. IEEE Transactions on Parallel and Distributed Systems, 2020, 32(3): 708-727.</a>&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>Christopher D Manning, Christopher D Manning, and Hinrich Schütze. 1999. Foundations of statistical natural language processing. MIT press, Cambridge, MA, USA.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>David A Forsyth and Jean Ponce. 2002. Computer vision: a modern approach. Prentice Hall Professional Technical Reference, Upper Saddle River, NJ, USA.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p>Jung-Woo Ha, Hyuna Pyo, and Jeonghee Kim. 2016. Large-scale item categorization in e-commerce using multiple recurrent neural networks. In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining. ACM, San Francisco, CA, USA, 107–115.&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p>Mehdi Mohammadi, Ala Al-Fuqaha, Mohsen Guizani, and Jun-Seok Oh. 2017. Semisupervised deep reinforcement learning in support of IoT and smart city services. IEEE Internet of Things Journal 5, 2 (2017), 624–635.&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:6">
+<p>Hongming Chen, Ola Engkvist, Yinhai Wang, Marcus Olivecrona, and Thomas Blaschke. 2018. The rise of deep learning in drug discovery. Drug discovery today 23, 6 (2018), 1241–1250.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:7">
+<p>Yann LeCun, Léon Bottou, Yoshua Bengio, and Patrick Haffner. 1998. Gradient-based learning applied to document recognition. Proc. IEEE 86, 11 (1998), 2278–2324.&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:8">
+<p>David E Rumelhart, Geoffrey E Hinton, and Ronald J Williams. 1986. Learning representations by back-propagating errors. nature 323, 6088 (1986), 533–536.&#160;<a href="#fnref:8" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:9">
+<p>Sepp Hochreiter and Jürgen Schmidhuber. 1997. Long short-term memory. Neural computation 9, 8 (1997), 1735–1780.&#160;<a href="#fnref:9" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:10">
+<p>Ian J. Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and Yoshua Bengio. 2014. Generative Adversarial Networks. arXiv:stat.ML/1406.2661&#160;<a href="#fnref:10" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:11">
+<p>Martín Abadi, Paul Barham, Jianmin Chen, Zhifeng Chen, Andy Davis, Jeffrey Dean, Matthieu Devin, Sanjay Ghemawat, Geoffrey Irving, Michael Isard, et al. 2016. Tensorflow: A system for large-scale machine learning. In 12th {USENIX} Symposium on Operating Systems Design and Implementation ({OSDI} 16). USENIX Association, Savannah, GA, USA, 265–283.&#160;<a href="#fnref:11" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:12">
+<p>Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et al. 2019. PyTorch: An imperative style, high-performance deep learning library. In Advances in Neural Information Processing Systems. Curran Associates, Vancouver, BC, Canada, 8024–8035.&#160;<a href="#fnref:12" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:13">
+<p>Tianqi Chen, Mu Li, Yutian Li, Min Lin, Naiyan Wang, Minjie Wang, Tianjun Xiao, Bing Xu, Chiyuan Zhang, and Zheng Zhang. 2015. Mxnet: A flexible and efficient machine learning library for heterogeneous distributed systems.&#160;<a href="#fnref:13" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:14">
+<p>Frank Seide and Amit Agarwal. 2016. CNTK: Microsoft’s open-source deep-learning toolkit. In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining. ACM, ACM, San Francisco, CA, USA, 2135–2135.&#160;<a href="#fnref:14" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:15">
+<p>Microsoft. 2017. ONNX Github repository. <a href="https://github.com/onnx/onnx">https://github.com/onnx/onnx</a>. Accessed February 4, 2020.&#160;<a href="#fnref:15" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:16">
+<p>Norman P Jouppi, Cliff Young, Nishant Patil, David Patterson, Gaurav Agrawal, Raminder Bajwa, Sarah Bates, Suresh Bhatia, Nan Boden, Al Borchers, et al. 2017. In-datacenter performance analysis of a tensor processing unit. In Proceedings of the 44th Annual International Symposium on Computer Architecture. ACM, Toronto, ON, Canada, 1–12.&#160;<a href="#fnref:16" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:17">
+<p>Heng Liao, Jiajin Tu, Jing Xia, and Xiping Zhou. 2019. DaVinci: A Scalable Architecture for Neural Network Computing. In 2019 IEEE Hot Chips 31 Symposium (HCS). IEEE, IEEE, Cupertino, CA, USA, 1–44.&#160;<a href="#fnref:17" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:18">
+<p>Adrian Kingsley-Hughes. 2017. Inside Apple new A11 Bionic processor.&#160;<a href="#fnref:18" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:19">
+<p>NVIDIA. 2019. Nvidia Turing Architecture. <a href="https://www.nvidia.com/en-us/design-visualization/technologies/turingarchitecture/">https://www.nvidia.com/en-us/design-visualization/technologies/turingarchitecture/</a>. Accessed February 4, 2020.&#160;<a href="#fnref:19" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:20">
+<p>Intel. 2019. Nervana Neural Network Processor. <a href="https://www.intel.ai/nervana-nnp/">https://www.intel.ai/nervana-nnp/</a>. Accessed February 4, 2020.&#160;<a href="#fnref:20" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:21">
+<p>Amazon. 2018. AWS Inferentia. <a href="https://aws.amazon.com/machine-learning/inferentia">https://aws.amazon.com/machine-learning/inferentia</a>. Accessed February 4, 2020.&#160;<a href="#fnref:21" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:22">
+<p>Alibaba. 2019. Announcing Hanguang 800: Alibaba’s First AI-Inference Chip. <a href="https://www.alibabacloud.com/blog/announcing-hanguang-800-alibabas-first-ai-inference-chip_595482">https://www.alibabacloud.com/blog/announcing-hanguang-800-alibabas-first-ai-inference-chip_595482</a>. Accessed February 4, 2020.&#160;<a href="#fnref:22" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:23">
+<p>S. Liu, Z. Du, J. Tao, D. Han, T. Luo, Y. Xie, Y. Chen, and T. Chen. 2016. Cambricon: An Instruction Set Architecture for Neural Networks. In 2016 ACM/IEEE 43rd Annual International Symposium on Computer Architecture (ISCA). IEEE Computer Society, Seoul, South Korea, 393–405. <a href="https://doi.org/10.1109/ISCA.2016.42">https://doi.org/10.1109/ISCA.2016.42</a>&#160;<a href="#fnref:23" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:23" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:24">
+<p>Zhe Jia, Blake Tillman, Marco Maggioni, and Daniele Paolo Scarpazza. 2019. Dissecting the Graphcore IPU Architecture via Microbenchmarking.&#160;<a href="#fnref:24" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:24" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:25">
+<p>NVIDIA. 2019. TensorRT Github repository. <a href="https://github.com/NVIDIA/TensorRT">https://github.com/NVIDIA/TensorRT</a>. Accessed February 4, 2020.&#160;<a href="#fnref:25" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:26">
+<p>Tianqi Chen, Thierry Moreau, Ziheng Jiang, Lianmin Zheng, Eddie Yan, Haichen Shen, Meghan Cowan, Leyuan Wang, Yuwei Hu, Luis Ceze, et al. 2018. {TVM}: An automated end-to-end optimizing compiler for deep learning. In 13th {USENIX} Symposium on Operating Systems Design and Implementation ({OSDI} 18). USENIX Association, Carlsbad, CA, USA, 578–594.&#160;<a href="#fnref:26" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:27">
+<p>Nicolas Vasilache, Oleksandr Zinenko, Theodoros Theodoridis, Priya Goyal, Zachary DeVito, William S Moses, Sven Verdoolaege, Andrew Adams, and Albert Cohen. 2018. Tensor comprehensions: Framework-agnostic high performance machine learning abstractions.&#160;<a href="#fnref:27" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:28">
+<p>Nadav Rotem, Jordan Fix, Saleem Abdulrasool, Garret Catron, Summer Deng, Roman Dzhabarov, Nick Gibson, James Hegeman, Meghan Lele, Roman Levenstein, Jack Montgomery, Bert Maher, Satish Nadathur, Jakob Olesen, Jongsoo Park, Artem Rakhov, Misha Smelyanskiy, and Man Wang. 2018. Glow: Graph Lowering Compiler Techniques for Neural Networks. arXiv:cs.PL/1805.00907&#160;<a href="#fnref:28" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:29">
+<p>Scott Cyphers, Arjun K Bansal, Anahita Bhiwandiwalla, Jayaram Bobba, Matthew Brookhart, Avijit Chakraborty, Will Constable, Christian Convey, Leona Cook, Omar Kanawi, et al. 2018. Intel ngraph: An intermediate representation, compiler, and executor for deep learning.&#160;<a href="#fnref:29" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:30">
+<p>Chris Leary and Todd Wang. 2017. XLA: TensorFlow, compiled.&#160;<a href="#fnref:30" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:31">
+<p>Chris Lattner and Vikram Adve. 2004. LLVM: A compilation framework for lifelong program analysis &amp; transformation. In Proceedings of the international symposium on Code generation and optimization: feedback-directed and runtime optimization. IEEE Computer Society, IEEE Computer Society, San Jose, CA, USA, 75.&#160;<a href="#fnref:31" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </div>

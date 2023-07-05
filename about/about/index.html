@@ -17,7 +17,7 @@
 		<meta itemprop="name" content="About">
 <meta itemprop="description" content="Something you may want to know about me."><meta itemprop="datePublished" content="2023-01-01T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-01-01T00:00:00+00:00" />
-<meta itemprop="wordCount" content="202">
+<meta itemprop="wordCount" content="651">
 <meta itemprop="keywords" content="" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -124,21 +124,24 @@
 		</header>
 
 		<div class="content post__content clearfix">
-			<p>Hi👋, I&rsquo;m Chenghua Wang, currently a Junior student in ZJGSU.</p>
+			<p>Hi👋, I&rsquo;m Chenghua Wang, currently a Junior student at ZJGSU.</p>
 <ul>
-<li>I&rsquo;m currently preparing for the entrance examination for postgraduate.</li>
-<li>I&rsquo;m interested in machine learning system, distributed system and database.</li>
-<li>Currently learning distributed system, Golang and OS.</li>
-<li>Reading &lsquo;Operating System Three Easy Pieces&rsquo; and tons of papers(MLSys)</li>
+<li>I&rsquo;m currently preparing for the entrance examination for postgraduate and looking for labs that do HPC+AI research.</li>
+<li>I&rsquo;m interested in machine learning system, distributed system, HPC+AI, Hardware/Software Co-design.</li>
+<li>Currently working on <strong>nncv</strong>(A neural network inference and compile framework for computer vision; for practicing purpose; to learning MLSys).</li>
 <li>I&rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&gt; Dec 31 2022)</li>
 </ul>
 <p>contact me: <a href="mailto:chenghua.wang.edu@gmail.com">chenghua.wang.edu@gmail.com</a></p>
 <h2 id="research-interests">Research Interests</h2>
 <ul>
 <li>
-<p>Machine Learning Infrastructure(*)</p>
+<p>Machine Learning Infrastructure</p>
 <ul>
-<li>ML Compiler</li>
+<li>ML Compiler
+<ul>
+<li>I&rsquo;m currently working on nncv. And try to bring efficient parallelization to nested for loops using Polyhedra Algorithms. nncv is based on MLIR, it has a high scalability. After the kernel level work is done, I will try to let nncv has ability to compile models from torch. And make nncv capable of parallel optimization at both operator and subgraph levels. The nncv is a toolchain that has not only a compiler, but also a vm and runtime. I hope I can find time to complete this project during my exam preparation</li>
+</ul>
+</li>
 <li>Distributed and Parallel</li>
 <li>System Design</li>
 </ul>
@@ -146,9 +149,24 @@
 <li>
 <p>Computer Vision</p>
 <ul>
-<li>low-level(Image dehazing; while, I&rsquo;m tired about this subject)</li>
+<li>low-level(<a href="https://github.com/chenghuaWang/image-dehazing-the-end">Image dehazing</a>; while, I&rsquo;m tired about this subject)
+<ul>
+<li><strong>I have spent almost a year on image dehazing.</strong> This is a very interesting but very difficult subject. But since the spread of deep learning in the field of image dehazing, a lot of things are hard to explain in a few words(Mainly the lack of real-world datasets that causes people immersed in artificial datasets). Anyway, I still came up with several novel datasets and algorithms on this research topic. And with this project, I got the XinMiao Program of Zhejiang Province(浙江省新苗人才计划 in chinese).</li>
+</ul>
+</li>
 <li>multi-label multi-class classification</li>
 <li>object detection</li>
+</ul>
+</li>
+</ul>
+<h2 id="research-experience">Research Experience</h2>
+<ul>
+<li>Multimedia Laboratory, ZJGSU. July 1 2021 -&gt; Dec 31 2022.
+<ul>
+<li>Image Dehazing</li>
+<li>Medical Image Processing(Palm-print, multi-class multi-label classification)</li>
+<li>Remote Sensing Image Processing(Semantic segmentation)</li>
+<li>Line chart table to data(OCR like, but for line chart)</li>
 </ul>
 </li>
 </ul>
@@ -157,16 +175,56 @@
 <br>
 <ul>
 <li>
-<p><a href="https://github.com/chenghuaWang/mgloria">mgloria</a></p>
-<p>A Matrix lib based on SIMD and expression template. On CPU/GPU.</p>
+<p><a href="https://github.com/chenghuaWang/nncv">nncv</a></p>
+<p><strong>N</strong>eural <strong>N</strong>etwork inference&amp;compile toolchain for <strong>C</strong>omputer <strong>V</strong>ision. <em>Still on working.</em></p>
 </li>
 <li>
+<p><a href="https://github.com/chenghuaWang/mgloria">mgloria</a></p>
+<p>A Matrix lib based on SIMD and expression template. On CPU/GPU. <em>Currently, GPU functionality is not fully implemented</em></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;mgloria/core.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">__test_tensor_basic_OP__</span>() {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">using</span> <span style="color:#66d9ef">namespace</span> mgloria;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  InitTensorComputeMachine<span style="color:#f92672">&lt;</span>CPU<span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">ReLU</span> {
+</span></span><span style="display:flex;"><span>    MGLORIA_INLINE_NORMAL <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">float</span> Do(<span style="color:#66d9ef">float</span> t) {
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (t <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0.f</span>) <span style="color:#66d9ef">return</span> t;
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0.f</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">auto</span> __stream__ <span style="color:#f92672">=</span> NewStream<span style="color:#f92672">&lt;</span>CPU<span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  Tensor<span style="color:#f92672">&lt;</span>CPU, <span style="color:#ae81ff">3</span><span style="color:#f92672">&gt;</span> A <span style="color:#f92672">=</span> NewTensor(makeShape3d(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">5</span>), true, <span style="color:#ae81ff">2.f</span>, true, __stream__);
+</span></span><span style="display:flex;"><span>  Tensor<span style="color:#f92672">&lt;</span>CPU, <span style="color:#ae81ff">3</span><span style="color:#f92672">&gt;</span> B <span style="color:#f92672">=</span> NewTensor(makeShape3d(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">5</span>), true, <span style="color:#ae81ff">1.f</span>, true, __stream__);
+</span></span><span style="display:flex;"><span>  Tensor<span style="color:#f92672">&lt;</span>CPU, <span style="color:#ae81ff">3</span><span style="color:#f92672">&gt;</span> C <span style="color:#f92672">=</span> NewTensor(makeShape3d(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>, <span style="color:#ae81ff">5</span>), true, <span style="color:#ae81ff">5.f</span>, true, __stream__);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  A <span style="color:#f92672">=</span> B <span style="color:#f92672">+</span> C;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// A = expr::implicit_dot(B, C);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  A <span style="color:#f92672">=</span> expr<span style="color:#f92672">::</span>Func<span style="color:#f92672">&lt;</span>ReLU<span style="color:#f92672">&gt;</span>(A);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> A;
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> B;
+</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> C;
+</span></span><span style="display:flex;"><span>  FreeStream(__stream__);
+</span></span><span style="display:flex;"><span>  ShutdownTensorComputeMachine<span style="color:#f92672">&lt;</span>CPU<span style="color:#f92672">&gt;</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div></li>
+<li>
 <p><a href="https://github.com/chenghuaWang/covalentBond">covalent bond</a></p>
-<p>A tool for managing distributed database, gathering/cleaning data, etc. A project for 2022-2023 Fall, SE lecture.</p>
+<p>A tool for managing distributed database, gathering/cleaning data, etc. covalentBond(cb) using Op graph concept to allow users to easily build query logic and data manipulation logic. We took a lot of inspiration from torch and bound most of cb&rsquo;s operators in lua, making it very easy for users to construct and overload the basic behavior of graphs. This project is for 2022-2023 Fall, SE lecture.</p>
+<div align="center"> 
+<img src="https://user-images.githubusercontent.com/68260701/205858080-6dd02dd1-0d57-4a30-9a50-3bab4729e590.png" width = "80%"/>
+</div>
 </li>
 <li>
 <p><a href="https://github.com/chenghuaWang/DaydreamEngine">daydream engine</a></p>
-<p>A render lib. For 2022-2023 Fall, CG lecture</p>
+<p>A render lib. Compatible with ShaderToy, can switch between 2d and 3d rendering modes. For 2022-2023 Fall, CG lecture. This lib is shown as a 3d editor below(this editor is also a part of daydream lib):</p>
+<div align="center"> 
+<img src="/keep-moving-forward/imgs/day-dream.png" width = "80%"/>
+</div>
 </li>
 <li>
 <p><a href="https://chenghuawang.github.io/keep-moving-forward/#/">keep-moving-forward</a></p>
@@ -175,13 +233,37 @@
 <li>
 <p><a href="https://github.com/chenghuaWang/image-dehazing-the-end">image-dehazing-the-end</a></p>
 <p>A tech report of my image dehazing research from Jan 1 2022 to Dec 31 2022</p>
+<table>
+    <tr>
+        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/3.bmp" > pic 1(a) real-world id=3</center></td>
+        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/3.png" > pic 1(b) dehazed id=3</center></td>
+    </tr>
+    <tr>
+        <td><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/5.bmp"> pic 2(a) real-world id=5</center></td>
+        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/5.png"> pic 2(b) dehazed id=5</center> </td>
+    </tr>
+    <tr>
+        <td><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/104.bmp" > pic 3(a) real-world id=104</center></td>
+        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/104.png" > pic 3(b) dehazed id=104</center> </td>
+    </tr>
+    <tr>
+        <td><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/8.bmp" ><br>pic 4(a) real-world id=8</center></td>
+        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/8.png"><br>pic 4(b) dehazed id=8</center> </td>
+    </tr>
+    <tr>
+        <td><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/12.bmp" ><br>pic 5(a) real-world id=12</center></td>
+        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/12.png"><br>pic 5(b) dehazed id=12</center> </td>
+    </tr>
+</table>
 </li>
 </ul>
 </details>
 <h2 id="languages--skills">Languages &amp; Skills</h2>
 <p><em>Languages used</em>: c, c++, python, golang, asm(x86, risc-v), cuda, glsl, lua, dart</p>
-<p><em>Skills</em>: pytorch, paddlepaddle, opencv, opengl, mysql, redis, flutter, nginx, django</p>
+<p><em>Skills</em>: MLIR, pytorch, paddlepaddle, opencv, opengl, mysql, redis, flutter, nginx, django</p>
+<div align="center"> 
 <p><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=chenghuaWang&amp;hide=javascript,html,CSS,Vue,TypeScript&amp;layout=compact" alt="Top Langs"></p>
+</div>
 <!-- <html>
     <table style="margin-left: auto; margin-right: auto;">
         <tr>

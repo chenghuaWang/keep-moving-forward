@@ -29,7 +29,7 @@
 补充:
 虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。"><meta itemprop="datePublished" content="2023-06-14T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-06-14T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1022">
+<meta itemprop="wordCount" content="1271">
 <meta itemprop="keywords" content="Compiler," />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -218,6 +218,24 @@ text-transform: uppercase;
 <p>本文的其余部分组织如下。第2节介绍了深度学习编译器的背景，包括框架、硬件，以及硬件(FPGA)特定的深度学习代码生成器。第3节描述了深度学习编译器的通用设计架构。第4节讨论了深度学习编译器的关键组件，包括多级 IR、前端优化和后端优化。优化。第5节提出了一个全面的分类法。第6节提供了定量的性能比较。第7节强调了深度学习编译器研究的未来方向。</p>
 <h2 id="2-相关工作">2. 相关工作</h2>
 <h3 id="21-深度学习框架">2.1 深度学习框架</h3>
+<p>在本节中，作者提供了一个流行的深度学习框架的概述。讨论并不是非常细致，但旨在为从业者提供一个指导。图 1 展示了深度学习框架的情况，包括目前流行的框架、历史上的框架和 ONNX 支持的框架。</p>
+<div align="center"> 
+<img src="/keep-moving-forward/imgs/dl_survey/fig1.png" width = "100%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">图 1. 深度学习框架: 目前流行的框架、历史上的框架和 ONNX 支持的框架</div>
+</div>
+<p><strong>TensorFlow:</strong> 在所有的深度学习框架中，TensorFlow 对语言接口的支持最为全面，包括 C++、Python、Java、Go、R 和 Haskell。TensorFlow 采用原语算子(primitive operators)的数据流图，并用受限控制边扩展来表示不同的程序<sup id="fnref:32"><a href="#fn:32" class="footnote-ref" role="doc-noteref">32</a></sup>。TensorFlow Lite 是为移动和嵌入式深度学习设计的，并提供了Android 神经网络 API。为了降低使用 TensorFlow 的复杂性，谷歌采用了 Keras 作为 TensorFlow 核心的前端。此外，TensorFlow中的 eager-mode 应用了类似于 PyTorch 中的方法，以更好地支持动态计算图。</p>
+<p><strong>Keras:</strong> Keras<sup id="fnref:33"><a href="#fn:33" class="footnote-ref" role="doc-noteref">33</a></sup>是一个 high-level 的神经网络库，用于快速构建深度学习模型，用纯 Python 编写。尽管 Keras 本身不是一个框架，但它提供了一个 high-level 的API，与 TensorFlow、MXNet、Theano和CNTK集成。有了 Keras，开发者只需几行代码就可以建立一个神经网络。此外，Keras 还可以与其他常见的深度学习相关的包集成，如 scikit-learn。然而，由于过度封装，Keras 不够灵活，这使得添加运算符或获取低级数据信息十分困难。</p>
+<p><strong>PyTorch:</strong> Facebook 用 Python 重写了原本基于 Lua 的深度学习框架 Torch，并重构了所有张量级的模块，这就促成了现在的Pytorch。作为最流行的动态框架，PyTorch 在 Python 中嵌入了构建动态数据流图的原语，其中控制流在 Python 中执行的。PyTorch 1.0 整合了 PyTorch 0.4 和 Caffe2 的代码库，以创建一个统一的框架。这使得 PyTorch 能够吸收 Caffe2 的优点，支持高效的图执行和移动端部署。FastAI<sup id="fnref:34"><a href="#fn:34" class="footnote-ref" role="doc-noteref">34</a></sup> 是一个基于 PyTorch 的上层封装的高级 API 层。它完全借用了Keras 的概念，以方便使用PyTorch。</p>
+<p><strong>Caffe/Caffe2:</strong> Caffe<sup id="fnref:35"><a href="#fn:35" class="footnote-ref" role="doc-noteref">35</a></sup>是由加州大学伯克利分校为深度学习和图像分类设计的。Caffe有命令行、Python 和 MATLAB 的 API。Caffe 的简单性使得源代码易于扩展，适合开发者进行深入分析。因此，Caffe 主要定位在研究方面，这使得它从一开始到现在都很受欢迎。Caffe2 是建立在最初的 Caffe 项目之上的。Caffe2 在代码结构上类似于 TensorFlow，但是它有更轻的 API 和更容易访问计算图中的中间结果。</p>
+<p><strong>MXNet:</strong> MXNet 支持多种语言的 API，包括 Python、C++、R、Scala、Julia、Matlab 和 JavaScript。它的目的是可扩展，并从减少数据加载和 I/O 复杂性的角度来设计<sup id="fnref1:13"><a href="#fn:13" class="footnote-ref" role="doc-noteref">13</a></sup>。MXNet提供了不同的范式：像 Caffe 和 Tensorflow 那样的声明式编程，以及像PyTorch 那样的命令式编程。2017年12月，亚马逊和微软联合发布了基于 MXNet 的 Gluon<sup id="fnref:36"><a href="#fn:36" class="footnote-ref" role="doc-noteref">36</a></sup>，这是一个类似于 Keras 和 FastAI 的高级接口。Gluon 既支持灵活的动态图，也支持高效的静态图。</p>
+<p><strong>CNTK:</strong> CNTK 可以通过 Python、C++ 和 C#，或其自己的脚本语言(即BrainScript)来使用。CNTK 面向易于使用和可用于生产中的大规模数据来设计<sup id="fnref:37"><a href="#fn:37" class="footnote-ref" role="doc-noteref">37</a></sup>。然而，CNTK 还不支持 ARM 架构，这限制了它在移动设备上的使用。它使用类似于 TensorFlow 和 Caffe 的静态计算图，其中深度学习模型被视为通过有向图的一系列计算步骤。</p>
+<p><strong>PaddlePaddle:</strong></p>
+<p><strong>ONNX:</strong></p>
+<p><strong>Historical Frameworks:</strong></p>
 <h3 id="22-深度学习硬件">2.2 深度学习硬件</h3>
 <h2 id="3-主流的深度学习编译器的设计">3. 主流的深度学习编译器的设计</h2>
 <h2 id="4-深度学习编译器的主要模块">4. 深度学习编译器的主要模块</h2>
@@ -268,7 +286,7 @@ text-transform: uppercase;
 <p>Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et al. 2019. PyTorch: An imperative style, high-performance deep learning library. In Advances in Neural Information Processing Systems. Curran Associates, Vancouver, BC, Canada, 8024–8035.&#160;<a href="#fnref:12" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:13">
-<p>Tianqi Chen, Mu Li, Yutian Li, Min Lin, Naiyan Wang, Minjie Wang, Tianjun Xiao, Bing Xu, Chiyuan Zhang, and Zheng Zhang. 2015. Mxnet: A flexible and efficient machine learning library for heterogeneous distributed systems.&#160;<a href="#fnref:13" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>Tianqi Chen, Mu Li, Yutian Li, Min Lin, Naiyan Wang, Minjie Wang, Tianjun Xiao, Bing Xu, Chiyuan Zhang, and Zheng Zhang. 2015. Mxnet: A flexible and efficient machine learning library for heterogeneous distributed systems.&#160;<a href="#fnref:13" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:13" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:14">
 <p>Frank Seide and Amit Agarwal. 2016. CNTK: Microsoft’s open-source deep-learning toolkit. In Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining. ACM, ACM, San Francisco, CA, USA, 2135–2135.&#160;<a href="#fnref:14" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
@@ -324,6 +342,24 @@ text-transform: uppercase;
 <li id="fn:31">
 <p>Chris Lattner and Vikram Adve. 2004. LLVM: A compilation framework for lifelong program analysis &amp; transformation. In Proceedings of the international symposium on Code generation and optimization: feedback-directed and runtime optimization. IEEE Computer Society, IEEE Computer Society, San Jose, CA, USA, 75.&#160;<a href="#fnref:31" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
+<li id="fn:32">
+<p>Jared Roesch, Steven Lyubomirsky, Marisa Kirisame, Logan Weber, Josh Pollock, Luis Vega, Ziheng Jiang, Tianqi Chen, Thierry Moreau, and Zachary Tatlock. 2019. Relay: A High-Level Compiler for Deep Learning. arXiv:cs.LG/1904.08368&#160;<a href="#fnref:32" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:33">
+<p>François Chollet et al. 2015. Keras. <a href="https://keras.io">https://keras.io</a>.&#160;<a href="#fnref:33" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:34">
+<p>Jeremy Howard et al. 2018. fastai. <a href="https://github.com/fastai/fastai">https://github.com/fastai/fastai</a>.&#160;<a href="#fnref:34" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:35">
+<p>Yangqing Jia, Evan Shelhamer, Jeff Donahue, Sergey Karayev, Jonathan Long, Ross Girshick, Sergio Guadarrama, and Trevor Darrell. 2014. Caffe: Convolutional architecture for fast feature embedding. In Proceedings of the 22nd ACM international conference on Multimedia. ACM, ACM, Orlando, FL, USA, 675–678.&#160;<a href="#fnref:35" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:36">
+<p>MXNet. 2017. Gluon. <a href="https://gluon.mxnet.io">https://gluon.mxnet.io</a>. Accessed February 4, 2020.&#160;<a href="#fnref:36" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:37">
+<p>William Grant Hatcher and Wei Yu. 2018. A survey of deep learning: platforms, applications and emerging research trends. IEEE Access 6 (2018), 24411–24432.&#160;<a href="#fnref:37" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
 </ol>
 </div>
 
@@ -378,10 +414,10 @@ text-transform: uppercase;
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/impl_mlir_class/">Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/dl_compiler_survey/">[Notes] The Deep Learning Compiler: A Comprehensive Survey</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/lectures/tldr-for-compiler-exam/">编译原理通关攻略</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
@@ -392,10 +428,11 @@ text-transform: uppercase;
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (6)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlir/" title="MLIR">MLIR (1)</a>
 	</div>
 </div>
 <div class="toc__block_div">
@@ -437,7 +474,7 @@ text-transform: uppercase;
 	<div class="container footer__container flex">
 		
 		<div class="footer__copyright">
-			&copy; 2023 chenghua.wang.
+			&copy; 2024 chenghua.wang.
 			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
 		</div>
 	</div>

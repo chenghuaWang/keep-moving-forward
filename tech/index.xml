@@ -6,16 +6,14 @@
     <description>Recent content in Teches on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Mon, 12 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 09 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>浅析 IREE</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</link>
-      <pubDate>Mon, 12 Jun 2023 00:00:00 +0000</pubDate>
+      <title>Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/</link>
+      <pubDate>Sun, 09 Jul 2023 00:00:00 +0000</pubDate>
       
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/intro_to_iree/</guid>
-      <description>最近在编写 NNCV(nerual network inference and comile framework for computer vision, 这是一个以工程驱动的学习 MLSys 的项目，可能作为一些课程作业/毕设使用。至于为什么是 for computer vision，只能说：时间有限，优先能跑起来 resnet 就行了) 的过程中在不断的调研各种推理框架和深度学习编译器的设计逻辑，算法实现等。我发现我在 NNCV 中的设计逻辑和 IREE 非常的相似，可能这个框架的形态大家都是这么想的吧，其实整个类型的框架设计是非常显然的。都是使用编译技术来对计算图做深层的优化，做 CodeGen，Schedule，等。最终生成目标平台的机器码和 vm(也可以说是 runtime)上的字节码。主要克服的难点仍然是 CodeGen，动态 Shape，Auto Schedule 上。
-IREE 是什么？ 一如既往的，我们先来看下设计 iree 的团队对其作品的定义[1]：
-IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to-end compiler and runtime that lowers Machine Learning (ML) models to a unified IR that scales up to meet the needs of the datacenter and down to satisfy the constraints and special considerations of mobile and edge deployments.</description>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/</guid>
+      <description>很多时候，人们想要使用 MLIR 在 high-level 实现一些 fancy 的 idea。这些 idea 可能会涉及到 struct，class 这些类型。虽然 MLIR 是一个非常完备的框架，可以自定义一个 type 再 lowering 到 llvm，但是我想大部分人并不想触碰到 llvm Dialect 层次(这需要学习很多东西)，他们只是想在 high-level 完成一些创作罢了。那么 MemRef Dialect 就变得十分的重要了。</description>
     </item>
     
     <item>
@@ -34,18 +32,6 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 1.1.1 DP（Data Parallel）Parameter Server DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。
 [点击折叠] 李沐老师的 PS 讲解 Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。
 Parameter Server Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。</description>
-    </item>
-    
-    <item>
-      <title>How to Optimize Convolution</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/how_to_optimize_convlution/</link>
-      <pubDate>Fri, 21 Apr 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/how_to_optimize_convlution/</guid>
-      <description>此篇文章记录了一个个人项目(NNCV，面向计算机视觉的神经网络编译推理框架) 中的 Conv 实现和加速过程
-1. Algorithms 1.0 naive 首先，先祭出 [4] CS231n 中包浆的图，对于 naive 的做法，就是按照卷积的原理来做，不做任何的优化。
-Conv from CS231n[4]. 1.1 img2col &amp;amp; img2row 1.2 Winograd 1.2.x winograd impl in NCNN 1.3 Conv on mobile device 1.4 Depth Wise Conv 2. Handcraft kernel impl 2.0 Data Layout 一般 4D-Tensor 数据布局的形式是 NCHW 和 NHWC，其中 N 表示 Batch size，C 表示 Channel，H 表示 Height，W 表示 Width。本文中所有的例子都是 NCHW 的 4D-Tensor。
-NCHW Datalayout[5]. 使用上述图像 [5] 来展示数据排布。对于 NCHW 排列方法来说：</description>
     </item>
     
     <item>
@@ -130,44 +116,6 @@ int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &amp;lt; 
 阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
 sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
 /** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &amp;#34;kernel/types.h&amp;#34; #include &amp;#34;kernel/stat.h&amp;#34; #include &amp;#34;user/user.h&amp;#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&amp;#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mlir_toy_1/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/nv-archs-introduction/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/nv-archs-introduction/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/raft_cpp_impl/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/raft_cpp_impl/</guid>
-      <description>Try to implement a raft algorithm in c++. And binding python interface on it.
-In this artical:
-The original raft algorithm. Paper analyze. The cpp impl of raft. What&amp;rsquo;s new in my impl. Python binding, and wheel to official python libs(On both windows and debian linux). API reference. That&amp;rsquo;s quite a large project. Taking almost 9 month to finish it !!! Just do it.</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/tensordock_interface_design/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/tensordock_interface_design/</guid>
-      <description></description>
     </item>
     
     <item>

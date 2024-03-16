@@ -136,31 +136,6 @@
 	<div class="list__footer clearfix">
 		<a class="list__footer-readmore btn" href="/keep-moving-forward/papers/dl_compiler_survey/">Read more…</a>
 	</div>
-</article><article class="list__item post">
-	
-	<header class="list__header">
-		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/intro_to_iree/" rel="bookmark">
-			浅析 IREE
-			</a>
-		</h2>
-		<p class="list__lead post__lead">最近设计 NNCV 时，从 IREE 获得的启发</p>
-		<div class="list__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
-</div>
-<div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-06-12T00:00:00Z">2023-06-12</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai/" rel="category">HPC&#43;AI</a>
-	</span>
-</div></div>
-	</header>
-	<div class="content list__excerpt post__content clearfix">
-		最近在编写 NNCV(nerual network inference and comile framework for computer vision, 这是一个以工程驱动的学习 MLSys 的项目，可能作为一些课程作业/毕设使用。至于为什么是 for computer vision，只能说：时间有限，优先能跑起来 resnet 就行了) 的过程中在不断的调研各种推理框架和深度学习编译器的设计逻辑，算法实现等。我发现我在 NNCV 中的设计逻辑和 IREE 非常的相似，可能这个框架的形态大家都是这么想的吧，其实整个类型的框架设计是非常显然的。都是使用编译技术来对计算图做深层的优化，做 CodeGen，Schedule，等。最终生成目标平台的机器码和 vm(也可以说是 runtime)上的字节码。主要克服的难点仍然是 CodeGen，动态 Shape，Auto Schedule 上。
-IREE 是什么？ 一如既往的，我们先来看下设计 iree 的团队对其作品的定义[1]：
-IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to-end compiler and runtime that lowers Machine Learning (ML) models to a unified IR that scales up to meet the needs of the datacenter and down to satisfy the constraints and special considerations of mobile and edge deployments.
-	</div>
-	<div class="list__footer clearfix">
-		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/intro_to_iree/">Read more…</a>
-	</div>
 </article>
 </main>
 
@@ -180,10 +155,10 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/impl_mlir_class/">Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/dl_compiler_survey/">[Notes] The Deep Learning Compiler: A Comprehensive Survey</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/lectures/tldr-for-compiler-exam/">编译原理通关攻略</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
@@ -196,12 +171,16 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 	<div class="widget__content">
 		<ul class="widget__list">
 			<li class="widget__item">
+				<a class="widget__link" href="/keep-moving-forward/categories/compiler/">Compiler</a>&nbsp;
+				<span class="widget__counter widget__counter--bubble">1</span>
+				</li>
+			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/distributed-sys/">distributed sys</a>&nbsp;
 				<span class="widget__counter widget__counter--bubble">3</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">3</span>
+				<span class="widget__counter widget__counter--bubble">2</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -221,10 +200,11 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (6)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlir/" title="MLIR">MLIR (1)</a>
 	</div>
 </div>
 <div class="widget-social widget">
@@ -254,7 +234,7 @@ IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to
 	<div class="container footer__container flex">
 		
 		<div class="footer__copyright">
-			&copy; 2023 chenghua.wang.
+			&copy; 2024 chenghua.wang.
 			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
 		</div>
 	</div>

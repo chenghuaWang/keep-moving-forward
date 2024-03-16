@@ -17,7 +17,7 @@
 		<meta itemprop="name" content="About">
 <meta itemprop="description" content="Something you may want to know about me."><meta itemprop="datePublished" content="2023-01-01T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-01-01T00:00:00+00:00" />
-<meta itemprop="wordCount" content="651">
+<meta itemprop="wordCount" content="647">
 <meta itemprop="keywords" content="" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -124,12 +124,12 @@
 		</header>
 
 		<div class="content post__content clearfix">
-			<p>Hi👋, I&rsquo;m Chenghua Wang, currently a Junior student at ZJGSU.</p>
+			<p>Hi👋, I am Chenghua Wang, currently a Senior student at ZJGSU.</p>
 <ul>
-<li>I&rsquo;m currently preparing for the entrance examination for postgraduate and looking for labs that do HPC+AI research.</li>
-<li>I&rsquo;m interested in machine learning system, distributed system, HPC+AI, Hardware/Software Co-design.</li>
-<li>Currently working on <strong>nncv</strong>(A neural network inference and compile framework for computer vision; for practicing purpose; to learning MLSys).</li>
-<li>I&rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&gt; Dec 31 2022)</li>
+<li>I am currently looking for labs that do HPC+AI research(LLM/Diffusion-Model/Edge Inference, Distributed Training, Heterogeneous Compute).</li>
+<li>I am interested in machine learning system, distributed system, HPC+AI, Hardware/Software Co-design.</li>
+<li>Currently working on <strong>nncv</strong>(A neural network inference and compile framework for computer vision; for practicing purpose).</li>
+<li>I have struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&gt; Dec 31 2022)</li>
 </ul>
 <p>contact me: <a href="mailto:chenghua.wang.edu@gmail.com">chenghua.wang.edu@gmail.com</a></p>
 <h2 id="research-interests">Research Interests</h2>
@@ -139,7 +139,7 @@
 <ul>
 <li>ML Compiler
 <ul>
-<li>I&rsquo;m currently working on nncv. And try to bring efficient parallelization to nested for loops using Polyhedra Algorithms. nncv is based on MLIR, it has a high scalability. After the kernel level work is done, I will try to let nncv has ability to compile models from torch. And make nncv capable of parallel optimization at both operator and subgraph levels. The nncv is a toolchain that has not only a compiler, but also a vm and runtime. I hope I can find time to complete this project during my exam preparation</li>
+<li>I&rsquo;m currently working on nncv. And try to bring efficient parallelization to nested for loops using Polyhedra Algorithms. nncv is based on MLIR, it has a high scalability. Nncv now can compile models from torch.</li>
 </ul>
 </li>
 <li>Distributed and Parallel</li>
@@ -161,12 +161,10 @@
 </ul>
 <h2 id="research-experience">Research Experience</h2>
 <ul>
-<li>Multimedia Laboratory, ZJGSU. July 1 2021 -&gt; Dec 31 2022.
+<li>Multimedia And Computer Vision Laboratory, ZJGSU. July 1 2021 -&gt; Dec 31 2022.
 <ul>
 <li>Image Dehazing</li>
 <li>Medical Image Processing(Palm-print, multi-class multi-label classification)</li>
-<li>Remote Sensing Image Processing(Semantic segmentation)</li>
-<li>Line chart table to data(OCR like, but for line chart)</li>
 </ul>
 </li>
 </ul>
@@ -177,10 +175,24 @@
 <li>
 <p><a href="https://github.com/chenghuaWang/nncv">nncv</a></p>
 <p><strong>N</strong>eural <strong>N</strong>etwork inference&amp;compile toolchain for <strong>C</strong>omputer <strong>V</strong>ision. <em>Still on working.</em></p>
-</li>
+<ul>
+<li>An <code>Aten</code> language support Polyhedral model for CPU(X86 with AVX2) target.</li>
+<li>A small pipeline which use tiling and vectorization method to optimize model from torch.</li>
+<li>Support X86(with AVX2) and partial Tensor Core instruction.</li>
+</ul>
+<p>using command below to compile a model from torch:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$nncv-c -target HostWParallel -split-params res18.mlir -o optimized.mlir
+</span></span></code></pre></div><p>call from C++ side:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c++" data-lang="c++"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;libnncv/DataType.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;libnncv/SystemIo.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">using</span> <span style="color:#66d9ef">namespace</span> nncv<span style="color:#f92672">::</span>rt;
+</span></span><span style="display:flex;"><span>MemRefFlatArray <span style="color:#a6e22e">params</span>(dataType<span style="color:#f92672">::</span>kFloat32);
+</span></span><span style="display:flex;"><span>params.read(<span style="color:#e6db74">&#34;model.bin&#34;</span>)
+</span></span><span style="display:flex;"><span>optimized_res18_forward(<span style="color:#75715e">/*dst*/</span>..., <span style="color:#75715e">/*src*/</span>..., params.get());
+</span></span></code></pre></div></li>
 <li>
 <p><a href="https://github.com/chenghuaWang/mgloria">mgloria</a></p>
-<p>A Matrix lib based on SIMD and expression template. On CPU/GPU. <em>Currently, GPU functionality is not fully implemented</em></p>
+<p>A Matrix lib based on SIMD and expression template(Lazy Compute). On CPU/GPU. <em>Currently, GPU functionality is not fully implemented</em></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;mgloria/core.hpp&#34;</span><span style="color:#75715e">
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">inline</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">__test_tensor_basic_OP__</span>() {
@@ -235,11 +247,11 @@
 <p>A tech report of my image dehazing research from Jan 1 2022 to Dec 31 2022</p>
 <table>
     <tr>
-        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/3.bmp" > pic 1(a) real-world id=3</center></td>
-        <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/3.png" > pic 1(b) dehazed id=3</center></td>
+        <td><center><div><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/3.bmp"></div> pic 1(a) real-world id=3</center></td>
+        <td ><center><div><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/3.png"></div> pic 1(b) dehazed id=3</center></td>
     </tr>
     <tr>
-        <td><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/5.bmp"> pic 2(a) real-world id=5</center></td>
+        <td><center><div><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/real-world/5.bmp"></div> pic 2(a) real-world id=5</center></td>
         <td ><center><img src="https://raw.githubusercontent.com/chenghuaWang/image-dehazing-the-end/master/asset/dehazed/5.png"> pic 2(b) dehazed id=5</center> </td>
     </tr>
     <tr>
@@ -261,7 +273,7 @@
 <h2 id="languages--skills">Languages &amp; Skills</h2>
 <p><em>Languages used</em>: c, c++, python, golang, asm(x86, risc-v), cuda, glsl, lua, dart</p>
 <p><em>Skills</em>: MLIR, pytorch, paddlepaddle, opencv, opengl, mysql, redis, flutter, nginx, django</p>
-<div align="center"> 
+<div align="center">
 <p><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=chenghuaWang&amp;hide=javascript,html,CSS,Vue,TypeScript&amp;layout=compact" alt="Top Langs"></p>
 </div>
 <!-- <html>
@@ -295,7 +307,7 @@
 	<div class="container footer__container flex">
 		
 		<div class="footer__copyright">
-			&copy; 2023 chenghua.wang.
+			&copy; 2024 chenghua.wang.
 			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
 		</div>
 	</div>

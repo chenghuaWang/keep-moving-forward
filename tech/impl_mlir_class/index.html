@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout" />
+<meta property="og:description" content="很多时候，人们想要使用 MLIR 在 high-level 实现一些 fancy 的 idea。这些 idea 可能会涉及到 struct，class 这些类型。虽然 MLIR 是一个非常完备的框架，可以自定义一个 type 再 lowering 到 llvm，但是我想大部分人并不想触碰到 llvm Dialect 层次(这需要学习很多东西)，他们只是想在 high-level 完成一些创作罢了。那么 MemRef Dialect 就变得十分的重要了。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/" /><meta property="article:section" content="Tech" />
+<meta property="article:published_time" content="2023-07-09T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-07-09T00:00:00+00:00" />
+
+		<meta itemprop="name" content="Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout">
+<meta itemprop="description" content="很多时候，人们想要使用 MLIR 在 high-level 实现一些 fancy 的 idea。这些 idea 可能会涉及到 struct，class 这些类型。虽然 MLIR 是一个非常完备的框架，可以自定义一个 type 再 lowering 到 llvm，但是我想大部分人并不想触碰到 llvm Dialect 层次(这需要学习很多东西)，他们只是想在 high-level 完成一些创作罢了。那么 MemRef Dialect 就变得十分的重要了。"><meta itemprop="datePublished" content="2023-07-09T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2023-07-09T00:00:00+00:00" />
+<meta itemprop="wordCount" content="27">
+<meta itemprop="keywords" content="MLIR," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		
+<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed" >
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
+			
+			<div class="logo__item logo__text" >
+					<div class="logo__title" >Ubios Home</div>
+					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/hpc_ai/">
+				
+				<span class="menu__text">HPC &amp; AI 入坑</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
+				
+				<span class="menu__text">Lecture-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
+				
+				<span class="menu__text">Thinking</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/news/">
+				
+				<span class="menu__text">🎉News🎉</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</h1>
+			<p class="post__lead">MemRefElementTypeInterface and Datalayout to create a genric `Class`/`Struct`</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-07-09T00:00:00Z">2023-07-09</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/" rel="category">HPC&#43;AI Tools</a>
+	</span>
+</div></div>
+		</header>
+
+		<div class="content post__content clearfix">
+			<p>很多时候，人们想要使用 MLIR 在 high-level 实现一些 fancy 的 idea。这些 idea 可能会涉及到 <code>struct</code>，<code>class</code> 这些类型。虽然 MLIR 是一个非常完备的框架，可以自定义一个 type 再 lowering 到 llvm，但是我想大部分人并不想触碰到 llvm Dialect 层次(这需要学习很多东西)，他们只是想在 high-level 完成一些创作罢了。那么 MemRef Dialect 就变得十分的重要了。</p>
+
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/mlir/" rel="tag">MLIR</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Learning and developing Machine learning infrastructure now. Did some works in Computer Vision and Graphics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/tech/introduction_mldistri/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">浅析机器学习中的并行模型和自动并行方法</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2024 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { fonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+</script>
+</body>
+</html>

@@ -111,26 +111,21 @@
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/intro_to_iree/" rel="bookmark">
-			浅析 IREE
+			<a href="/keep-moving-forward/tech/impl_mlir_class/" rel="bookmark">
+			Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout
 			</a>
 		</h2>
-		<p class="list__lead post__lead">最近设计 NNCV 时，从 IREE 获得的启发</p>
+		<p class="list__lead post__lead">MemRefElementTypeInterface and Datalayout to create a genric `Class`/`Struct`</p>
 		<div class="list__meta meta"><div class="meta__item-author meta__item">
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
 <div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-06-12T00:00:00Z">2023-06-12</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai/" rel="category">HPC&#43;AI</a>
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-07-09T00:00:00Z">2023-07-09</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/" rel="category">HPC&#43;AI Tools</a>
 	</span>
 </div></div>
 	</header>
 	<div class="content list__excerpt post__content clearfix">
-		最近在编写 NNCV(nerual network inference and comile framework for computer vision, 这是一个以工程驱动的学习 MLSys 的项目，可能作为一些课程作业/毕设使用。至于为什么是 for computer vision，只能说：时间有限，优先能跑起来 resnet 就行了) 的过程中在不断的调研各种推理框架和深度学习编译器的设计逻辑，算法实现等。我发现我在 NNCV 中的设计逻辑和 IREE 非常的相似，可能这个框架的形态大家都是这么想的吧，其实整个类型的框架设计是非常显然的。都是使用编译技术来对计算图做深层的优化，做 CodeGen，Schedule，等。最终生成目标平台的机器码和 vm(也可以说是 runtime)上的字节码。主要克服的难点仍然是 CodeGen，动态 Shape，Auto Schedule 上。
-IREE 是什么？ 一如既往的，我们先来看下设计 iree 的团队对其作品的定义[1]：
-IREE (Intermediate Representation Execution Environment) is an MLIR-based end-to-end compiler and runtime that lowers Machine Learning (ML) models to a unified IR that scales up to meet the needs of the datacenter and down to satisfy the constraints and special considerations of mobile and edge deployments.
-	</div>
-	<div class="list__footer clearfix">
-		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/intro_to_iree/">Read more…</a>
+		很多时候，人们想要使用 MLIR 在 high-level 实现一些 fancy 的 idea。这些 idea 可能会涉及到 struct，class 这些类型。虽然 MLIR 是一个非常完备的框架，可以自定义一个 type 再 lowering 到 llvm，但是我想大部分人并不想触碰到 llvm Dialect 层次(这需要学习很多东西)，他们只是想在 high-level 完成一些创作罢了。那么 MemRef Dialect 就变得十分的重要了。
 	</div>
 </article><article class="list__item post">
 	
@@ -163,32 +158,6 @@ Parameter Server Worker 节点的主要功能是各自保存部分训练数据�
 	</div>
 	<div class="list__footer clearfix">
 		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/introduction_mldistri/">Read more…</a>
-	</div>
-</article><article class="list__item post">
-	
-	<header class="list__header">
-		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/how_to_optimize_convlution/" rel="bookmark">
-			How to Optimize Convolution
-			</a>
-		</h2>
-		<p class="list__lead post__lead">Optimizing conv using img2col, winograd, etc</p>
-		<div class="list__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
-</div>
-<div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-04-21T00:00:00Z">2023-04-21</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/" rel="category">HPC&#43;AI Tools</a>
-	</span>
-</div></div>
-	</header>
-	<div class="content list__excerpt post__content clearfix">
-		此篇文章记录了一个个人项目(NNCV，面向计算机视觉的神经网络编译推理框架) 中的 Conv 实现和加速过程
-1. Algorithms 1.0 naive 首先，先祭出 [4] CS231n 中包浆的图，对于 naive 的做法，就是按照卷积的原理来做，不做任何的优化。
-Conv from CS231n[4]. 1.1 img2col &amp; img2row 1.2 Winograd 1.2.x winograd impl in NCNN 1.3 Conv on mobile device 1.4 Depth Wise Conv 2. Handcraft kernel impl 2.0 Data Layout 一般 4D-Tensor 数据布局的形式是 NCHW 和 NHWC，其中 N 表示 Batch size，C 表示 Channel，H 表示 Height，W 表示 Width。本文中所有的例子都是 NCHW 的 4D-Tensor。
-NCHW Datalayout[5]. 使用上述图像 [5] 来展示数据排布。对于 NCHW 排列方法来说：
-	</div>
-	<div class="list__footer clearfix">
-		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/how_to_optimize_convlution/">Read more…</a>
 	</div>
 </article><article class="list__item post">
 	
@@ -362,7 +331,7 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/mlir_toy_1/" rel="bookmark">
+			<a href="/keep-moving-forward/tech/xv6_overall/" rel="bookmark">
 			
 			</a>
 		</h2>
@@ -376,10 +345,6 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 </article>
 </main>
 
-<div class="pagination">
-	<span class="pagination__item pagination__item--current">1/2</span>
-	<a class="pagination__item pagination__item--next btn" href="/keep-moving-forward/tech/page/2/">»</a>
-</div>
 
 			</div>
 			
@@ -396,10 +361,10 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/impl_mlir_class/">Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/dl_compiler_survey/">[Notes] The Deep Learning Compiler: A Comprehensive Survey</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/intro_to_iree/">浅析 IREE</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/how_to_optimize_convlution/">How to Optimize Convolution</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/lectures/tldr-for-compiler-exam/">编译原理通关攻略</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
@@ -412,12 +377,16 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 	<div class="widget__content">
 		<ul class="widget__list">
 			<li class="widget__item">
+				<a class="widget__link" href="/keep-moving-forward/categories/compiler/">Compiler</a>&nbsp;
+				<span class="widget__counter widget__counter--bubble">1</span>
+				</li>
+			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/distributed-sys/">distributed sys</a>&nbsp;
 				<span class="widget__counter widget__counter--bubble">3</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">3</span>
+				<span class="widget__counter widget__counter--bubble">2</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
@@ -437,10 +406,11 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 <div class="widget-taglist widget">
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/compiler/" title="Compiler">Compiler (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (6)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlir/" title="MLIR">MLIR (1)</a>
 	</div>
 </div>
 <div class="widget-social widget">
@@ -470,7 +440,7 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 	<div class="container footer__container flex">
 		
 		<div class="footer__copyright">
-			&copy; 2023 chenghua.wang.
+			&copy; 2024 chenghua.wang.
 			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
 		</div>
 	</div>

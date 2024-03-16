@@ -50,22 +50,6 @@ Parameter Server Worker 节点的主要功能是各自保存部分训练数据�
     </item>
     
     <item>
-      <title>编译原理通关攻略</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/lectures/tldr-for-compiler-exam/</link>
-      <pubDate>Mon, 01 May 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/lectures/tldr-for-compiler-exam/</guid>
-      <description>1. 文法和语言 阐明语法的工具是文法。
-定义 1.1 文法定义为四元组 $(V_N, V_T, P, S)$
-$V_N$ 为非终结符集合；$V_T$ 为终结符集合；$P$ 为规则 $(\alpha \to \beta)$ 的集合，$\alpha \in (V_{N} \cup V_{T})^{*}$ 且至少包含一个非终结符。
-$\beta \in (V_{N} \cup V_{T})^{*}$ ； $V_N,V_T,P$ 是非空有穷集合。 $S$ 称为标识符和开始符号，是非终结符号，必须在一条规则中作为左部出现。
-定义 1.2 $\nu \implies \omega_{0} \implies \omega_{1} \dots \implies \omega_{n}(n &amp;gt; 0)$
-记作 $\nu \overset{+}{\implies} \omega$
-1.1 文法的类型 0 型 1 型 2 型 3 型 0123 型 文法的表格比较
-2. 词法分析 SLR flowchart LRa--&gt;bn. TL;DR 做题吧，就</description>
-    </item>
-    
-    <item>
       <title>CUDA: NSight System</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</link>
       <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>

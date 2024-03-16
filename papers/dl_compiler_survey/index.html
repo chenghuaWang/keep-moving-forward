@@ -4,10 +4,10 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>[Notes] The Deep Learning Compiler: A Comprehensive Survey - Ubios Home</title>
+	<title>【施工中】[Notes] The Deep Learning Compiler: A Comprehensive Survey - Ubios Home</title>
 	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
 	<meta name="description" content="">
-		<meta property="og:title" content="[Notes] The Deep Learning Compiler: A Comprehensive Survey" />
+		<meta property="og:title" content="【施工中】[Notes] The Deep Learning Compiler: A Comprehensive Survey" />
 <meta property="og:description" content="Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
 简介
 在不同的深度学习硬件上部署各种深度学习模型的困难，促进了社区内深度学习编译器的研究和开发。工业界和学术界都提出了一些深度学习编译器，如 Tensorflow XLA 和 TVM。同样，深度学习编译器将不同深度学习框架中描述的深度学习模型作为输入，然后为不同的深度学习硬件生成特定的优化代码作为输出。然而，现有的综述都没有全面地分析深度学习编译器的独特设计架构。在本文中，作者们对现有的深度学习编译器进行了全面的调查，详细剖析了普遍采用的设计，重点是面向深度学习的多级IR，以及前端/后端优化。作者对多级 IR 的设计进行了详细的分析，并说明了普遍采用的优化技术。最后，作者强调了深度学习编译器的几个潜在研究方向。这是第一篇关注深度学习编译器设计架构的综述论文，希望它能为未来的深度学习编译器研究铺平道路。
@@ -20,7 +20,7 @@
 <meta property="article:published_time" content="2023-06-14T00:00:00+00:00" />
 <meta property="article:modified_time" content="2023-06-14T00:00:00+00:00" />
 
-		<meta itemprop="name" content="[Notes] The Deep Learning Compiler: A Comprehensive Survey">
+		<meta itemprop="name" content="【施工中】[Notes] The Deep Learning Compiler: A Comprehensive Survey">
 <meta itemprop="description" content="Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
 简介
 在不同的深度学习硬件上部署各种深度学习模型的困难，促进了社区内深度学习编译器的研究和开发。工业界和学术界都提出了一些深度学习编译器，如 Tensorflow XLA 和 TVM。同样，深度学习编译器将不同深度学习框架中描述的深度学习模型作为输入，然后为不同的深度学习硬件生成特定的优化代码作为输出。然而，现有的综述都没有全面地分析深度学习编译器的独特设计架构。在本文中，作者们对现有的深度学习编译器进行了全面的调查，详细剖析了普遍采用的设计，重点是面向深度学习的多级IR，以及前端/后端优化。作者对多级 IR 的设计进行了详细的分析，并说明了普遍采用的优化技术。最后，作者强调了深度学习编译器的几个潜在研究方向。这是第一篇关注深度学习编译器设计架构的综述论文，希望它能为未来的深度学习编译器研究铺平道路。
@@ -29,7 +29,7 @@
 补充:
 虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。"><meta itemprop="datePublished" content="2023-06-14T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2023-06-14T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1271">
+<meta itemprop="wordCount" content="1270">
 <meta itemprop="keywords" content="Compiler," />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -125,7 +125,7 @@
 <main class="main" role="main">
 	<article class="post">
 		<header class="post__header">
-			<h1 class="post__title">[Notes] The Deep Learning Compiler: A Comprehensive Survey</h1>
+			<h1 class="post__title">【施工中】[Notes] The Deep Learning Compiler: A Comprehensive Survey</h1>
 			<p class="post__lead">notes of paper, deep learning compiler, survey.</p>
 			<div class="post__meta meta"><div class="meta__item-author meta__item">
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
@@ -198,22 +198,14 @@ text-transform: uppercase;
 <p>虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。</p>
 </blockquote>
 <p>与此同时，矩阵乘法等独特的计算特性也让芯片设计师有了更大的兴趣去设计特定的深度学习加速器，这让一些深度学习相关的计算有了更高的效率。互联网科技巨头(如谷歌TPU <sup id="fnref:16"><a href="#fn:16" class="footnote-ref" role="doc-noteref">16</a></sup> 、海思NPU <sup id="fnref:17"><a href="#fn:17" class="footnote-ref" role="doc-noteref">17</a></sup> 、苹果Bonic <sup id="fnref:18"><a href="#fn:18" class="footnote-ref" role="doc-noteref">18</a></sup> )、处理器供应商(如英伟达图灵 <sup id="fnref:19"><a href="#fn:19" class="footnote-ref" role="doc-noteref">19</a></sup> 、英特尔 NNP <sup id="fnref:20"><a href="#fn:20" class="footnote-ref" role="doc-noteref">20</a></sup> )、服务提供商(如 亚马逊Inferentia <sup id="fnref:21"><a href="#fn:21" class="footnote-ref" role="doc-noteref">21</a></sup> ，阿里巴巴 Hanguang <sup id="fnref:22"><a href="#fn:22" class="footnote-ref" role="doc-noteref">22</a></sup> )，甚至创业公司(如 Cambricon <sup id="fnref:23"><a href="#fn:23" class="footnote-ref" role="doc-noteref">23</a></sup> ，Graphcore <sup id="fnref:24"><a href="#fn:24" class="footnote-ref" role="doc-noteref">24</a></sup> )都在投入巨大的人力和资金开发来开发深度学习芯片，以提高深度学习模型的性能。一般来说，深度学习硬件可以分为以下几类：<em>(1)</em> 具有软硬件协同设计的通用硬件，<em>(2)</em> 为深度学习模型完全定制的专用硬件 和 <em>(3)</em> 受生物脑科学启发的神经仿生硬件。例如，通用硬件(如 CPU、GPU)增加了特殊的硬件组件，如 AVX512 向量单元(CPU) 和 TensorCore(CUDA) 来加速深度学习模型。而对于专用硬件，如谷歌 TPU，特定应用的集成电路(如矩阵乘法引擎和高带宽内存)可以将性能和能耗比提升到极致。在可预见的未来，深度学习硬件的设计将变得更加多样化。</p>
-<p>为了拥抱硬件的多样性，将 Operator 有效地映射到深度学习硬件上是很重要的。在通用硬件上，高度优化的线性代数库，如基本线性代数(BLAS)程序库(如 MKL 和 cuBLAS)，是一些深度学习模型高效计算的基石。以卷积操作为例，深度学习框架可以将卷积转换成矩阵乘法(img2col, winograd)，然后调用BLAS 库中的 GEMM 函数。此外，硬件供应商已经发布了专门为深度学习优化的库(如 MKL-DNN 和cuDN )，包括前向和后向计算，包括卷积、池化、归一化和激活函数等算子。更多先进的工具也被开发出来，以进一步加快深度学习的计算。例如，TensorRT <sup id="fnref:25"><a href="#fn:25" class="footnote-ref" role="doc-noteref">25</a></sup> 支持图优化(例如，Layer fusion)和低位量化，有大量高度优化的 GPU kernel。在专用的深度学习硬件上，也提供了类似的库 <sup id="fnref1:24"><a href="#fn:24" class="footnote-ref" role="doc-noteref">24</a></sup> <sup id="fnref1:23"><a href="#fn:23" class="footnote-ref" role="doc-noteref">23</a></sup> 。然而，依赖库的缺点是，它们通常落后于深度学习模型的快速发展，因此不能有效地利用深度学习芯片。</p>
+<p>为了拥抱硬件的多样性，将 Operator 有效地映射到深度学习硬件上是很重要的。在通用硬件上，高度优化的线性代数库，如基本线性代数(BLAS)程序库(如 MKL 和 cuBLAS)，是一些深度学习模型高效计算的基石。以卷积操作为例，深度学习框架可以将卷积转换成矩阵乘法(img2col, winograd)，然后调用BLAS 库中的 GEMM 函数。此外，硬件供应商已经发布了专门为深度学习优化的库(如 MKL-DNN 和cuDN )，包括前向和后向计算，包括卷积、池化、归一化和激活函数等算子。更多先进的工具也被开发出来，以进一步加快深度学习的计算。例如，TensorRT <sup id="fnref:25"><a href="#fn:25" class="footnote-ref" role="doc-noteref">25</a></sup> 支持图优化(例如，Layer fusion)和低位量化，有大量高度优化的 GPU kernel。在专用的深度学习硬件上，也提供了类似的库 <sup id="fnref1:24"><a href="#fn:24" class="footnote-ref" role="doc-noteref">24</a></sup><sup id="fnref1:23"><a href="#fn:23" class="footnote-ref" role="doc-noteref">23</a></sup> 。然而，依赖库的缺点是，它们通常落后于深度学习模型的快速发展，因此不能有效地利用深度学习芯片。</p>
 <p>为了解决深度学习基础库和工具的缺点，以及减轻在每个深度学习硬件上手动优化深度学习模型的负担，深度学习社区将一部分的精力转移到了<strong>特定领域编译器上</strong>。迅速地，工业界和学术界都提出了几个流行的DL编译器，如 TVM <sup id="fnref:26"><a href="#fn:26" class="footnote-ref" role="doc-noteref">26</a></sup> 、Tensor Comprehension <sup id="fnref:27"><a href="#fn:27" class="footnote-ref" role="doc-noteref">27</a></sup> 、Glow <sup id="fnref:28"><a href="#fn:28" class="footnote-ref" role="doc-noteref">28</a></sup> 、nGraph <sup id="fnref:29"><a href="#fn:29" class="footnote-ref" role="doc-noteref">29</a></sup> 和 XLA <sup id="fnref:30"><a href="#fn:30" class="footnote-ref" role="doc-noteref">30</a></sup> 。深度学习编译器将深度学习框架中描述的模型定义作为输入，并在各种深度学习硬件上生成高效的代码实现作为输出。模型定义和具体代码实现之间的转换是针对模型规范和硬件进行了高度优化的。具体来说，它们包含了面向深度学习的优化，如 layer 和 operator 的融合，这使得生成的代码更加高效。此外，现有的DL编译器还利用了通用编译器(如LLVM<sup id="fnref:31"><a href="#fn:31" class="footnote-ref" role="doc-noteref">31</a></sup>)的成熟的工具链，从而对于不同的硬件架构上提供了更好的移植性。与传统编译器类似，深度学习编译器也采用分层设计，包括前端、中间表示(IR)和后端。然而，深度学习编译器的独特之处在于多层IR的设计和特定的优化。</p>
 <p>在本文中，作者对现有的深度学习编译器进行了全面的调查，将编译器的设计分解为前端、多级IR和后端，特别强调了IR设计和优化方法。这是第一篇提供关于深度学习编译器设计的 survey。具体来说，本文有以下几点贡献：</p>
 <ul>
-<li>
-<p>剖析了现有深度学习编译器普遍采用的设计架构，并对多级IR、前端优化(包括节点级、块级和数据流级优化)和后端优化(包括硬件特定优化、auto-tunning 和优化内核库)等关键设计组件进行了详细分析。</p>
-</li>
-<li>
-<p>从各个方面对现有的深度学习编译器进行了全面的分类。这个分类法的目的是为从业人员提供选择深度学习编译器的指南，考虑他们的要求，同时也为研究人员提供深度学习编译器的全面总结。</p>
-</li>
-<li>
-<p>提供了深度学习编译器在 CNN模 型上的量化性能比较，包括完整的模型和轻量级的模型。比较了端到端和每层(卷积层，因为它们在推理时间中占主导地位)的性能，以显示优化的有效性。<a href="https://github.com/buaa-hipo/dlcompiler-comparison">评估脚本和结果是公开的，供参考</a>。</p>
-</li>
-<li>
-<p>强调了深度学习编译器未来发展的几个方向，包括动态形状和前/后处理、高级自动调整(advanced auto-tuning)、多面体模型、子图分区、量化、统一优化(unified optimizations)、可微编程(differentiable programming)和隐私保护。希望这能促进深度学习编译器社区的研究。</p>
-</li>
+<li>剖析了现有深度学习编译器普遍采用的设计架构，并对多级IR、前端优化(包括节点级、块级和数据流级优化)和后端优化(包括硬件特定优化、auto-tunning 和优化内核库)等关键设计组件进行了详细分析。</li>
+<li>从各个方面对现有的深度学习编译器进行了全面的分类。这个分类法的目的是为从业人员提供选择深度学习编译器的指南，考虑他们的要求，同时也为研究人员提供深度学习编译器的全面总结。</li>
+<li>提供了深度学习编译器在 CNN模 型上的量化性能比较，包括完整的模型和轻量级的模型。比较了端到端和每层(卷积层，因为它们在推理时间中占主导地位)的性能，以显示优化的有效性。<a href="https://github.com/buaa-hipo/dlcompiler-comparison">评估脚本和结果是公开的，供参考</a>。</li>
+<li>强调了深度学习编译器未来发展的几个方向，包括动态形状和前/后处理、高级自动调整(advanced auto-tuning)、多面体模型、子图分区、量化、统一优化(unified optimizations)、可微编程(differentiable programming)和隐私保护。希望这能促进深度学习编译器社区的研究。</li>
 </ul>
 <p>本文的其余部分组织如下。第2节介绍了深度学习编译器的背景，包括框架、硬件，以及硬件(FPGA)特定的深度学习代码生成器。第3节描述了深度学习编译器的通用设计架构。第4节讨论了深度学习编译器的关键组件，包括多级 IR、前端优化和后端优化。优化。第5节提出了一个全面的分类法。第6节提供了定量的性能比较。第7节强调了深度学习编译器研究的未来方向。</p>
 <h2 id="2-相关工作">2. 相关工作</h2>
@@ -414,8 +406,8 @@ text-transform: uppercase;
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/impl_mlir_class/">Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/dl_compiler_survey/">[Notes] The Deep Learning Compiler: A Comprehensive Survey</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/impl_mlir_class/">【施工中】Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/dl_compiler_survey/">【施工中】[Notes] The Deep Learning Compiler: A Comprehensive Survey</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>

@@ -6,29 +6,39 @@
     <description>Recent content on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 09 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 21 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>【施工中】Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/</link>
-      <pubDate>Sun, 09 Jul 2023 00:00:00 +0000</pubDate>
+      <title>✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</link>
+      <pubDate>Fri, 21 Jun 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/</guid>
-      <description>很多时候，人们想要使用 MLIR 在 high-level 实现一些 fancy 的 idea。这些 idea 可能会涉及到 struct，class 这些类型。虽然 MLIR 是一个非常完备的框架，可以自定义一个 type 再 lowering 到 llvm，但是我想大部分人并不想触碰到 llvm Dialect 层次(这需要学习很多东西)，他们只是想在 high-level 完成一些创作罢了。那么 MemRef Dialect 就变得十分的重要了。</description>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</guid>
+      <description>背景和动机 以KV Cache为启发，探索了对time-to-first-token (TTFT) Latency的优化。类似于KV Cache，Prompt Cache(PC)推理加速的核心思想是复用注意力的中间状态(Attention States)。然而与KV Cache不同的是，PC是在不同的prompt之间进行复用。
+在大部分的LLM任务中，prompt有重叠(overlapping)的现象，这些重叠的prompt可以被存储起来，进而在接下来的LLM处理阶段可以像KV Cache一样，提取出来直接使用。在TTFT的推理过程中，免去计算不同prompt中重叠部分的注意力状态，从而缩短TTFT的生成时间。
+与KV Cache不同的点是：
+相同的文本段可能出现在不同prompt的不同位置，如何对它们的Attention States进行复用。因为不同位置的文本段的Position Encoding进去的值是不一样的。在KV Cache中不需要考虑这一点，因为cache是从前往后线性增长的，但Prompt所在的位置是不确定的。 如何从不同的prompt中识别出已经缓存过的文本。 算法 实验经验 一段prompt的Position值不连续没有关系。只要这一段prompt本身的Position值是连续的就行。意思是部分连续对于LLM就够了，不一定要完全连续。请注意：这是一个实验性验证的结论。
+Prompt Schema Fig 1. Prompt Schema作者团队定义了一个Prompt Markup Language(PML)。上图中的例子有：可以复用的module和不能复用的填充部分，填充部分需要用Param指出，并给出长度。Prompt Attention States中的红色部分是可以被复用的区域。Fig 2. 原始LLM/KV Cache/Prompt Cache我们来对比下普通的自回归LLM、使用了KV Cache的LLM和使用了Prompt Cache的LLM。普通的LLM每次都要通过输入的Prompt来预测出下一个Token，Prompt是全量的计算。使用了KV Cache的LLM，每次Token预测不用全量计算了，可以使用上次Attention的中间结果。而使用了Prompt Cache的LLM，在后期预测Token的过程和原来的KV Cache没有什么区别。主要区别是在一开始的Prompt输入的阶段，Prompt Cache中常用的Prompt Attention States可以被利用起来，这会极大的缩减第一个Token输出的时间。 Prompt Schema有很多的细节，这里只讲大致的思路，具体的请看文章和代码仓库。
+我对module怎么复用不是很理解，应该是通过将文本内容进行sha256编码来对其进行识别。
+本文主要是对首Token输出时间的优化，对于用户来说可以有更好的体验。要是能做个全局的Prompt Cache数据库，应该可以给大规模的LLM Infer系统带来不少的好处。</description>
     </item>
     
     <item>
-      <title>【施工中】[Notes] The Deep Learning Compiler: A Comprehensive Survey</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</link>
-      <pubDate>Wed, 14 Jun 2023 00:00:00 +0000</pubDate>
+      <title>✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</link>
+      <pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate>
       
-      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</guid>
-      <description>Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
-简介
-在不同的深度学习硬件上部署各种深度学习模型的困难，促进了社区内深度学习编译器的研究和开发。工业界和学术界都提出了一些深度学习编译器，如 Tensorflow XLA 和 TVM。同样，深度学习编译器将不同深度学习框架中描述的深度学习模型作为输入，然后为不同的深度学习硬件生成特定的优化代码作为输出。然而，现有的综述都没有全面地分析深度学习编译器的独特设计架构。在本文中，作者们对现有的深度学习编译器进行了全面的调查，详细剖析了普遍采用的设计，重点是面向深度学习的多级IR，以及前端/后端优化。作者对多级 IR 的设计进行了详细的分析，并说明了普遍采用的优化技术。最后，作者强调了深度学习编译器的几个潜在研究方向。这是第一篇关注深度学习编译器设计架构的综述论文，希望它能为未来的深度学习编译器研究铺平道路。
-1. 介绍 深度学习(DL)的发展已经对各个科学领域产生了深远的影响。它不仅在人工智能，如自然语言处理(NLP) 2 和计算机视觉(CV) 3 中表现出令人惊讶的价值，而且在更广泛的领域也取得了巨大成功。诸如电子商务 4 、智能城市 5 和药物探索 6 等更广泛的应用中取得了巨大成功。随着多种类的深度学习模型出现，如卷积神经网络(CNN) 7 、递归神经网络(RNN) 8 、长短时记忆网络(LSTM) 9 和生成对抗网络(GAN) 10 ，深度学习进一步成为一种时代的趋势。为了能够使它们被广泛应用，简化各种深度学习模型是至关重要的。
-随着工业界和学术界的不断努力，几个流行的深度学习框架已被提出，如 TensorFlow 11 、PyTorch 12 、MXNet 13 和 CNTK 14 ，这些框架简化了深度学习模型的实现。尽管每个框架因为自生的设计做了一些 tradeoffs，这使得每个框架都各有优劣。但在支持新兴的深度学习模型和现有的深度学习模型时，互操作性对于减少冗余的工作量变得非常重要。为了提供互操作性，ONNX 15 被提出，它定义了一个深度学习模型的统一格式，以促进不同DL框架之间的模型转换。
-补充:
-虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。</description>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</guid>
+      <description>Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
+1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ原有的Round方法(图a)：
+$$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$
+其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。
+改进后的量化方法(图c)：
+$$ Q(w\cdot s)\cdot\frac xs=\Delta^{&amp;rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&amp;rsquo;}})\cdot x\cdot\frac1s $$
+其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
+$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;amp;=\Delta^{&amp;rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&amp;rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
+其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
+由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&amp;rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&amp;rsquo;}}{\Delta} \times \frac{1}{s}$。
+2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$</description>
     </item>
     
     <item>
@@ -223,8 +233,10 @@ MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框�
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/about/</guid>
-      <description>Hi👋, I am Chenghua Wang, currently a Senior student at ZJGSU.
-I am currently looking for labs that do HPC+AI research(LLM/Diffusion-Model/Edge Inference, Distributed Training, Heterogeneous Compute). I am interested in machine learning system, distributed system, HPC+AI, Hardware/Software Co-design. Currently working on nncv(A neural network inference and compile framework for computer vision; for practicing purpose). I have struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.</description>
+      <description>Hi👋, I&amp;rsquo;m Chenghua Wang, currently a postgraduate CS student at BUPT.
+I&amp;rsquo;m interested in AI&amp;amp;Sys. I&amp;rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.wang.edu@gmail.com
+Research Interests Machine Learning Infrastructure
+ML Compiler NNCV(ZJGSU, BS dissertation), it contains an Aten-lang auto-parallel language(using Polyhedra Algorithms) and a set of deep learning compilation pipelines(Based on MLIR). Distributed and Parallel System Design Computer Vision</description>
     </item>
     
     <item>
@@ -242,9 +254,7 @@ I am currently looking for labs that do HPC+AI research(LLM/Diffusion-Model/Edge
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description>distributed system 2023-01-17, MapReduce, link
-2023-01-18, Google File System(GFS), link
-2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link</description>
+      <description>distributed system 2023-01-17, MapReduce, link 2023-01-18, Google File System(GFS), link 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link 2024-05-25, ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration, link 2024-06-21, ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference, link </description>
     </item>
     
     <item>

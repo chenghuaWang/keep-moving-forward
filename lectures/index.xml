@@ -1,27 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Lectures on Ubios Home</title>
-    <link>https://chenghuawang.github.io/keep-moving-forward/lectures/</link>
-    <description>Recent content in Lectures on Ubios Home</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Mon, 01 May 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/lectures/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>编译原理通关攻略</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/lectures/tldr-for-compiler-exam/</link>
-      <pubDate>Mon, 01 May 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/lectures/tldr-for-compiler-exam/</guid>
-      <description>1. 文法和语言 阐明语法的工具是文法。
-定义 1.1 文法定义为四元组 $(V_N, V_T, P, S)$
-$V_N$ 为非终结符集合；$V_T$ 为终结符集合；$P$ 为规则 $(\alpha \to \beta)$ 的集合，$\alpha \in (V_{N} \cup V_{T})^{*}$ 且至少包含一个非终结符。
-$\beta \in (V_{N} \cup V_{T})^{*}$ ； $V_N,V_T,P$ 是非空有穷集合。 $S$ 称为标识符和开始符号，是非终结符号，必须在一条规则中作为左部出现。
-定义 1.2 $\nu \implies \omega_{0} \implies \omega_{1} \dots \implies \omega_{n}(n &amp;gt; 0)$
-记作 $\nu \overset{+}{\implies} \omega$
-1.1 文法的类型 0 型 1 型 2 型 3 型 0123 型 文法的表格比较
-2. 词法分析 SLR flowchart LRa--&gt;bn. TL;DR 做题吧，就</description>
-    </item>
-    
-  </channel>
-</rss>

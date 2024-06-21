@@ -2,40 +2,46 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/</loc>
-    <lastmod>2023-07-09T00:00:00+00:00</lastmod>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</loc>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/aisys/</loc>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/</loc>
-    <lastmod>2023-07-09T00:00:00+00:00</lastmod>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai-tools/</loc>
-    <lastmod>2023-07-09T00:00:00+00:00</lastmod>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm/</loc>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/mlir/</loc>
-    <lastmod>2023-07-09T00:00:00+00:00</lastmod>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm-cache-optimize/</loc>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
-    <lastmod>2023-07-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
-    <lastmod>2023-07-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
-    <lastmod>2023-07-09T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</loc>
-    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/compiler/</loc>
-    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai/</loc>
-    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm-server/</loc>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/papers/</loc>
-    <lastmod>2023-06-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
+    <lastmod>2024-06-21T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</loc>
+    <lastmod>2024-05-25T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/quantization/</loc>
+    <lastmod>2024-05-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/distributed-system/</loc>
+    <lastmod>2023-05-02T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai/</loc>
+    <lastmod>2023-05-02T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
     <lastmod>2023-05-02T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</loc>
@@ -45,6 +51,9 @@
     <lastmod>2023-04-18T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</loc>
+    <lastmod>2023-04-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai-tools/</loc>
     <lastmod>2023-04-18T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/about/</loc>

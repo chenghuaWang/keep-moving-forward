@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Quantization on Ubios Home</title>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tags/quantization/</link>
+    <description>Recent content in Quantization on Ubios Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 25 May 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/quantization/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</link>
+      <pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</guid>
+      <description>Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
+1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ原有的Round方法(图a)：
+$$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$
+其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。
+改进后的量化方法(图c)：
+$$ Q(w\cdot s)\cdot\frac xs=\Delta^{&amp;rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&amp;rsquo;}})\cdot x\cdot\frac1s $$
+其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
+$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;amp;=\Delta^{&amp;rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&amp;rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
+其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
+由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&amp;rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&amp;rsquo;}}{\Delta} \times \frac{1}{s}$。
+2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$</description>
+    </item>
+    
+  </channel>
+</rss>

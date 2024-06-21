@@ -6,16 +6,7 @@
     <description>Recent content in HPC&#43;AI Tools on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Sun, 09 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/hpc+ai-tools/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>【施工中】Implementing `Class`/`struct` type in MLIR using MemRef and DataLayout</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/</link>
-      <pubDate>Sun, 09 Jul 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/impl_mlir_class/</guid>
-      <description>很多时候，人们想要使用 MLIR 在 high-level 实现一些 fancy 的 idea。这些 idea 可能会涉及到 struct，class 这些类型。虽然 MLIR 是一个非常完备的框架，可以自定义一个 type 再 lowering 到 llvm，但是我想大部分人并不想触碰到 llvm Dialect 层次(这需要学习很多东西)，他们只是想在 high-level 完成一些创作罢了。那么 MemRef Dialect 就变得十分的重要了。</description>
-    </item>
-    
+    <lastBuildDate>Tue, 18 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/hpc+ai-tools/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>CUDA: NSight System</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</link>

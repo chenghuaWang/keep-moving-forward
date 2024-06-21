@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration" />
+<meta property="og:description" content="Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
+1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ原有的Round方法(图a)：
+$$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$
+其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。
+改进后的量化方法(图c)：
+$$ Q(w\cdot s)\cdot\frac xs=\Delta^{&rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s $$
+其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
+$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
+其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
+由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&rsquo;}}{\Delta} \times \frac{1}{s}$。
+2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/papers/awq/" /><meta property="article:section" content="Papers" />
+<meta property="article:published_time" content="2024-05-25T00:00:00+00:00" />
+<meta property="article:modified_time" content="2024-05-25T00:00:00+00:00" />
+
+		<meta itemprop="name" content="✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration">
+<meta itemprop="description" content="Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
+1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ原有的Round方法(图a)：
+$$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$
+其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。
+改进后的量化方法(图c)：
+$$ Q(w\cdot s)\cdot\frac xs=\Delta^{&rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s $$
+其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
+$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
+其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
+由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&rsquo;}}{\Delta} \times \frac{1}{s}$。
+2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$"><meta itemprop="datePublished" content="2024-05-25T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2024-05-25T00:00:00+00:00" />
+<meta itemprop="wordCount" content="112">
+<meta itemprop="keywords" content="LLM Server,Quantization,LLM," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		
+<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed" >
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
+			
+			<div class="logo__item logo__text" >
+					<div class="logo__title" >Ubios Home</div>
+					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/hpc_ai/">
+				
+				<span class="menu__text">HPC &amp; AI 入坑</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
+				
+				<span class="menu__text">Lecture-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
+				
+				<span class="menu__text">Thinking</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/news/">
+				
+				<span class="menu__text">🎉News🎉</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</h1>
+			<p class="post__lead">AWQ</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2024-05-25T00:00:00Z">2024-05-25</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/aisys/" rel="category">AI&amp;Sys</a>
+	</span>
+</div></div>
+		</header>
+
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-背景和动机">1. 背景和动机</a></li>
+    <li><a href="#2-算法">2. 算法</a>
+      <ul>
+        <li><a href="#21-原理和假设">2.1 原理和假设</a></li>
+        <li><a href="#22-优化如何找到最优的scaling值呢">2.2 优化：如何找到最优的Scaling值呢？</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-总结">3. 总结</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<p>Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper.
+<a href="https://arxiv.org/abs/2306.00978">https://arxiv.org/abs/2306.00978</a></p>
+<hr>
+<h1 id="1-背景和动机">1. 背景和动机</h1>
+<ol>
+<li>直接在FP16精度上Round成INT3/INT4会造成极大的性能损失</li>
+<li>基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。</li>
+<li>但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。</li>
+</ol>
+<h1 id="2-算法">2. 算法</h1>
+<h2 id="21-原理和假设">2.1 原理和假设</h2>
+<div align="center"> 
+<img src="/keep-moving-forward/imgs/awq.png" width = "100%"/>
+<br>
+    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
+    display: inline-block;
+    color: #999;
+    padding: 2px;">Fig 1. AWQ</div>
+</div>
+<p><strong>原有的Round方法(图a)：</strong></p>
+<p>$$
+Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}}
+$$</p>
+<p>其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。</p>
+<p><strong>改进后的量化方法(图c)：</strong></p>
+<p>$$
+Q(w\cdot s)\cdot\frac xs=\Delta^{&rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s
+$$</p>
+<p>其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：</p>
+<ol>
+<li></li>
+</ol>
+<p>$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline
+\operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned}
+$$</p>
+<p>其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。<strong>不管是否被缩放了，这个分布是不变的。</strong></p>
+<ol start="2">
+<li>由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&rsquo;} \approx \Delta$。</li>
+</ol>
+<p>在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&rsquo;}}{\Delta} \times \frac{1}{s}$。</p>
+<h2 id="22-优化如何找到最优的scaling值呢">2.2 优化：如何找到最优的Scaling值呢？</h2>
+<p>$$
+\mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s})
+$$</p>
+<p>$$
+\mathcal{L}(s) = \Vert Q(\mathbf{W} \cdot \text{diag}(s))(\text{diag}(s)^{-1}\cdot \mathbf{X}) - \mathbf{WX} \Vert
+$$</p>
+<p>实际上就是用L2 Norm搜索出来一组最为合适的Scaling参数，注意，Scaling是对于每个权值都做的。
+作者团队为了简化搜索的空间，对$\mathbf{s}$做了一定的约束，如下：</p>
+<p>$$
+\mathbf{s} = \mathbf{s_X}^{\alpha}，\alpha^{*}=\arg \mathop{\min}_{\alpha}\mathcal{L}(\mathbf{s_X}^{\alpha})
+$$</p>
+<p>其中，$\alpha \in [0, 1]$为缩放系数，$\mathbf{s_{X}}$是activation perchannel 的值。当$\alpha = 0$时，意味着不缩放；反之，意味着完全缩放。</p>
+<h1 id="3-总结">3. 总结</h1>
+<p>非常有用，简单粗暴，Best Paper实至名归？是一个非常符合直觉的工程性质的工作，但是工程的实现复杂性比较高，在多数场景上没有被使用。
+<strong>问题：由于一组权重</strong>$\mathbf{w}$<strong>的最大值在缩放一个</strong>$w$<strong>后是基本不变的，所以我们可以认为</strong>$\Delta^{&rsquo;} \approx \Delta$<strong>。这个假设并不是很成立啊？</strong></p>
+
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/llm-server/" rel="tag">LLM Server</a>
+		</li>
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/quantization/" rel="tag">Quantization</a>
+		</li>
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/llm/" rel="tag">LLM</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Currently working on AI&amp;Sys, CV (low-level) and LLM topics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/papers/ft-vm/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">The Design of a Practical System for Fault-Tolerant Virtual Machines</p>
+		</a>
+	</div>
+	<div class="pager__item pager__item--next">
+		<a class="pager__link" href="/keep-moving-forward/papers/prompt_cache/" rel="next">
+			<span class="pager__subtitle">Next&thinsp;»</span>
+			<p class="pager__title">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			<aside class="sidebar"><div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="https://google.com/search">
+		<label>
+			<input class="widget-search__field" type="search" placeholder="SEARCH…" value="" name="q" aria-label="SEARCH…">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="don&#39;t use this search" value="don&#39;t use this searchhttps://chenghuawang.github.io/keep-moving-forward/">
+	</form>
+</div>
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/prompt_cache/">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/awq/">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
+		</ul>
+	</div>
+</div>
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (2)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-cache-optimize/" title="LLM Cache Optimize">LLM Cache Optimize (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (2)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (1)</a>
+	</div>
+</div>
+<div class="toc__block_div">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-背景和动机">1. 背景和动机</a></li>
+    <li><a href="#2-算法">2. 算法</a>
+      <ul>
+        <li><a href="#21-原理和假设">2.1 原理和假设</a></li>
+        <li><a href="#22-优化如何找到最优的scaling值呢">2.2 优化：如何找到最优的Scaling值呢？</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-总结">3. 总结</a></li>
+  </ul>
+</nav>
+	</div>
+</div>
+
+</aside>
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2024 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { fonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+</script>
+</body>
+</html>

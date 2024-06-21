@@ -38,8 +38,10 @@ Spring 2023 Homepage
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/about/</guid>
-      <description>Hi👋, I am Chenghua Wang, currently a Senior student at ZJGSU.
-I am currently looking for labs that do HPC+AI research(LLM/Diffusion-Model/Edge Inference, Distributed Training, Heterogeneous Compute). I am interested in machine learning system, distributed system, HPC+AI, Hardware/Software Co-design. Currently working on nncv(A neural network inference and compile framework for computer vision; for practicing purpose). I have struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.</description>
+      <description>Hi👋, I&amp;rsquo;m Chenghua Wang, currently a postgraduate CS student at BUPT.
+I&amp;rsquo;m interested in AI&amp;amp;Sys. I&amp;rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.wang.edu@gmail.com
+Research Interests Machine Learning Infrastructure
+ML Compiler NNCV(ZJGSU, BS dissertation), it contains an Aten-lang auto-parallel language(using Polyhedra Algorithms) and a set of deep learning compilation pipelines(Based on MLIR). Distributed and Parallel System Design Computer Vision</description>
     </item>
     
     <item>
@@ -57,9 +59,7 @@ I am currently looking for labs that do HPC+AI research(LLM/Diffusion-Model/Edge
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description>distributed system 2023-01-17, MapReduce, link
-2023-01-18, Google File System(GFS), link
-2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link</description>
+      <description>distributed system 2023-01-17, MapReduce, link 2023-01-18, Google File System(GFS), link 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link 2024-05-25, ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration, link 2024-06-21, ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference, link </description>
     </item>
     
     <item>

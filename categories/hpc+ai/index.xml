@@ -6,22 +6,7 @@
     <description>Recent content in HPC&#43;AI on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 14 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/hpc+ai/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>【施工中】[Notes] The Deep Learning Compiler: A Comprehensive Survey</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</link>
-      <pubDate>Wed, 14 Jun 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/dl_compiler_survey/</guid>
-      <description>Looking back for Looking forward这篇笔记记录了 Deep Learning Compiler Survey 1 的一些内容。因为文章是 2020 年发的，MLSys 这个领域最近发展的非常快速，我也会在文中补充一点内容，补充内容都会用 bullet 块指出。
-简介
-在不同的深度学习硬件上部署各种深度学习模型的困难，促进了社区内深度学习编译器的研究和开发。工业界和学术界都提出了一些深度学习编译器，如 Tensorflow XLA 和 TVM。同样，深度学习编译器将不同深度学习框架中描述的深度学习模型作为输入，然后为不同的深度学习硬件生成特定的优化代码作为输出。然而，现有的综述都没有全面地分析深度学习编译器的独特设计架构。在本文中，作者们对现有的深度学习编译器进行了全面的调查，详细剖析了普遍采用的设计，重点是面向深度学习的多级IR，以及前端/后端优化。作者对多级 IR 的设计进行了详细的分析，并说明了普遍采用的优化技术。最后，作者强调了深度学习编译器的几个潜在研究方向。这是第一篇关注深度学习编译器设计架构的综述论文，希望它能为未来的深度学习编译器研究铺平道路。
-1. 介绍 深度学习(DL)的发展已经对各个科学领域产生了深远的影响。它不仅在人工智能，如自然语言处理(NLP) 2 和计算机视觉(CV) 3 中表现出令人惊讶的价值，而且在更广泛的领域也取得了巨大成功。诸如电子商务 4 、智能城市 5 和药物探索 6 等更广泛的应用中取得了巨大成功。随着多种类的深度学习模型出现，如卷积神经网络(CNN) 7 、递归神经网络(RNN) 8 、长短时记忆网络(LSTM) 9 和生成对抗网络(GAN) 10 ，深度学习进一步成为一种时代的趋势。为了能够使它们被广泛应用，简化各种深度学习模型是至关重要的。
-随着工业界和学术界的不断努力，几个流行的深度学习框架已被提出，如 TensorFlow 11 、PyTorch 12 、MXNet 13 和 CNTK 14 ，这些框架简化了深度学习模型的实现。尽管每个框架因为自生的设计做了一些 tradeoffs，这使得每个框架都各有优劣。但在支持新兴的深度学习模型和现有的深度学习模型时，互操作性对于减少冗余的工作量变得非常重要。为了提供互操作性，ONNX 15 被提出，它定义了一个深度学习模型的统一格式，以促进不同DL框架之间的模型转换。
-补充:
-虽然 ONNX 的描述非常的美好，但是还是有非常多的不足。且不论其两个版本的 API 适配问题。ONNX 因为要适配不同框架的算子设计会把算子拆的非常的细，这导致最终出来的计算图可能是非常庞大的，这又需要引入 simplifier 去简化计算图。作为中间表示，我认为还是用 MLIR 这种通用 IR 来表示比较好，毕竟可以复用很多的东西。当然 ONNX 目前还是比较流行的方法。</description>
-    </item>
-    
+    <lastBuildDate>Tue, 02 May 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/hpc+ai/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>浅析机器学习中的并行模型和自动并行方法</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</link>

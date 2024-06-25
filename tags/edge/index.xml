@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Edge on Ubios Home</title>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tags/edge/</link>
+    <description>Recent content in Edge on Ubios Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Mon, 17 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/edge/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/</link>
+      <pubDate>Mon, 17 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/</guid>
+      <description>Li L, Qian S, Lu J, et al. Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs. arxiv preprint arxiv:2403.20041, 2024.
+无代码，技术报告
+⭐️⭐️⭐️
+http://arxiv.org/abs/2403.20041
+1. 背景 &amp;amp; 动机 这篇论文是OPPO AI Center发表的，其提出了Transformer-Lite框架来缓解移动设备GPU上部署大型语言模型（LLM）时存在的性能问题。大型语言模型（如ChatGLM2 6B和Gemma 2B）被广泛应用于智能助手、文本摘要、翻译和多模态任务等，但它们在移动设备上的部署面临着几个关键问题：
+计算能力和内存带宽的需求：LLMs需要大量的计算能力和内存带宽，这些资源在移动设备上是有限的。 用户体验：当前的在端侧设备上部署LLM的方法通常有着较慢的推理速度，这会严重影响用户体验。 成本：在云上大规模部署LLM有着可观的成本，而且随着移动设备性能的不断提升，本地部署LLM不仅可以减少与云部署相关的高成本，还可以扩大LLM在移动设备上的应用前景以及保护用户隐私。 为了解决上述问题。这篇文章文章提出了以下优化技术：
+符号表达式的方法：支持动态形状模型推理，包括动态形状推导、内存重用和执行调度等。 算子优化和执行优先级设置：加快推理速度并减少手机延迟。 FP4量化方法：称为M0E4，减少dequantize开销，使得矩阵乘法更高效。 基于子张量的技巧：避免了在LLM推理后复制KV缓存的内存压力。 作者团队还实现了一个名为Transformer-Lite的移动推理引擎，该引擎与高通和联发科处理器兼容，并通过一系列实验评估了其性能。通过这些技术，Transformer-Lite引擎在prefill和decoding方面相比基于CPU的FastLLM和基于GPU的MLC-LLM取得了显著的速度提升。
+2. 方法 2.1 对于动态形状推理的符号表达方法 不同于多数静态尺寸的CV模型，LLM 是一种动态形状输入的场景，每次迭代的输入形状都会发生变化。这导致模型中一些激活张量的形状发生变化，给内存重用和算子性能优化带来了巨大挑战。 例如，将形状[“sumN-N”,1,2,128]与axis 0上的[“N”,1,2,128]连接，输出形状为[“sumN”,1,2,128]。为此，作者团队利用类似于 Nimble 和 DISC 的方法，将深度学习模型中的算子分为两类：张量计算算子和形状计算算子。后一类算子包含形状算子和那些其输入取决于形状算子结果的算子。形状计算算子在 CPU 上执行，计算形状信息。相反，负责计算激活的张量和权重的张量的计算算子则在 GPU 上执行。
+Fig 1. 形状推理作者团队使用了SymPy包且结合了ONNX来实现了这一能力。
+对于内存复用，实现内存复用的先决条件是获得张量之间的内存大小关系，这在静态形状推理中很简单。符号表达式便于轻松确定这种关系。首先，计算每个张量的内存大小，即元素数乘以数据类型的字节数，从而为每个张量的内存大小创建一个符号表达式。**然后结合减法和除法来辨别张量之间的内存大小关系。**例如，用 “N ”*4096 除以 “N ”32128，得到的整数为 1，表示大小相等，可以重复使用内存。另一方面，当 “N” * 4096 与 “sumN” * 2 * 128 相比较时，减法和除法都会产生另一个符号表达式，而不是一个确定的整数。因此，除非探索所有潜在的输入形状，否则它们之间的大小关系是不确定的，这意味着无法进行内存重用。 作者团队使用了OpenCL工具来实现了内存复用。</description>
+    </item>
+    
+  </channel>
+</rss>

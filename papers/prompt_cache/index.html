@@ -30,7 +30,7 @@ Prompt Schema Fig 1. Prompt Schema作者团队定义了一个Prompt Markup Lang
 本文主要是对首Token输出时间的优化，对于用户来说可以有更好的体验。要是能做个全局的Prompt Cache数据库，应该可以给大规模的LLM Infer系统带来不少的好处。"><meta itemprop="datePublished" content="2024-06-21T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2024-06-21T00:00:00+00:00" />
 <meta itemprop="wordCount" content="52">
-<meta itemprop="keywords" content="LLM Server,LLM Cache Optimize,LLM," />
+<meta itemprop="keywords" content="LLM Server,LLM Cache Optimize,LLM,MLSys 2024," />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
 	<link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -126,7 +126,7 @@ Prompt Schema Fig 1. Prompt Schema作者团队定义了一个Prompt Markup Lang
 	<article class="post">
 		<header class="post__header">
 			<h1 class="post__title">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</h1>
-			<p class="post__lead">Prompt Cache</p>
+			<p class="post__lead">MLSys 2024 Prompt Cache</p>
 			<div class="post__meta meta"><div class="meta__item-author meta__item">
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
@@ -204,6 +204,9 @@ Prompt Schema有很多的细节，这里只讲大致的思路，具体的请看�
 		<li class="tags__item">
 			<a class="tags__link btn" href="/keep-moving-forward/tags/llm/" rel="tag">LLM</a>
 		</li>
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/mlsys-2024/" rel="tag">MLSys 2024</a>
+		</li>
 	</ul>
 </div>
 		</footer>
@@ -224,9 +227,15 @@ Prompt Schema有很多的细节，这里只讲大致的思路，具体的请看�
 
 <nav class="pager flex">
 	<div class="pager__item pager__item--prev">
-		<a class="pager__link" href="/keep-moving-forward/papers/awq/" rel="prev">
+		<a class="pager__link" href="/keep-moving-forward/papers/transformer-lite/" rel="prev">
 			<span class="pager__subtitle">«&thinsp;Previous</span>
-			<p class="pager__title">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</p>
+			<p class="pager__title">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</p>
+		</a>
+	</div>
+	<div class="pager__item pager__item--next">
+		<a class="pager__link" href="/keep-moving-forward/papers/mlsys2024-qmoe/" rel="next">
+			<span class="pager__subtitle">Next&thinsp;»</span>
+			<p class="pager__title">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</p>
 		</a>
 	</div>
 </nav>
@@ -246,14 +255,14 @@ Prompt Schema有很多的细节，这里只讲大致的思路，具体的请看�
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mlsys2024-qmoe/">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/prompt_cache/">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/transformer-lite/">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/awq/">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/">【施工中】6xKx16 SGEMM Kernel on X86-AVX</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 		</ul>
 	</div>
 </div>
@@ -262,11 +271,14 @@ Prompt Schema有很多的细节，这里只讲大致的思路，具体的请看�
 	<div class="widget__content">
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/edge/" title="Edge">Edge (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/kernel/" title="Kernel">Kernel (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (2)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (4)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-cache-optimize/" title="LLM Cache Optimize">LLM Cache Optimize (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (4)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlsys-2024/" title="MLSys 2024">MLSys 2024 (3)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (2)</a>
 	</div>
 </div>
 <div class="toc__block_div">

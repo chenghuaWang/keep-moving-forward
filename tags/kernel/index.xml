@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kernel on Ubios Home</title>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tags/kernel/</link>
+    <description>Recent content in Kernel on Ubios Home</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Fri, 16 Jun 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/kernel/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>【施工中】6xKx16 SGEMM Kernel on X86-AVX</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/x86_avx_sgemm_6x16/</link>
+      <pubDate>Fri, 16 Jun 2023 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/x86_avx_sgemm_6x16/</guid>
+      <description>1. Algorithm 2. Code void sgemm_micro_6x16_ac_br_cr(int m, int n, int k, float alpha, const float* A, const float* B, float beta, float* C, int ldc) { assert( m == 6 &amp;amp;&amp;amp; n == 16 &amp;amp;&amp;amp; &amp;#34;sgemm micro kernel expects A: 6xk(col major), B: kx16(row major) and C: 6x16(row major)&amp;#34;); uint64_t iters = k / 4; uint64_t remaining = k % 4; uint64_t ldc_ = ldc; #if defined(__AVX__) const float* a_ptr = A; const float* b_ptr = B; __m256 ymm4, ymm5, ymm6, ymm7, ymm8, ymm9, ymm10, ymm11, ymm12, ymm13, ymm14, ymm15; // set all outputs ymm register to zeros.</description>
+    </item>
+    
+  </channel>
+</rss>

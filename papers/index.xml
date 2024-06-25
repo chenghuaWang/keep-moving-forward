@@ -6,7 +6,29 @@
     <description>Recent content in Papers on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 21 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/papers/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 25 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/papers/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</link>
+      <pubDate>Tue, 25 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</guid>
+      <description>http://arxiv.org/abs/2310.16795
+MLSys 2024
+1.背景和动机 为了解决大型模型的高推理成本问题，MoE架构被提出。MoE通过稀疏路由的方式，将输入分配给多个专家（experts）中的一小部分，以实现更快的推理速度和更高的模型质量。但这种架构也带来了巨大的参数量，例如SwitchTransformer-c2048模型就有1.6万亿参数。MoE模型的参数量巨大，需要数TB级的存储空间，这使得它们在实际部署时面临内存和成本的挑战，尤其是在需要大规模并行计算的场合。
+为了降低MoE模型的内存和存储需求，同时保持模型性能，模型压缩成为了一个重要的研究方向。传统的压缩技术，如量化和稀疏性，虽然在一定程度上有效，但对于参数量达到万亿级别的模型来说，仍然不足以实现高效的压缩。
+本文提出了QMoE，一种新的压缩和执行框架，旨在实现对万亿参数MoE模型的高效压缩和推理。QMoE通过设计一种可扩展的算法，将模型压缩到每个参数不到1比特的大小，并与定制的GPU解码内核协同设计，以实现端到端的高效压缩推理，且运行时开销相对较小。
+Fig 1. 量化结果作者首先考虑了Huffman和LZW两种常用于文件压缩的方法。但是Huffman方法的解码依赖于上文已经被解析的参数，并行性低；且变长的编码方式在实现上和存储的时候也是较为困难的。作者总结出了MoE量化的4个难点：
+现有的压缩方法，如量化和稀疏性，通常只能在不显著损失精度的情况下将模型的精度降低到每个参数3或4比特，或者达到大约50%的稀疏度。然而，要使万亿参数的MoE模型实用化，需要比16位精度高出10到20倍的压缩率，即平均每个参数少于1比特。 将现有的压缩方法应用于比大型dense模型大一个数量级的MoE模型时，会遇到内存、性能和可靠性方面的障碍。MoE模型由于其稀疏性，需要处理的内存和数据量巨大。即量化过程需要的内存太大，且可能会出现因为corner case导致量化失败的问题。 实现每个参数少于1比特的压缩率需要一个非平凡的自定义压缩格式，并且这种格式需要配备在GPU等加速器上高效的解码算法，以避免在压缩模型上进行推理时出现重大的处理延迟（比如要避免Huffman方法的同步）。 为了应对上述挑战，需要在系统级别进行设计和优化，包括优化激活卸载、使用列表缓冲区来支持样本访问、延迟权重获取以减少内存占用、专家分组以提高GPU利用率，以及进行鲁棒性修改以处理在压缩具有数万个层的模型时可能遇到的罕见corner case。 2. 算法 2.1 使用GPTQ量化 Fig 2. 使用GPTQ量化流程具体来说，我们维护一个大型缓冲区$B$，并按以下方式更新 Transformer 块的Dense部分：
+从CPU到GPU抓取一个 &amp;ldquo;样本&amp;rdquo; $X$，其中包含数百个Token 通过相应的Dense Layer，得到结果$Y$ 计算并存储$Y$中标记的专家分配 将$Y$送回CPU并覆盖$B$中的$X$ 并且对于稀疏部分，分别对专家进行循环：
+从CPU到GPU获取$B$中所有被分配给专家$E$的单独Token，记作$X_{E}$ 使用它们来生成压缩后的专家$E^{&amp;rsquo;}$（例如，使用GPTQ算法） 通过$E^{&amp;rsquo;}$模块以获得$Y_{E^{&amp;rsquo;}}$ 将$Y_{E^{&amp;rsquo;}}$发送回CPU，并在B中覆盖$X_{E}$ 作者在这里还引入了List Buffering、Lazy Weight Fetching和Expert Grouping技巧
+2.1.1 List Buffering 为了有效地支持对Dense模型的访问，以及对专家tokens的完全向量化查询，我们将$B$存储为列表缓冲数据结构。这可以被看作是一个包含所有tokens隐藏状态的巨大连续缓冲区，以及分隔符索引，这些索引标志着各个样本之间的边界。下图展示了这种存储格式。这种数据结构对效率至关重要；对于大量样本计数，通过掩码迭代样本并获取相关tokens的方法是很慢的，而作者提出的方法则有大幅度改进。
+Fig 3. list buffering2.1.2 Lazy Weight Fetching 由于1.6万亿参数模型的权重占用了超过3TB的存储空间，它们甚至无法存储在CPU的RAM中。因此，我们按需直接从磁盘存储中懒加载它们。按照推理的流程，我们需要将所有的参数从磁盘搬移到内存中完整的一整次。
+2.1.3 Experts Grouping 此外，为了避免GPU的利用率不足，作者将多个专家组合在一起，并应用GPTQ算法的联合批处理变体。
+2.2 字典生成 对于量化后得到的Ternary Pair ${w_{min}, 0, w_{max}}$，在很多的情况下，是0居多的，也就是说是稀疏的，那么对于稀疏矩阵可以用CSR等方法来存储。但是使用传统的稀疏矩阵存储方法压缩比还是不够，作者团队使用了一种更加偏向于文件压缩的思路来进行量化后的参数压缩，这个方法就使用到了字典查找的方法。字典查找的方法还是比较通俗易懂的，以下面的例子来举例：
+对于“001002003&amp;hellip;”我们可以统计该串里面的子串的出现频率，比如001，002，003出现的频率高，那么我们可以将他们编码成 A,B,C然后仅需要三个char的空间“ABC”就可以表示一个压缩后的文件。</description>
+    </item>
+    
     <item>
       <title>✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</link>
@@ -23,6 +45,24 @@ Prompt Schema Fig 1. Prompt Schema作者团队定义了一个Prompt Markup Lang
     </item>
     
     <item>
+      <title>✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/</link>
+      <pubDate>Mon, 17 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/</guid>
+      <description>Li L, Qian S, Lu J, et al. Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs. arxiv preprint arxiv:2403.20041, 2024.
+无代码，技术报告
+⭐️⭐️⭐️
+http://arxiv.org/abs/2403.20041
+1. 背景 &amp;amp; 动机 这篇论文是OPPO AI Center发表的，其提出了Transformer-Lite框架来缓解移动设备GPU上部署大型语言模型（LLM）时存在的性能问题。大型语言模型（如ChatGLM2 6B和Gemma 2B）被广泛应用于智能助手、文本摘要、翻译和多模态任务等，但它们在移动设备上的部署面临着几个关键问题：
+计算能力和内存带宽的需求：LLMs需要大量的计算能力和内存带宽，这些资源在移动设备上是有限的。 用户体验：当前的在端侧设备上部署LLM的方法通常有着较慢的推理速度，这会严重影响用户体验。 成本：在云上大规模部署LLM有着可观的成本，而且随着移动设备性能的不断提升，本地部署LLM不仅可以减少与云部署相关的高成本，还可以扩大LLM在移动设备上的应用前景以及保护用户隐私。 为了解决上述问题。这篇文章文章提出了以下优化技术：
+符号表达式的方法：支持动态形状模型推理，包括动态形状推导、内存重用和执行调度等。 算子优化和执行优先级设置：加快推理速度并减少手机延迟。 FP4量化方法：称为M0E4，减少dequantize开销，使得矩阵乘法更高效。 基于子张量的技巧：避免了在LLM推理后复制KV缓存的内存压力。 作者团队还实现了一个名为Transformer-Lite的移动推理引擎，该引擎与高通和联发科处理器兼容，并通过一系列实验评估了其性能。通过这些技术，Transformer-Lite引擎在prefill和decoding方面相比基于CPU的FastLLM和基于GPU的MLC-LLM取得了显著的速度提升。
+2. 方法 2.1 对于动态形状推理的符号表达方法 不同于多数静态尺寸的CV模型，LLM 是一种动态形状输入的场景，每次迭代的输入形状都会发生变化。这导致模型中一些激活张量的形状发生变化，给内存重用和算子性能优化带来了巨大挑战。 例如，将形状[“sumN-N”,1,2,128]与axis 0上的[“N”,1,2,128]连接，输出形状为[“sumN”,1,2,128]。为此，作者团队利用类似于 Nimble 和 DISC 的方法，将深度学习模型中的算子分为两类：张量计算算子和形状计算算子。后一类算子包含形状算子和那些其输入取决于形状算子结果的算子。形状计算算子在 CPU 上执行，计算形状信息。相反，负责计算激活的张量和权重的张量的计算算子则在 GPU 上执行。
+Fig 1. 形状推理作者团队使用了SymPy包且结合了ONNX来实现了这一能力。
+对于内存复用，实现内存复用的先决条件是获得张量之间的内存大小关系，这在静态形状推理中很简单。符号表达式便于轻松确定这种关系。首先，计算每个张量的内存大小，即元素数乘以数据类型的字节数，从而为每个张量的内存大小创建一个符号表达式。**然后结合减法和除法来辨别张量之间的内存大小关系。**例如，用 “N ”*4096 除以 “N ”32128，得到的整数为 1，表示大小相等，可以重复使用内存。另一方面，当 “N” * 4096 与 “sumN” * 2 * 128 相比较时，减法和除法都会产生另一个符号表达式，而不是一个确定的整数。因此，除非探索所有潜在的输入形状，否则它们之间的大小关系是不确定的，这意味着无法进行内存重用。 作者团队使用了OpenCL工具来实现了内存复用。</description>
+    </item>
+    
+    <item>
       <title>✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</link>
       <pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate>
@@ -35,7 +75,7 @@ $$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=
 改进后的量化方法(图c)：
 $$ Q(w\cdot s)\cdot\frac xs=\Delta^{&amp;rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&amp;rsquo;}})\cdot x\cdot\frac1s $$
 其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
-$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;amp;=\Delta^{&amp;rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&amp;rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
+$$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;amp;=\Delta^{&amp;rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&amp;rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
 其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
 由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&amp;rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&amp;rsquo;}}{\Delta} \times \frac{1}{s}$。
 2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$</description>

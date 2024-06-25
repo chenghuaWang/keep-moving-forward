@@ -59,7 +59,13 @@ ML Compiler NNCV(ZJGSU, BS dissertation), it contains an Aten-lang auto-parallel
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description>distributed system 2023-01-17, MapReduce, link 2023-01-18, Google File System(GFS), link 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link 2024-05-25, ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration, link 2024-06-21, ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference, link </description>
+      <description>Distributed System 2023-01-17, MapReduce, link 2023-01-18, Google File System(GFS), link 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link MLSys 2024 2024-05-25, ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration, link
+Best Paper，量化
+2024-06-21, ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference, link
+prompt cache优化
+2024-06-25, ✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models, link
+MoE量化
+arxiv 2024-06-17, ✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs, link</description>
     </item>
     
     <item>

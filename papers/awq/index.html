@@ -15,7 +15,7 @@ $$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=
 改进后的量化方法(图c)：
 $$ Q(w\cdot s)\cdot\frac xs=\Delta^{&rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s $$
 其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
-$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
+$$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
 其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
 由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&rsquo;}}{\Delta} \times \frac{1}{s}$。
 2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$" />
@@ -32,13 +32,13 @@ $$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=
 改进后的量化方法(图c)：
 $$ Q(w\cdot s)\cdot\frac xs=\Delta^{&rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s $$
 其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
-$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
+$$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned} $$
 其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
 由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&rsquo;}}{\Delta} \times \frac{1}{s}$。
 2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$"><meta itemprop="datePublished" content="2024-05-25T00:00:00+00:00" />
 <meta itemprop="dateModified" content="2024-05-25T00:00:00+00:00" />
-<meta itemprop="wordCount" content="112">
-<meta itemprop="keywords" content="LLM Server,Quantization,LLM," />
+<meta itemprop="wordCount" content="113">
+<meta itemprop="keywords" content="LLM Server,Quantization,LLM,MLSys 2024," />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link rel="dns-prefetch" href="//fonts.googleapis.com">
 	<link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -134,7 +134,7 @@ $$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundEr
 	<article class="post">
 		<header class="post__header">
 			<h1 class="post__title">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</h1>
-			<p class="post__lead">AWQ</p>
+			<p class="post__lead">MLSys 2024 AWQ</p>
 			<div class="post__meta meta"><div class="meta__item-author meta__item">
 	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
@@ -191,10 +191,8 @@ $$</p>
 Q(w\cdot s)\cdot\frac xs=\Delta^{&rsquo;}\cdot\mathrm{Round}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s
 $$</p>
 <p>其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：</p>
-<ol>
-<li></li>
-</ol>
-<p>$$\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline
+<p>$$
+\begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline
 \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{&rsquo;}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{&rsquo;}})\cdot x\cdot\frac1s\end{aligned}
 $$</p>
 <p>其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。<strong>不管是否被缩放了，这个分布是不变的。</strong></p>
@@ -234,6 +232,9 @@ $$</p>
 		<li class="tags__item">
 			<a class="tags__link btn" href="/keep-moving-forward/tags/llm/" rel="tag">LLM</a>
 		</li>
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/mlsys-2024/" rel="tag">MLSys 2024</a>
+		</li>
 	</ul>
 </div>
 		</footer>
@@ -260,9 +261,9 @@ $$</p>
 		</a>
 	</div>
 	<div class="pager__item pager__item--next">
-		<a class="pager__link" href="/keep-moving-forward/papers/prompt_cache/" rel="next">
+		<a class="pager__link" href="/keep-moving-forward/papers/transformer-lite/" rel="next">
 			<span class="pager__subtitle">Next&thinsp;»</span>
-			<p class="pager__title">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</p>
+			<p class="pager__title">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</p>
 		</a>
 	</div>
 </nav>
@@ -282,14 +283,14 @@ $$</p>
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mlsys2024-qmoe/">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/prompt_cache/">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/transformer-lite/">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/awq/">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/">【施工中】6xKx16 SGEMM Kernel on X86-AVX</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab5_cow/">XV6 Lab 5: Copy On Write</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab4_trap/">XV6 Lab 4: Traps</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/xv6_lab3_pagetable/">XV6 Lab 3: Page Table</a></li>
 		</ul>
 	</div>
 </div>
@@ -298,11 +299,14 @@ $$</p>
 	<div class="widget__content">
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/edge/" title="Edge">Edge (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/kernel/" title="Kernel">Kernel (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (2)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (4)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-cache-optimize/" title="LLM Cache Optimize">LLM Cache Optimize (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (2)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (4)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlsys-2024/" title="MLSys 2024">MLSys 2024 (3)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (2)</a>
 	</div>
 </div>
 <div class="toc__block_div">

@@ -6,7 +6,22 @@
     <description>Recent content on Ubios Home</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Tue, 25 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 28 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>mllm框架浅析-以QWen0.5B为例</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/</link>
+      <pubDate>Fri, 28 Jun 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/</guid>
+      <description>笔者最近在做一些mllm相关的工作，书写此文对mllm框架进行梳理总结，定有不少纰漏，请读者立即指出，谢谢。mllm目前在做一些其他工作，这篇文章的书写时间为发布时间。在mllm的其他工作合并进主仓库后，本文还会进一步的跟进。读者请注意本文的时效性。
+1. 简介 mllm是一款适用于移动设备和边缘设备的快速、轻量的多模态LLM推理引擎。
+完全的C/C++实现，无第三方依赖 针对fuyu-8B等多模态LLM进行了优化 支持ARM NEON和X86 AVX2向量指令 支持4 bits和6 bits整数量化 本文将更多的以工程的视角来解析mllm框架，在行文过程中，本文会将mllm与其他框架的设计方法做对比。接下来，本文将会用项目组织结构、框架执行流程、自定义Op/Layer、Tokenizer和如何支持新模型五个章节来详细描述mllm框架的各项特性和总体结构。读者可以把该文章做mllm的使用文档。在最后，本文将会指出mllm的不足之处和可以尝试跟进的工作。
+在开始正式解析mllm之前，读者可以先clone下mllm的代码库，以便于跟进分析流程。mllm不依赖于git submodule，项目配置起来很方便，目前mllm可以在linux上使用Clang/GCC编译器进行编译。目前mllm支持的目标设备体系结构是X86和Arm。
+git clone https://github.com/UbiquitousLearning/mllm mllm团队将所有LLM相关的vocab文件都放在了git仓库中（这个其实可以移动到HuggingFace的仓库上），LLM量化后的模型文件都存储在HuggingFace上，读者可以在https://huggingface.co/mllmTeam上找到mllm提供的模型文件。
+2. 框架执行流程 2.1 以两层Linear层运行为例 首先，考虑下面的代码，定义了两个Linear Layers，并且输入$X$通过两个Linear Layers来得到输出：
+class TwoLinear final : public Module { public: TwoLinear() = default; TwoLinear() { linear1 = Linear(in_f, out_f, /*bias*/true, &amp;#34;linear1&amp;#34;); linear2 = Linear(out_f, out_f, /*bias*/true, &amp;#34;linear2&amp;#34;); } std::vector&amp;lt;Tensor&amp;gt; Forward(std::vector&amp;lt;Tensor&amp;gt; inputs, std::vector&amp;lt;std::any&amp;gt; args) override { x = inputs[0]; x = linear1(x); x = linear2(x); return x; } private: Layer linear1; Layer linear2; } TwoLinear tl; 2.</description>
+    </item>
+    
     <item>
       <title>✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</link>
@@ -318,12 +333,7 @@ arxiv 2024-06-17, ✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of 
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</guid>
-      <description>MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities, link
-2023-02-25, XV6 lab 2 syscall, link
-2023-03-02, XV6 lab 3 page table, link
-2023-03-12, XV6 lab 4 traps, link
-2023-03-17, XV6 lab 5 copy on write, link
-Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler </description>
+      <description>MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities, link 2023-02-25, XV6 lab 2 syscall, link 2023-03-02, XV6 lab 3 page table, link 2023-03-12, XV6 lab 4 traps, link 2023-03-17, XV6 lab 5 copy on write, link Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler Framework 2024-06-28, mllm框架浅析-以QWen0.5B为例, link </description>
     </item>
     
     <item>

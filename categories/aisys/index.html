@@ -111,6 +111,35 @@
 	
 	<header class="list__header">
 		<h2 class="list__title post__title">
+			<a href="/keep-moving-forward/tech/mllm-qwen/" rel="bookmark">
+			mllm框架浅析-以QWen0.5B为例
+			</a>
+		</h2>
+		<p class="list__lead post__lead">mllm framework</p>
+		<div class="list__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2024-06-28T00:00:00Z">2024-06-28</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/aisys/" rel="category">AI&amp;Sys</a>
+	</span>
+</div></div>
+	</header>
+	<div class="content list__excerpt post__content clearfix">
+		笔者最近在做一些mllm相关的工作，书写此文对mllm框架进行梳理总结，定有不少纰漏，请读者立即指出，谢谢。mllm目前在做一些其他工作，这篇文章的书写时间为发布时间。在mllm的其他工作合并进主仓库后，本文还会进一步的跟进。读者请注意本文的时效性。
+1. 简介 mllm是一款适用于移动设备和边缘设备的快速、轻量的多模态LLM推理引擎。
+完全的C/C++实现，无第三方依赖 针对fuyu-8B等多模态LLM进行了优化 支持ARM NEON和X86 AVX2向量指令 支持4 bits和6 bits整数量化 本文将更多的以工程的视角来解析mllm框架，在行文过程中，本文会将mllm与其他框架的设计方法做对比。接下来，本文将会用项目组织结构、框架执行流程、自定义Op/Layer、Tokenizer和如何支持新模型五个章节来详细描述mllm框架的各项特性和总体结构。读者可以把该文章做mllm的使用文档。在最后，本文将会指出mllm的不足之处和可以尝试跟进的工作。
+在开始正式解析mllm之前，读者可以先clone下mllm的代码库，以便于跟进分析流程。mllm不依赖于git submodule，项目配置起来很方便，目前mllm可以在linux上使用Clang/GCC编译器进行编译。目前mllm支持的目标设备体系结构是X86和Arm。
+git clone https://github.com/UbiquitousLearning/mllm mllm团队将所有LLM相关的vocab文件都放在了git仓库中（这个其实可以移动到HuggingFace的仓库上），LLM量化后的模型文件都存储在HuggingFace上，读者可以在https://huggingface.co/mllmTeam上找到mllm提供的模型文件。
+2. 框架执行流程 2.1 以两层Linear层运行为例 首先，考虑下面的代码，定义了两个Linear Layers，并且输入$X$通过两个Linear Layers来得到输出：
+class TwoLinear final : public Module { public: TwoLinear() = default; TwoLinear() { linear1 = Linear(in_f, out_f, /*bias*/true, &#34;linear1&#34;); linear2 = Linear(out_f, out_f, /*bias*/true, &#34;linear2&#34;); } std::vector&lt;Tensor&gt; Forward(std::vector&lt;Tensor&gt; inputs, std::vector&lt;std::any&gt; args) override { x = inputs[0]; x = linear1(x); x = linear2(x); return x; } private: Layer linear1; Layer linear2; } TwoLinear tl; 2.
+	</div>
+	<div class="list__footer clearfix">
+		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/mllm-qwen/">Read more…</a>
+	</div>
+</article><article class="list__item post">
+	
+	<header class="list__header">
+		<h2 class="list__title post__title">
 			<a href="/keep-moving-forward/papers/mlsys2024-qmoe/" rel="bookmark">
 			✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models
 			</a>
@@ -276,6 +305,7 @@ $$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundE
 	<h4 class="widget__title">Recent Posts</h4>
 	<div class="widget__content">
 		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/mllm-qwen/">mllm框架浅析-以QWen0.5B为例</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mlsys2024-qmoe/">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/prompt_cache/">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/transformer-lite/">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</a></li>
@@ -283,7 +313,6 @@ $$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundE
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/">【施工中】6xKx16 SGEMM Kernel on X86-AVX</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
 			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/about/hpc_ai/">HPC &amp; AI 入坑</a></li>
 		</ul>
 	</div>
 </div>
@@ -293,7 +322,7 @@ $$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundE
 		<ul class="widget__list">
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/aisys/">AI&amp;Sys</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">5</span>
+				<span class="widget__counter widget__counter--bubble">6</span>
 				</li>
 			<li class="widget__item">
 				<a class="widget__link" href="/keep-moving-forward/categories/distributed-sys/">distributed sys</a>&nbsp;
@@ -326,9 +355,9 @@ $$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundE
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/edge/" title="Edge">Edge (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/kernel/" title="Kernel">Kernel (1)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (4)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (5)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-cache-optimize/" title="LLM Cache Optimize">LLM Cache Optimize (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (4)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (5)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlsys-2024/" title="MLSys 2024">MLSys 2024 (3)</a>
 		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (2)</a>
 	</div>

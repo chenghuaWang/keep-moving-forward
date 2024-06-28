@@ -2,19 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</loc>
-    <lastmod>2024-06-25T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/aisys/</loc>
-    <lastmod>2024-06-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/</loc>
-    <lastmod>2024-06-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm/</loc>
-    <lastmod>2024-06-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm-server/</loc>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/</loc>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
+    <lastmod>2024-06-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</loc>
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/mlsys-2024/</loc>
@@ -24,12 +36,6 @@
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/quantization/</loc>
-    <lastmod>2024-06-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
-    <lastmod>2024-06-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</loc>
@@ -51,9 +57,6 @@
     <lastmod>2023-06-16T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/kernel/</loc>
-    <lastmod>2023-06-16T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
     <lastmod>2023-06-16T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/distributed-system/</loc>

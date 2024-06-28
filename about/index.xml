@@ -74,12 +74,7 @@ arxiv 2024-06-17, ✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of 
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</guid>
-      <description>MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities, link
-2023-02-25, XV6 lab 2 syscall, link
-2023-03-02, XV6 lab 3 page table, link
-2023-03-12, XV6 lab 4 traps, link
-2023-03-17, XV6 lab 5 copy on write, link
-Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler </description>
+      <description>MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities, link 2023-02-25, XV6 lab 2 syscall, link 2023-03-02, XV6 lab 3 page table, link 2023-03-12, XV6 lab 4 traps, link 2023-03-17, XV6 lab 5 copy on write, link Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler Framework 2024-06-28, mllm框架浅析-以QWen0.5B为例, link </description>
     </item>
     
     <item>

@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>mllm框架浅析-以QWen0.5B为例 - Ubios Home</title>
+	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
+	<meta name="description" content="">
+		<meta property="og:title" content="mllm框架浅析-以QWen0.5B为例" />
+<meta property="og:description" content="笔者最近在做一些mllm相关的工作，书写此文对mllm框架进行梳理总结，定有不少纰漏，请读者立即指出，谢谢。mllm目前在做一些其他工作，这篇文章的书写时间为发布时间。在mllm的其他工作合并进主仓库后，本文还会进一步的跟进。读者请注意本文的时效性。
+1. 简介 mllm是一款适用于移动设备和边缘设备的快速、轻量的多模态LLM推理引擎。
+完全的C/C&#43;&#43;实现，无第三方依赖 针对fuyu-8B等多模态LLM进行了优化 支持ARM NEON和X86 AVX2向量指令 支持4 bits和6 bits整数量化 本文将更多的以工程的视角来解析mllm框架，在行文过程中，本文会将mllm与其他框架的设计方法做对比。接下来，本文将会用项目组织结构、框架执行流程、自定义Op/Layer、Tokenizer和如何支持新模型五个章节来详细描述mllm框架的各项特性和总体结构。读者可以把该文章做mllm的使用文档。在最后，本文将会指出mllm的不足之处和可以尝试跟进的工作。
+在开始正式解析mllm之前，读者可以先clone下mllm的代码库，以便于跟进分析流程。mllm不依赖于git submodule，项目配置起来很方便，目前mllm可以在linux上使用Clang/GCC编译器进行编译。目前mllm支持的目标设备体系结构是X86和Arm。
+git clone https://github.com/UbiquitousLearning/mllm mllm团队将所有LLM相关的vocab文件都放在了git仓库中（这个其实可以移动到HuggingFace的仓库上），LLM量化后的模型文件都存储在HuggingFace上，读者可以在https://huggingface.co/mllmTeam上找到mllm提供的模型文件。
+2. 框架执行流程 2.1 以两层Linear层运行为例 首先，考虑下面的代码，定义了两个Linear Layers，并且输入$X$通过两个Linear Layers来得到输出：
+class TwoLinear final : public Module { public: TwoLinear() = default; TwoLinear() { linear1 = Linear(in_f, out_f, /*bias*/true, &#34;linear1&#34;); linear2 = Linear(out_f, out_f, /*bias*/true, &#34;linear2&#34;); } std::vector&lt;Tensor&gt; Forward(std::vector&lt;Tensor&gt; inputs, std::vector&lt;std::any&gt; args) override { x = inputs[0]; x = linear1(x); x = linear2(x); return x; } private: Layer linear1; Layer linear2; } TwoLinear tl; 2." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/" /><meta property="article:section" content="Tech" />
+<meta property="article:published_time" content="2024-06-28T00:00:00+00:00" />
+<meta property="article:modified_time" content="2024-06-28T00:00:00+00:00" />
+
+		<meta itemprop="name" content="mllm框架浅析-以QWen0.5B为例">
+<meta itemprop="description" content="笔者最近在做一些mllm相关的工作，书写此文对mllm框架进行梳理总结，定有不少纰漏，请读者立即指出，谢谢。mllm目前在做一些其他工作，这篇文章的书写时间为发布时间。在mllm的其他工作合并进主仓库后，本文还会进一步的跟进。读者请注意本文的时效性。
+1. 简介 mllm是一款适用于移动设备和边缘设备的快速、轻量的多模态LLM推理引擎。
+完全的C/C&#43;&#43;实现，无第三方依赖 针对fuyu-8B等多模态LLM进行了优化 支持ARM NEON和X86 AVX2向量指令 支持4 bits和6 bits整数量化 本文将更多的以工程的视角来解析mllm框架，在行文过程中，本文会将mllm与其他框架的设计方法做对比。接下来，本文将会用项目组织结构、框架执行流程、自定义Op/Layer、Tokenizer和如何支持新模型五个章节来详细描述mllm框架的各项特性和总体结构。读者可以把该文章做mllm的使用文档。在最后，本文将会指出mllm的不足之处和可以尝试跟进的工作。
+在开始正式解析mllm之前，读者可以先clone下mllm的代码库，以便于跟进分析流程。mllm不依赖于git submodule，项目配置起来很方便，目前mllm可以在linux上使用Clang/GCC编译器进行编译。目前mllm支持的目标设备体系结构是X86和Arm。
+git clone https://github.com/UbiquitousLearning/mllm mllm团队将所有LLM相关的vocab文件都放在了git仓库中（这个其实可以移动到HuggingFace的仓库上），LLM量化后的模型文件都存储在HuggingFace上，读者可以在https://huggingface.co/mllmTeam上找到mllm提供的模型文件。
+2. 框架执行流程 2.1 以两层Linear层运行为例 首先，考虑下面的代码，定义了两个Linear Layers，并且输入$X$通过两个Linear Layers来得到输出：
+class TwoLinear final : public Module { public: TwoLinear() = default; TwoLinear() { linear1 = Linear(in_f, out_f, /*bias*/true, &#34;linear1&#34;); linear2 = Linear(out_f, out_f, /*bias*/true, &#34;linear2&#34;); } std::vector&lt;Tensor&gt; Forward(std::vector&lt;Tensor&gt; inputs, std::vector&lt;std::any&gt; args) override { x = inputs[0]; x = linear1(x); x = linear2(x); return x; } private: Layer linear1; Layer linear2; } TwoLinear tl; 2."><meta itemprop="datePublished" content="2024-06-28T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2024-06-28T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1622">
+<meta itemprop="keywords" content="LLM Server,LLM," />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="dns-prefetch" href="//fonts.googleapis.com">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+
+	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
+	
+
+	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
+		
+</head>
+<body class="body">
+	<div class="container container--outer">
+		
+<header class="header">
+	<div class="container header__container">
+		
+	<div class="logo logo--mixed" >
+		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
+			
+			<div class="logo__item logo__text" >
+					<div class="logo__title" >Ubios Home</div>
+					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
+				</div>
+		</a>
+	</div>
+		
+<nav class="menu">
+	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
+		<span class="menu__btn-title" tabindex="-1">Menu</span>
+	</button>
+	<ul class="menu__list">
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/about/">
+				
+				<span class="menu__text">About</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/hpc_ai/">
+				
+				<span class="menu__text">HPC &amp; AI 入坑</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
+				
+				<span class="menu__text">Lecture-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
+				
+				<span class="menu__text">Paper-Notes</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
+				
+				<span class="menu__text">Tech-Posts</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
+				
+				<span class="menu__text">Thinking</span>
+				
+			</a>
+		</li>
+		<li class="menu__item">
+			<a class="menu__link" href="/keep-moving-forward/about/news/">
+				
+				<span class="menu__text">🎉News🎉</span>
+				
+			</a>
+		</li>
+	</ul>
+</nav>
+
+	</div>
+</header>
+		<div class="wrapper flex">
+			<div class="primary">
+			
+
+
+<main class="main" role="main">
+	<article class="post">
+		<header class="post__header">
+			<h1 class="post__title">mllm框架浅析-以QWen0.5B为例</h1>
+			<p class="post__lead">mllm framework</p>
+			<div class="post__meta meta"><div class="meta__item-author meta__item">
+	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
+</div>
+<div class="meta__item-datetime meta__item">
+	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2024-06-28T00:00:00Z">2024-06-28</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/aisys/" rel="category">AI&amp;Sys</a>
+	</span>
+</div></div>
+		</header>
+
+		
+<div class="post__toc toc">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-简介">1. 简介</a></li>
+    <li><a href="#2-框架执行流程">2. 框架执行流程</a>
+      <ul>
+        <li><a href="#21-以两层linear层运行为例">2.1 以两层Linear层运行为例</a>
+          <ul>
+            <li><a href="#211-加载参数">2.1.1 加载参数</a></li>
+            <li><a href="#212module的operator是如何调用forward函数的">2.1.2Module的Operator()是如何调用Forward函数的？</a></li>
+            <li><a href="#213-linear层的执行">2.1.3 Linear层的执行</a></li>
+          </ul>
+        </li>
+        <li><a href="#22-总结">2.2 总结</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-如何编写op与自定义layer">3. 如何编写Op与自定义Layer</a>
+      <ul>
+        <li><a href="#31-新增对应backend的op文件">3.1 新增对应Backend的Op文件</a></li>
+        <li><a href="#32-op参数自定义">3.2 Op参数自定义</a></li>
+        <li><a href="#33-重载函数">3.3 重载函数</a></li>
+        <li><a href="#34-op是如何被注册和创建的">3.4 Op是如何被注册和创建的？</a>
+          <ul>
+            <li><a href="#341-在backend中注册op">3.4.1 在Backend中注册Op</a></li>
+            <li><a href="#342-在layerhpp中加入对应的op-layer">3.4.2 在Layer.hpp中加入对应的Op Layer</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#4-tokenizer">4. Tokenizer</a></li>
+    <li><a href="#5-如何对新模型进行支持">5. 如何对新模型进行支持</a>
+      <ul>
+        <li><a href="#51-生成mllm支持的vocab和模型参数">5.1 生成mllm支持的vocab和模型参数</a>
+          <ul>
+            <li><a href="#511-模型转换">5.1.1 模型转换</a></li>
+            <li><a href="#512-vocab转换">5.1.2 Vocab转换</a></li>
+            <li><a href="#513-量化">5.1.3 量化</a></li>
+          </ul>
+        </li>
+        <li><a href="#52-configuration">5.2 Configuration</a></li>
+        <li><a href="#53-tokenization">5.3 Tokenization</a></li>
+        <li><a href="#54-modeling">5.4 Modeling</a>
+          <ul>
+            <li><a href="#541-创建该module需要使用的layers">5.4.1 创建该Module需要使用的Layers</a></li>
+            <li><a href="#542-重载forward前向推理函数">5.4.2 重载Forward前向推理函数</a></li>
+          </ul>
+        </li>
+        <li><a href="#55-运行">5.5 运行</a></li>
+      </ul>
+    </li>
+    <li><a href="#6-mllm框架的不足">6. mllm框架的不足</a>
+      <ul>
+        <li><a href="#61-benchmark">6.1 Benchmark</a></li>
+        <li><a href="#62-对于移动端llm推理的特定优化">6.2 对于移动端LLM推理的特定优化</a></li>
+        <li><a href="#63-易用性">6.3 易用性</a></li>
+      </ul>
+    </li>
+    <li><a href="#a1-qwen模型定义">A1. Qwen模型定义</a></li>
+  </ul>
+</nav>
+	</div>
+</div><div class="content post__content clearfix">
+			<hr>
+<p>笔者最近在做一些mllm相关的工作，书写此文对mllm框架进行梳理总结，定有不少纰漏，请读者立即指出，谢谢。mllm目前在做一些其他工作，这篇文章的书写时间为发布时间。在mllm的其他工作合并进主仓库后，本文还会进一步的跟进。读者请注意本文的时效性。</p>
+<hr>
+<h1 id="1-简介">1. 简介</h1>
+<p><strong>mllm</strong>是一款适用于<strong>移动设备和边缘设备</strong>的快速、轻量的多模态LLM推理引擎。</p>
+<ul>
+<li>完全的C/C++实现，无第三方依赖</li>
+<li>针对fuyu-8B等多模态LLM进行了优化</li>
+<li>支持ARM NEON和X86 AVX2向量指令</li>
+<li>支持4 bits和6 bits整数量化</li>
+</ul>
+<p>本文将更多的以工程的视角来解析mllm框架，在行文过程中，本文会将mllm与其他框架的设计方法做对比。接下来，本文将会用<strong>项目组织结构、框架执行流程、自定义Op/Layer、Tokenizer和如何支持新模型</strong>五个章节来详细描述mllm框架的各项特性和总体结构。读者可以把该文章做mllm的使用文档。<strong>在最后，本文将会指出mllm的不足之处和可以尝试跟进的工作</strong>。</p>
+<hr>
+<p>在开始正式解析mllm之前，读者可以先clone下mllm的代码库，以便于跟进分析流程。mllm不依赖于git submodule，项目配置起来很方便，目前mllm可以在linux上使用Clang/GCC编译器进行编译。目前mllm支持的目标设备体系结构是X86和Arm。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>git clone https://github.com/UbiquitousLearning/mllm
+</span></span></code></pre></div><p>mllm团队将所有LLM相关的vocab文件都放在了git仓库中（这个其实可以移动到HuggingFace的仓库上），LLM量化后的模型文件都存储在HuggingFace上，读者可以在<a href="https://huggingface.co/mllmTeam">https://huggingface.co/mllmTeam</a>上找到mllm提供的模型文件。</p>
+<h1 id="2-框架执行流程">2. 框架执行流程</h1>
+<h2 id="21-以两层linear层运行为例">2.1 以两层Linear层运行为例</h2>
+<p>首先，考虑下面的代码，定义了两个Linear Layers，并且输入$X$通过两个Linear Layers来得到输出：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TwoLinear</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    TwoLinear() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;
+</span></span><span style="display:flex;"><span>    TwoLinear() {
+</span></span><span style="display:flex;"><span>        linear1 <span style="color:#f92672">=</span> Linear(in_f, out_f, <span style="color:#75715e">/*bias*/</span>true, <span style="color:#e6db74">&#34;linear1&#34;</span>);
+</span></span><span style="display:flex;"><span>        linear2 <span style="color:#f92672">=</span> Linear(out_f, out_f, <span style="color:#75715e">/*bias*/</span>true, <span style="color:#e6db74">&#34;linear2&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> Forward(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> inputs, std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>any<span style="color:#f92672">&gt;</span> args) <span style="color:#66d9ef">override</span> {
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> inputs[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> linear1(x);
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> linear2(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    Layer linear1;
+</span></span><span style="display:flex;"><span>    Layer linear2;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>TwoLinear tl;
+</span></span></code></pre></div><h3 id="211-加载参数">2.1.1 加载参数</h3>
+<p>读者可以使用 <code>tl.load(path)</code>来加载参数。那么mllm是如何实现参数加载的呢？在load函数中，mllm会创建一个ParamLoader，这个ParamLoader是Static的，在全局可以访问。然后mllm会设置另一个全局参数doLoad为True，进而进入推理流程<code>operator()(tmps, tmpt);</code>。在推理流程中，要是执行层发现doLoad为True，那么就执行每个算子内定义好的load指令，而不是执行每个算子的原本逻辑。
+load的执行在<code>Layer.hpp</code>文件的<code>INIT_OP()</code>中。</p>
+<h3 id="212module的operator是如何调用forward函数的">2.1.2Module的Operator()是如何调用Forward函数的？</h3>
+<p>对于常见的<code>INPUT_TENSOR</code>类型的Tensor，mllm首先会设置这个Tensor的类型为<code>TENSOR_STATIC_INIT</code>，进行一遍Forward推理；第一遍Forward推理完毕以后再把Tensor的类型设为<code>TENSOR_STATIC_READY</code>，然后进行第二遍Forward推理。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (inputs[<span style="color:#ae81ff">0</span>].ttype() <span style="color:#f92672">==</span> TensorType<span style="color:#f92672">::</span>INPUT_TENSOR) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">auto</span> <span style="color:#f92672">&amp;</span>input : inputs) {
+</span></span><span style="display:flex;"><span>        input.setTtype(TensorType<span style="color:#f92672">::</span>NORMAL_TENSOR);
+</span></span><span style="display:flex;"><span>        input.status() <span style="color:#f92672">=</span> TENSOR_STATIC_INIT;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(input.batch() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){
+</span></span><span style="display:flex;"><span>            Tensor<span style="color:#f92672">::</span>gph_[input.name()] <span style="color:#f92672">=</span> input;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    tensor_status <span style="color:#f92672">=</span> TENSOR_STATIC_INIT;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Forward(inputs, anyArgs);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">auto</span> <span style="color:#f92672">&amp;</span>input : inputs) {
+</span></span><span style="display:flex;"><span>        input.status() <span style="color:#f92672">=</span> TENSOR_STATIC_READY;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    tensor_status <span style="color:#f92672">=</span> TENSOR_STATIC_READY;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Forward</span>(inputs, anyArgs);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>第一次Forward推理的目的是调用Op定义的Reshape和SetUp函数，Reshape函数会推理出这一次模型推理的过程中每个Tensor的形状大小。SetUp函数会对Op需要输出的Tensor做内存的申请。
+第二次Forward推理才是真正的计算。</p>
+<h3 id="213-linear层的执行">2.1.3 Linear层的执行</h3>
+<p>每个Layer在实现的时候都会重载<code>operator()</code>，比如linear layer的<code>operator()</code>函数如下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>Tensor <span style="color:#f92672">&amp;</span><span style="color:#66d9ef">operator</span>()(Tensor <span style="color:#f92672">&amp;</span>input) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">_1I1O_OP</span>(input);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>其中，<code>_1I1O_OP</code>表示的意思是，这是需要使用1个输入和1个输出的函数来处理这个算子。mllm还提供了许多类似于<code>_1I1O_OP</code>的函数来处理不同的算子。</p>
+<h2 id="22-总结">2.2 总结</h2>
+<p>大体来说，mllm使用了类似于状态机的参数来设置了当前推理过程的运行状态。每一次都是通过Forward函数来进行全模型的遍历，在Op的执行过程中，用这些设定的参数来区分每次Op需要表现的行为。</p>
+<h1 id="3-如何编写op与自定义layer">3. 如何编写Op与自定义Layer</h1>
+<h2 id="31-新增对应backend的op文件">3.1 新增对应Backend的Op文件</h2>
+<p>mllm提供了<code>src/backends/new_op.py</code>实用工具来帮助创建Op Class。该文件会帮助读者创建下述基本函数：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>ErrorCode <span style="color:#a6e22e">reshape</span>(vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> inputs, vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> outputs) <span style="color:#66d9ef">override</span>;
+</span></span><span style="display:flex;"><span>ErrorCode <span style="color:#a6e22e">execute</span>(vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> inputs, vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> outputs) <span style="color:#66d9ef">override</span>;
+</span></span><span style="display:flex;"><span>ErrorCode <span style="color:#a6e22e">load</span>(AbstructLoader <span style="color:#f92672">&amp;</span>loader) <span style="color:#66d9ef">override</span>;
+</span></span><span style="display:flex;"><span>ErrorCode <span style="color:#a6e22e">free</span>(vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> inputs, vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> outputs) <span style="color:#66d9ef">override</span>;
+</span></span><span style="display:flex;"><span>ErrorCode <span style="color:#a6e22e">setUp</span>(vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> inputs, vector<span style="color:#f92672">&lt;</span>shared_ptr<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;&gt;</span> outputs) <span style="color:#66d9ef">override</span>;
+</span></span></code></pre></div><h2 id="32-op参数自定义">3.2 Op参数自定义</h2>
+<p>比如对于CPU上的LinearOp，需要<code>in_features</code>、<code>out_features</code>和<code>has_bias</code>三个参数。那么可以在4.1自动生成的class中加入：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CPULinear</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Op {
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> in_features_;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> out_features_;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">bool</span> support_bias_;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> thread_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>;
+</span></span><span style="display:flex;"><span>    Tensor weight_;
+</span></span><span style="display:flex;"><span>    Tensor bias_;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>在CPULinearCreator中加入：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CPULinearCreator</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> CPUBackend<span style="color:#f92672">::</span>Creator {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">virtual</span> Op <span style="color:#f92672">*</span>create(OpParam op_param, Backend <span style="color:#f92672">*</span>bn, string name, <span style="color:#66d9ef">int</span> threadCount) <span style="color:#66d9ef">const</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> in_features <span style="color:#f92672">=</span> op_param[<span style="color:#e6db74">&#34;in_features&#34;</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> out_features <span style="color:#f92672">=</span> op_param[<span style="color:#e6db74">&#34;out_features&#34;</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> bias <span style="color:#f92672">=</span> op_param[<span style="color:#e6db74">&#34;bias&#34;</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">CPULinear</span>(bn, name, in_features, out_features, (<span style="color:#66d9ef">bool</span>)bias, threadCount);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>请注意，OpParam是一个string-float map。</p>
+<h2 id="33-重载函数">3.3 重载函数</h2>
+<p>读者需要自行实现reshape，execute，load，free函数，视情况重载setUp函数。
+以Linear Op为例，reshape函数就会通过<code>in_features_</code>变量来检查输入的Tensor的维度是否正确，然后对output Tensor做<code>outputs[0]-&gt;reshape(inputs[0]-&gt;batch(), inputs[0]-&gt;head(), inputs[0]-&gt;sequence(), out_features_)</code>
+在load函数中，实现Weight和Bias的加载。
+在execute函数中，具体实现矩阵乘法等计算操作。
+在free函数中释放Weight和Bias。</p>
+<h2 id="34-op是如何被注册和创建的">3.4 Op是如何被注册和创建的？</h2>
+<p>在定义完成Op后，读者还需要把该Op注册到相应的Backend中，以及将Op抽象成Layer。</p>
+<h3 id="341-在backend中注册op">3.4.1 在Backend中注册Op</h3>
+<p>以CPU Backend为例，读者需要再CPUBackend文件中加入<code>addCreator(LINEAR, (CPUBackend::Creator *)(new CPULinearCreator()));</code>如果这是一个新的算子，读者还需要在<code>OpDefined</code>文件中加入新Op的Enum项。</p>
+<h3 id="342-在layerhpp中加入对应的op-layer">3.4.2 在Layer.hpp中加入对应的Op Layer</h3>
+<p>如Linear Layer:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Linear</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Layer {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">explicit</span> Linear(<span style="color:#66d9ef">int</span> in_features, <span style="color:#66d9ef">int</span> out_features, <span style="color:#66d9ef">bool</span> bias, std<span style="color:#f92672">::</span>string name) {
+</span></span><span style="display:flex;"><span>        param_[<span style="color:#e6db74">&#34;in_features&#34;</span>] <span style="color:#f92672">=</span> in_features;
+</span></span><span style="display:flex;"><span>        param_[<span style="color:#e6db74">&#34;out_features&#34;</span>] <span style="color:#f92672">=</span> out_features;
+</span></span><span style="display:flex;"><span>        param_[<span style="color:#e6db74">&#34;bias&#34;</span>] <span style="color:#f92672">=</span> (<span style="color:#66d9ef">float</span>)bias;
+</span></span><span style="display:flex;"><span>        init(std<span style="color:#f92672">::</span>move(name), OpType<span style="color:#f92672">::</span>LINEAR);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    Tensor <span style="color:#f92672">&amp;</span><span style="color:#66d9ef">operator</span>()(Tensor <span style="color:#f92672">&amp;</span>input) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">_1I1O_OP</span>(input);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p><strong>其中，在构造函数中的</strong><code>**init()**</code><strong>函数并没有创建这个Linear算子。它只是负责给这个Linear指派了Backend。</strong>
+真正的算子创建还是在<code>INIT_OP()</code>函数中。在这个函数中，它会通过<code>backend_-&gt;opCreate(param_, name_);</code>来创建算子。</p>
+<h1 id="4-tokenizer">4. Tokenizer</h1>
+<p>mllm提供了基础的Tokenizer支持，目前支持BPE和Unigram两种分词算法。</p>
+<h1 id="5-如何对新模型进行支持">5. 如何对新模型进行支持</h1>
+<p>在mllm中，对模型组件（model、Tokenizer、Configuration）的定义和HuggingFace Transformer库中的定义方法基本一致。以支持QWen0.5B模型为例，需要编写三个文件：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>configuration_qwen.cpp
+</span></span><span style="display:flex;"><span>modeling_qwen.cpp
+</span></span><span style="display:flex;"><span>tokenization_qwen.cpp
+</span></span></code></pre></div><p>其中<code>configuration_qwen.cpp</code>定义了Qwen LLM的各类参数，如Head数量，hidden dim等。<code>modeling_qwen.cpp</code>定义了Qwen LLM网络。<code>tokenization_qwen.cpp</code>包含了将句子转化为Token的预处理行为。</p>
+<h2 id="51-生成mllm支持的vocab和模型参数">5.1 生成mllm支持的vocab和模型参数</h2>
+<h3 id="511-模型转换">5.1.1 模型转换</h3>
+<p>使用mllm提供的Converter实用工具来进行转换：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>cd tools/convertor
+</span></span><span style="display:flex;"><span>pip install -r ./requirements.txt
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># for one file pytorch model</span>
+</span></span><span style="display:flex;"><span>python convert.py --input_model<span style="color:#f92672">=</span>model.pth --output_model<span style="color:#f92672">=</span>model.mllm --type<span style="color:#f92672">=</span>torch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># for multi-file pytorch model</span>
+</span></span><span style="display:flex;"><span>python convert.py --input_model<span style="color:#f92672">=</span>pytorch_model.bin.index.json --output_model<span style="color:#f92672">=</span>model.mllm --type<span style="color:#f92672">=</span>torch
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># for one file safetensor model</span>
+</span></span><span style="display:flex;"><span>python convert.py --input_model<span style="color:#f92672">=</span>model.bin --output_model<span style="color:#f92672">=</span>model.mllm --type<span style="color:#f92672">=</span>safetensor
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># for multi-file safetensor model</span>
+</span></span><span style="display:flex;"><span>python convert.py --input_model<span style="color:#f92672">=</span>model.safetensors.index.json --output_model<span style="color:#f92672">=</span>model.mllm --type<span style="color:#f92672">=</span>safetensor
+</span></span></code></pre></div><h3 id="512-vocab转换">5.1.2 Vocab转换</h3>
+<p>使用mllm提供的Converter实用工具来进行转换：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>cd tools/convertor
+</span></span><span style="display:flex;"><span>python vocab.py --input_file<span style="color:#f92672">=</span>tokenizer.json --output_file<span style="color:#f92672">=</span>vocab.mllm --type<span style="color:#f92672">=</span>Unigram
+</span></span></code></pre></div><h3 id="513-量化">5.1.3 量化</h3>
+<p>mllm提供了量化工具，该工具支持4 bits和6 bits整数量化，你可以使用下述指令来对模型参数进行量化</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>cd bin
+</span></span><span style="display:flex;"><span>./quantize model.mllm model_q4_0.mllm Q4_K
+</span></span></code></pre></div><h2 id="52-configuration">5.2 Configuration</h2>
+<p>设置文件里面主要实现两个类，一个是<code>QWenNameConfig</code>，一个是<code>QWenConfig</code>，其中<code>QWenNameConfig</code>包含<code>QWenConfig</code>。在一个mllm模型参数文件中，模型参数是以key-value对的形式统一起来的。<code>QWenNameConfig</code>的目的就是给出每个参数的名称，以便于mllm框架索引到正确的模型参数。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenNameConfig</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> TransformerNameConfig {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">/**
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     * @brief QWen2 following the hugging face naming method
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     *
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     * @param type RoPEType
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">     */</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">void</span> init(RoPEType type <span style="color:#f92672">=</span> RoPEType<span style="color:#f92672">::</span>HFHUBROPE) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">switch</span> (type) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">case</span> RoPEType<span style="color:#f92672">::</span>HFHUBROPE: {
+</span></span><span style="display:flex;"><span>            blk_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;model.layers.&#34;</span>;
+</span></span><span style="display:flex;"><span>            _attn_base_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;self_attn.&#34;</span>;
+</span></span><span style="display:flex;"><span>            _ffn_base_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;mlp.&#34;</span>;
+</span></span><span style="display:flex;"><span>            _q_proj_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;q_proj&#34;</span>;
+</span></span><span style="display:flex;"><span>            _k_proj_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;k_proj&#34;</span>;
+</span></span><span style="display:flex;"><span>            _v_proj_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;v_proj&#34;</span>;
+</span></span><span style="display:flex;"><span>            _o_proj_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;o_proj&#34;</span>;
+</span></span><span style="display:flex;"><span>            _gate_proj_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;gate_proj&#34;</span>;
+</span></span><span style="display:flex;"><span>            _up_proj_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;up_proj&#34;</span>;
+</span></span><span style="display:flex;"><span>            _down_proj_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;down_proj&#34;</span>;
+</span></span><span style="display:flex;"><span>            _attn_norm_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;input_layernorm&#34;</span>;
+</span></span><span style="display:flex;"><span>            _ffn_norm_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;post_attention_layernorm&#34;</span>;
+</span></span><span style="display:flex;"><span>            token_embd_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;model.embed_tokens&#34;</span>;
+</span></span><span style="display:flex;"><span>            post_norm_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;model.norm&#34;</span>;
+</span></span><span style="display:flex;"><span>            lm_head_name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;lm_head&#34;</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>string blk_name;
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>string token_embd_name;
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>string post_norm_name;
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>string lm_head_name;
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>string _gate_proj_name;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>在<code>QWenConfig</code>中则主要定义各层的超参数，如rope的theta值、中间层维度大小等，如下面的代码所示：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">QWenConfig</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">explicit</span> <span style="color:#a6e22e">QWenConfig</span>(<span style="color:#66d9ef">int</span> token_limit, string billions <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;0.5B&#34;</span>, RoPEType type <span style="color:#f92672">=</span> RoPEType<span style="color:#f92672">::</span>HFHUBROPE) <span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>        cache_limit(token_limit) {
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>    };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> attention_dropout <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> bos_token_id <span style="color:#f92672">=</span> <span style="color:#ae81ff">151643</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> eos_token_id <span style="color:#f92672">=</span> <span style="color:#ae81ff">151643</span>;
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>string hidden_act <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;silu&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> hidden_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> initializer_range <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.02</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> intermediate_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">2816</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> max_position_embeddings <span style="color:#f92672">=</span> <span style="color:#ae81ff">32768</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> max_window_layers <span style="color:#f92672">=</span> <span style="color:#ae81ff">21</span>;
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>string model_type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;qwen2&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_attention_heads <span style="color:#f92672">=</span> <span style="color:#ae81ff">16</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_hidden_layers <span style="color:#f92672">=</span> <span style="color:#ae81ff">24</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_key_value_heads <span style="color:#f92672">=</span> <span style="color:#ae81ff">16</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">double</span> rms_norm_eps <span style="color:#f92672">=</span> <span style="color:#ae81ff">1e-6</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">float</span> rope_theta <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000000.0</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> sliding_window <span style="color:#f92672">=</span> <span style="color:#ae81ff">32768</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> vocab_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">151936</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">bool</span> tie_embedding_words <span style="color:#f92672">=</span> false;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> cache_limit;
+</span></span><span style="display:flex;"><span>    RoPEType RoPE_type <span style="color:#f92672">=</span> RoPEType<span style="color:#f92672">::</span>HFHUBROPE;
+</span></span><span style="display:flex;"><span>    QWenNameConfig names_config;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><h2 id="53-tokenization">5.3 Tokenization</h2>
+<p>Tokenization是一个非常客制化的步骤，每个LLM的Tokenization方法都不尽相同。以QWen为例子，QWen使用了BBPE方法，那么读者在支持QWen模型的时候，就要给出实现了BBPE的Tokenizer。mllm内部已经实现一个BPE算法，读者可以复用该实现来实现自己的Tokenizer。</p>
+<h2 id="54-modeling">5.4 Modeling</h2>
+<p>使用mllm框架提供的算子来实现模型是非常简单和便利的，熟悉Pytorch的读者可以快速的上手mllm。本文在这里默认读者对llama/qwen/mistral等常见LLM的模型有着基本的了解。在下文中，本文以Attention模块为例来演示如何使用mllm来搭建模型。
+首先，所有的class需要继承<code>Module</code>父类。<code>Module</code>父类提供了<code>Forward</code>函数，读者需要重载该函数来实现相应的计算流程。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenAttention</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module ...
+</span></span></code></pre></div><h3 id="541-创建该module需要使用的layers">5.4.1 创建该Module需要使用的Layers</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenAttention</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#960050;background-color:#1e0010">：</span>
+</span></span><span style="display:flex;"><span>    QWenAttention() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;
+</span></span><span style="display:flex;"><span>    QWenAttention(<span style="color:#66d9ef">const</span> QWenConfig <span style="color:#f92672">&amp;</span>config, <span style="color:#66d9ef">const</span> QWenNameConfig <span style="color:#f92672">&amp;</span>names, <span style="color:#66d9ef">const</span> string <span style="color:#f92672">&amp;</span>base_name) {
+</span></span><span style="display:flex;"><span>        hidden_size <span style="color:#f92672">=</span> config.hidden_size;
+</span></span><span style="display:flex;"><span>        num_heads <span style="color:#f92672">=</span> config.num_attention_heads;
+</span></span><span style="display:flex;"><span>        head_dim <span style="color:#f92672">=</span> config.hidden_size <span style="color:#f92672">/</span> num_heads;
+</span></span><span style="display:flex;"><span>        num_key_value_heads <span style="color:#f92672">=</span> config.num_key_value_heads;
+</span></span><span style="display:flex;"><span>        num_key_value_groups <span style="color:#f92672">=</span> num_heads <span style="color:#f92672">/</span> num_key_value_heads;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// init layers
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        q_proj <span style="color:#f92672">=</span> Linear(hidden_size, num_heads <span style="color:#f92672">*</span> head_dim, true, base_name <span style="color:#f92672">+</span> names._q_proj_name);
+</span></span><span style="display:flex;"><span>        k_proj <span style="color:#f92672">=</span> Linear(hidden_size, num_key_value_heads <span style="color:#f92672">*</span> head_dim, true, base_name <span style="color:#f92672">+</span> names._k_proj_name);
+</span></span><span style="display:flex;"><span>        v_proj <span style="color:#f92672">=</span> Linear(hidden_size, num_key_value_heads <span style="color:#f92672">*</span> head_dim, true, base_name <span style="color:#f92672">+</span> names._v_proj_name);
+</span></span><span style="display:flex;"><span>        o_proj <span style="color:#f92672">=</span> Linear(num_heads <span style="color:#f92672">*</span> head_dim, hidden_size, false, base_name <span style="color:#f92672">+</span> names._o_proj_name);
+</span></span><span style="display:flex;"><span>        q_rope <span style="color:#f92672">=</span> RoPE(config.RoPE_type, config.rope_theta, config.max_position_embeddings, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;q_rope&#34;</span>);
+</span></span><span style="display:flex;"><span>        k_rope <span style="color:#f92672">=</span> RoPE(config.RoPE_type, config.rope_theta, config.max_position_embeddings, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;k_rope&#34;</span>);
+</span></span><span style="display:flex;"><span>        k_cache <span style="color:#f92672">=</span> KVCache(num_key_value_groups, config.cache_limit, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;k_cache&#34;</span>);
+</span></span><span style="display:flex;"><span>        v_cache <span style="color:#f92672">=</span> KVCache(num_key_value_groups, config.cache_limit, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;v_cache&#34;</span>);
+</span></span><span style="display:flex;"><span>        mask <span style="color:#f92672">=</span> Causalmask(base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;mask&#34;</span>);
+</span></span><span style="display:flex;"><span>        softmax <span style="color:#f92672">=</span> Softmax(DIMENSION, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;softmax&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> hidden_size;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_heads;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> head_dim;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_key_value_heads;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_key_value_groups;
+</span></span><span style="display:flex;"><span>    Layer q_proj;
+</span></span><span style="display:flex;"><span>    Layer k_proj;
+</span></span><span style="display:flex;"><span>    Layer v_proj;
+</span></span><span style="display:flex;"><span>    Layer o_proj;
+</span></span><span style="display:flex;"><span>    Layer q_rope;
+</span></span><span style="display:flex;"><span>    Layer k_rope;
+</span></span><span style="display:flex;"><span>    Layer k_cache;
+</span></span><span style="display:flex;"><span>    Layer v_cache;
+</span></span><span style="display:flex;"><span>    Layer mask;
+</span></span><span style="display:flex;"><span>    Layer softmax;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>细心的读者可能已经发现了，在<code>QWenAttention</code>的构造函数中，创建每个Layer的时候都在最后一个参数上传递了Layer名称（std::string type），这是因为mllm依赖于Layer的名称来寻找该Layer所需要的参数。</p>
+<h3 id="542-重载forward前向推理函数">5.4.2 重载Forward前向推理函数</h3>
+<p>创建完了所有我们需要的Layers以后，就可以编写Forward函数来定义Attention模块的计算流程，Forward函数接收一个Tensor Array和一个std::any Array，返回Tensor Array：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> Forward(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> inputs, std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>any<span style="color:#f92672">&gt;</span> args) <span style="color:#66d9ef">override</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">auto</span> query_states <span style="color:#f92672">=</span> q_proj(inputs[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">auto</span> key_states <span style="color:#f92672">=</span> k_proj(inputs[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">auto</span> value_states <span style="color:#f92672">=</span> v_proj(inputs[<span style="color:#ae81ff">2</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// [batch, heads, sequence, dims]
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    query_states <span style="color:#f92672">=</span> query_states.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, num_heads, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim);
+</span></span><span style="display:flex;"><span>    key_states <span style="color:#f92672">=</span> key_states.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, num_key_value_heads, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim);
+</span></span><span style="display:flex;"><span>    value_states <span style="color:#f92672">=</span> value_states.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, num_key_value_heads, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// embedding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    query_states <span style="color:#f92672">=</span> q_rope(query_states);
+</span></span><span style="display:flex;"><span>    key_states <span style="color:#f92672">=</span> k_rope(key_states);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// kv cache
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    key_states <span style="color:#f92672">=</span> k_cache(key_states);
+</span></span><span style="display:flex;"><span>    value_states <span style="color:#f92672">=</span> v_cache(value_states);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// attention weight
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">auto</span> atten_weight <span style="color:#f92672">=</span> Tensor<span style="color:#f92672">::</span>mm(query_states, key_states.transpose(Chl<span style="color:#f92672">::</span>SEQUENCE, Chl<span style="color:#f92672">::</span>DIMENSION)) <span style="color:#f92672">/</span> std<span style="color:#f92672">::</span>sqrt(head_dim);
+</span></span><span style="display:flex;"><span>    atten_weight <span style="color:#f92672">=</span> mask(atten_weight);
+</span></span><span style="display:flex;"><span>    atten_weight <span style="color:#f92672">=</span> softmax(atten_weight);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// attention output
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">auto</span> atten_output <span style="color:#f92672">=</span> Tensor<span style="color:#f92672">::</span>mm(atten_weight, value_states);
+</span></span><span style="display:flex;"><span>    atten_output <span style="color:#f92672">=</span> atten_output.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim <span style="color:#f92672">*</span> num_heads);
+</span></span><span style="display:flex;"><span>    atten_output <span style="color:#f92672">=</span> o_proj(atten_output);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> {atten_output};
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="55-运行">5.5 运行</h2>
+<p>完整的Qwen模型定义代码可以在附录1中找到。读者可以像Torch一样调用定义好的模型：首先，创建模型：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span>QWenConfig <span style="color:#a6e22e">config</span>(tokens_limit, <span style="color:#e6db74">&#34;0.5B&#34;</span>, RoPEType<span style="color:#f92672">::</span>HFHUBROPE);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">auto</span> model <span style="color:#f92672">=</span> QWenForCausalLM(config);
+</span></span><span style="display:flex;"><span>model.load(model_path);
+</span></span></code></pre></div><p><code>module</code>class重载了()operator，读者可以使用<code>model({input_tensor})</code>来进行推理。</p>
+<h1 id="6-mllm框架的不足">6. mllm框架的不足</h1>
+<p>这里写的有点mean，本人专业知识浅薄，在学术上是依托答辩，对mllm的理解更是不到位，大家轻喷。</p>
+<h2 id="61-benchmark">6.1 Benchmark</h2>
+<ol>
+<li>缺少算子的Benchmark</li>
+</ol>
+<p>本文认为，mllm在实现的时候极力的避免使用第三方的库，因为mllm需要迁移到移动设备上，一些三方库可能不能正常工作。但是手工实现的Kernel还是需要一个Benchmark来和目标平台上提供的算子库来进行性能比较的。就mllm目前提供的MatMul Kernel来看，似乎缺少Pack优化和/micro Kernel的优化？</p>
+<ol start="2">
+<li>缺少prefill/decode的Benchmark</li>
+</ol>
+<p>mllm的issues中也有人提到过这个问题。作为具有LLM推理能力的引擎，应当测一下这两个基本能力。</p>
+<h2 id="62-对于移动端llm推理的特定优化">6.2 对于移动端LLM推理的特定优化</h2>
+<ol>
+<li>KV Cache量化</li>
+</ol>
+<p>IIRC，在OPPO的Transformer-Lite[2]中，用到了KV Cache量化的小技巧。这对移动设备有限的内存来说可能会更加友好，当然还需要考量量化带来的CPU负载问题。</p>
+<ol start="2">
+<li>动态形状推理/内存复用/KV Cache搬移优化</li>
+</ol>
+<p>目前mllm是没有做内存复用的，可以考虑使用符号推理方法来做动态形状的支持进而便于求解下一轮的内存使用情况。或许可以考虑一下PageAttention[3]的Tensor管理方法或者[2]中的KV Cache规划方法来进一步减少内存的搬移。</p>
+<ol start="3">
+<li>异构算力</li>
+</ol>
+<p>可以考虑把形状推理（CPU）和计算（GPU/NPU）并行执行起来。或者是6.2.4中提到的内容与计算并行起来。</p>
+<ol start="4">
+<li>对模型参数的Lazy Fetch和Pre Fetch</li>
+</ol>
+<p>目前，mllm会把参数一次性的读入内存？考虑到移动设备的内存有限，可以在合适的时机提前从外存上预取而不是全数载入。</p>
+<h2 id="63-易用性">6.3 易用性</h2>
+<ol>
+<li>模型结构需要手动编写且无法保存</li>
+</ol>
+<p>目前，mllm的模型结构还是需要在C++文件中进行显示的手动定义。或许可以考虑创建自己的计算图和算子描述方式，使用flatbuffers来存储计算图。</p>
+<ol start="2">
+<li>如果要很好的使用所有的算力，可能还是需要完善的计算图机制，这样便于优化分析。</li>
+<li>尝试引入三方易用的库如icu等来弥补C++ utf-8处理能力的不足。</li>
+</ol>
+<hr>
+<p><strong>Ref：</strong>
+[1] mllm, <a href="https://github.com/UbiquitousLearning/mllm">https://github.com/UbiquitousLearning/mllm</a>
+[2] transformer-lite, <a href="https://arxiv.org/abs/2403.20041">https://arxiv.org/abs/2403.20041</a>
+[3] PageAttention, <a href="https://arxiv.org/abs/2309.06180">https://arxiv.org/abs/2309.06180</a></p>
+<h1 id="a1-qwen模型定义">A1. Qwen模型定义</h1>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#75715e">#ifndef MODELING_QWEN_HPP
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define MODELING_QWEN_HPP
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;Backend.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;Layer.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;Module.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;Tensor.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;configuration_qwen.hpp&#34;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;cmath&gt;</span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">using</span> <span style="color:#66d9ef">namespace</span> mllm;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Copied from GemmaMLP with Gemma-&gt;Qwen and using silu
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenMLP</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    QWenMLP() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;
+</span></span><span style="display:flex;"><span>    QWenMLP(<span style="color:#66d9ef">int</span> hidden_size, <span style="color:#66d9ef">int</span> intermediate_size, <span style="color:#66d9ef">const</span> QWenNameConfig <span style="color:#f92672">&amp;</span>names, <span style="color:#66d9ef">const</span> std<span style="color:#f92672">::</span>string <span style="color:#f92672">&amp;</span>base_name) {
+</span></span><span style="display:flex;"><span>        gate_proj <span style="color:#f92672">=</span> Linear(hidden_size, intermediate_size, false, base_name <span style="color:#f92672">+</span> names._gate_proj_name);
+</span></span><span style="display:flex;"><span>        silu <span style="color:#f92672">=</span> SiLU(base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;act&#34;</span>);
+</span></span><span style="display:flex;"><span>        up_proj <span style="color:#f92672">=</span> Linear(hidden_size, intermediate_size, false, base_name <span style="color:#f92672">+</span> names._up_proj_name);
+</span></span><span style="display:flex;"><span>        down_proj <span style="color:#f92672">=</span> Linear(intermediate_size, hidden_size, false, base_name <span style="color:#f92672">+</span> names._down_proj_name);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> Forward(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> inputs, std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>any<span style="color:#f92672">&gt;</span> args) <span style="color:#66d9ef">override</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> x <span style="color:#f92672">=</span> gate_proj(inputs[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> silu(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> y <span style="color:#f92672">=</span> up_proj(inputs[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">*</span> y;
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> down_proj(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {x};
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    Layer gate_proj;
+</span></span><span style="display:flex;"><span>    Layer up_proj;
+</span></span><span style="display:flex;"><span>    Layer down_proj;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    Layer silu;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Copied from GemmaAttention with Gemma-&gt;Qwen and using SWA
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenAttention</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    QWenAttention() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;
+</span></span><span style="display:flex;"><span>    QWenAttention(<span style="color:#66d9ef">const</span> QWenConfig <span style="color:#f92672">&amp;</span>config, <span style="color:#66d9ef">const</span> QWenNameConfig <span style="color:#f92672">&amp;</span>names, <span style="color:#66d9ef">const</span> string <span style="color:#f92672">&amp;</span>base_name) {
+</span></span><span style="display:flex;"><span>        hidden_size <span style="color:#f92672">=</span> config.hidden_size;
+</span></span><span style="display:flex;"><span>        num_heads <span style="color:#f92672">=</span> config.num_attention_heads;
+</span></span><span style="display:flex;"><span>        head_dim <span style="color:#f92672">=</span> config.hidden_size <span style="color:#f92672">/</span> num_heads;
+</span></span><span style="display:flex;"><span>        num_key_value_heads <span style="color:#f92672">=</span> config.num_key_value_heads;
+</span></span><span style="display:flex;"><span>        num_key_value_groups <span style="color:#f92672">=</span> num_heads <span style="color:#f92672">/</span> num_key_value_heads;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// init layers
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        q_proj <span style="color:#f92672">=</span> Linear(hidden_size, num_heads <span style="color:#f92672">*</span> head_dim, true, base_name <span style="color:#f92672">+</span> names._q_proj_name);
+</span></span><span style="display:flex;"><span>        k_proj <span style="color:#f92672">=</span> Linear(hidden_size, num_key_value_heads <span style="color:#f92672">*</span> head_dim, true, base_name <span style="color:#f92672">+</span> names._k_proj_name);
+</span></span><span style="display:flex;"><span>        v_proj <span style="color:#f92672">=</span> Linear(hidden_size, num_key_value_heads <span style="color:#f92672">*</span> head_dim, true, base_name <span style="color:#f92672">+</span> names._v_proj_name);
+</span></span><span style="display:flex;"><span>        o_proj <span style="color:#f92672">=</span> Linear(num_heads <span style="color:#f92672">*</span> head_dim, hidden_size, false, base_name <span style="color:#f92672">+</span> names._o_proj_name);
+</span></span><span style="display:flex;"><span>        q_rope <span style="color:#f92672">=</span> RoPE(config.RoPE_type, config.rope_theta, config.max_position_embeddings, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;q_rope&#34;</span>);
+</span></span><span style="display:flex;"><span>        k_rope <span style="color:#f92672">=</span> RoPE(config.RoPE_type, config.rope_theta, config.max_position_embeddings, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;k_rope&#34;</span>);
+</span></span><span style="display:flex;"><span>        k_cache <span style="color:#f92672">=</span> KVCache(num_key_value_groups, config.cache_limit, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;k_cache&#34;</span>);
+</span></span><span style="display:flex;"><span>        v_cache <span style="color:#f92672">=</span> KVCache(num_key_value_groups, config.cache_limit, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;v_cache&#34;</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// mask = SlidingWindowMask(config.sliding_window, base_name + &#34;mask&#34;);
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        mask <span style="color:#f92672">=</span> Causalmask(base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;mask&#34;</span>);
+</span></span><span style="display:flex;"><span>        softmax <span style="color:#f92672">=</span> Softmax(DIMENSION, base_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;softmax&#34;</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> Forward(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> inputs, std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>any<span style="color:#f92672">&gt;</span> args) <span style="color:#66d9ef">override</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> query_states <span style="color:#f92672">=</span> q_proj(inputs[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> key_states <span style="color:#f92672">=</span> k_proj(inputs[<span style="color:#ae81ff">1</span>]);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> value_states <span style="color:#f92672">=</span> v_proj(inputs[<span style="color:#ae81ff">2</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// [batch, heads, sequence, dims]
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        query_states <span style="color:#f92672">=</span> query_states.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, num_heads, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim);
+</span></span><span style="display:flex;"><span>        key_states <span style="color:#f92672">=</span> key_states.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, num_key_value_heads, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim);
+</span></span><span style="display:flex;"><span>        value_states <span style="color:#f92672">=</span> value_states.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, num_key_value_heads, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// embedding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        query_states <span style="color:#f92672">=</span> q_rope(query_states);
+</span></span><span style="display:flex;"><span>        key_states <span style="color:#f92672">=</span> k_rope(key_states);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// kv cache
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        key_states <span style="color:#f92672">=</span> k_cache(key_states);
+</span></span><span style="display:flex;"><span>        value_states <span style="color:#f92672">=</span> v_cache(value_states);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// attention weight
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">auto</span> atten_weight <span style="color:#f92672">=</span> Tensor<span style="color:#f92672">::</span>mm(query_states, key_states.transpose(Chl<span style="color:#f92672">::</span>SEQUENCE, Chl<span style="color:#f92672">::</span>DIMENSION)) <span style="color:#f92672">/</span> std<span style="color:#f92672">::</span>sqrt(head_dim);
+</span></span><span style="display:flex;"><span>        atten_weight <span style="color:#f92672">=</span> mask(atten_weight);
+</span></span><span style="display:flex;"><span>        atten_weight <span style="color:#f92672">=</span> softmax(atten_weight);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// attention output
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">auto</span> atten_output <span style="color:#f92672">=</span> Tensor<span style="color:#f92672">::</span>mm(atten_weight, value_states);
+</span></span><span style="display:flex;"><span>        atten_output <span style="color:#f92672">=</span> atten_output.view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, head_dim <span style="color:#f92672">*</span> num_heads);
+</span></span><span style="display:flex;"><span>        atten_output <span style="color:#f92672">=</span> o_proj(atten_output);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {atten_output};
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> hidden_size;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_heads;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> head_dim;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_key_value_heads;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> num_key_value_groups;
+</span></span><span style="display:flex;"><span>    Layer q_proj;
+</span></span><span style="display:flex;"><span>    Layer k_proj;
+</span></span><span style="display:flex;"><span>    Layer v_proj;
+</span></span><span style="display:flex;"><span>    Layer o_proj;
+</span></span><span style="display:flex;"><span>    Layer q_rope;
+</span></span><span style="display:flex;"><span>    Layer k_rope;
+</span></span><span style="display:flex;"><span>    Layer k_cache;
+</span></span><span style="display:flex;"><span>    Layer v_cache;
+</span></span><span style="display:flex;"><span>    Layer mask;
+</span></span><span style="display:flex;"><span>    Layer softmax;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Copied from GemmaDecoder with Gemma-&gt;Qwen and set RmsNorm(without add_unit_offset)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenDecoder</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    QWenDecoder() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;
+</span></span><span style="display:flex;"><span>    QWenDecoder(<span style="color:#66d9ef">const</span> QWenConfig <span style="color:#f92672">&amp;</span>config, <span style="color:#66d9ef">const</span> QWenNameConfig <span style="color:#f92672">&amp;</span>names, <span style="color:#66d9ef">const</span> string <span style="color:#f92672">&amp;</span>base_name) {
+</span></span><span style="display:flex;"><span>        self_atten <span style="color:#f92672">=</span> QWenAttention(config, names, base_name <span style="color:#f92672">+</span> names._attn_base_name);
+</span></span><span style="display:flex;"><span>        mlp <span style="color:#f92672">=</span> QWenMLP(config.hidden_size, config.intermediate_size, names, base_name <span style="color:#f92672">+</span> names._ffn_base_name);
+</span></span><span style="display:flex;"><span>        input_layernorm <span style="color:#f92672">=</span> RMSNorm(config.hidden_size, config.rms_norm_eps, base_name <span style="color:#f92672">+</span> names._attn_norm_name);
+</span></span><span style="display:flex;"><span>        post_attention_layernorm <span style="color:#f92672">=</span> RMSNorm(config.hidden_size, config.rms_norm_eps, base_name <span style="color:#f92672">+</span> names._ffn_norm_name);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> Forward(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> inputs, std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>any<span style="color:#f92672">&gt;</span> args) <span style="color:#66d9ef">override</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> x <span style="color:#f92672">=</span> input_layernorm(inputs[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self_atten({x, x, x})[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> tmp <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> inputs[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> post_attention_layernorm(tmp);
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> mlp({x})[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> tmp;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {x};
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    QWenAttention self_atten;
+</span></span><span style="display:flex;"><span>    QWenMLP mlp;
+</span></span><span style="display:flex;"><span>    Layer input_layernorm;
+</span></span><span style="display:flex;"><span>    Layer post_attention_layernorm;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Copied from GemmaModel with Gemma-&gt;Qwen and set RmsNorm(without add_unit_offset)
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenModel</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    QWenModel() <span style="color:#f92672">=</span> <span style="color:#66d9ef">default</span>;
+</span></span><span style="display:flex;"><span>    QWenModel(<span style="color:#66d9ef">const</span> QWenConfig <span style="color:#f92672">&amp;</span>config, <span style="color:#66d9ef">const</span> QWenNameConfig <span style="color:#f92672">&amp;</span>names, <span style="color:#66d9ef">const</span> string <span style="color:#f92672">&amp;</span>base_name) {
+</span></span><span style="display:flex;"><span>        blocks <span style="color:#f92672">=</span> List<span style="color:#f92672">&lt;</span>QWenDecoder<span style="color:#f92672">&gt;</span>(config.num_hidden_layers, config, names, base_name);
+</span></span><span style="display:flex;"><span>        norm <span style="color:#f92672">=</span> RMSNorm(config.hidden_size, config.rms_norm_eps, names.post_norm_name);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> Forward(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> inputs, std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>any<span style="color:#f92672">&gt;</span> args) <span style="color:#66d9ef">override</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> x <span style="color:#f92672">=</span> inputs[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">auto</span> <span style="color:#f92672">&amp;</span>block : blocks) {
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> block({x})[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> norm(x);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {x};
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>QWenDecoder<span style="color:#f92672">&gt;</span> blocks;
+</span></span><span style="display:flex;"><span>    Layer norm;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">QWenForCausalLM</span> <span style="color:#66d9ef">final</span> <span style="color:#f92672">:</span> <span style="color:#66d9ef">public</span> Module {
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">public</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    QWenForCausalLM(QWenConfig <span style="color:#f92672">&amp;</span>config) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> names <span style="color:#f92672">=</span> config.names_config;
+</span></span><span style="display:flex;"><span>        hidden_size <span style="color:#f92672">=</span> config.hidden_size;
+</span></span><span style="display:flex;"><span>        tie_embedding_words <span style="color:#f92672">=</span> config.tie_embedding_words;
+</span></span><span style="display:flex;"><span>        embedding <span style="color:#f92672">=</span> Embedding(config.vocab_size, config.hidden_size, names.token_embd_name);
+</span></span><span style="display:flex;"><span>        model <span style="color:#f92672">=</span> QWenModel(config, names, names.blk_name);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// FIXME Qwen-0.5 use tied embedding
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// Others use nn.Linear()
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (tie_embedding_words) {
+</span></span><span style="display:flex;"><span>            lm_head <span style="color:#f92672">=</span> Parameter(<span style="color:#ae81ff">1</span>, config.vocab_size, <span style="color:#ae81ff">1</span>, config.hidden_size, names.token_embd_name <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;.weight&#34;</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> Forward(std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>Tensor<span style="color:#f92672">&gt;</span> inputs, std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span>std<span style="color:#f92672">::</span>any<span style="color:#f92672">&gt;</span> args) <span style="color:#66d9ef">override</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">auto</span> x <span style="color:#f92672">=</span> embedding(inputs[<span style="color:#ae81ff">0</span>]);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// go through model
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">auto</span> outputs <span style="color:#f92672">=</span> model({x})[<span style="color:#ae81ff">0</span>];
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (tie_embedding_words) {
+</span></span><span style="display:flex;"><span>            outputs <span style="color:#f92672">=</span> Tensor<span style="color:#f92672">::</span>mm(outputs, lm_head().transpose(Chl<span style="color:#f92672">::</span>SEQUENCE, Chl<span style="color:#f92672">::</span>DIMENSION));
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> {outputs};
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">private</span><span style="color:#f92672">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> hidden_size;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">bool</span> tie_embedding_words;
+</span></span><span style="display:flex;"><span>    Layer embedding;
+</span></span><span style="display:flex;"><span>    Parameter lm_head;
+</span></span><span style="display:flex;"><span>    QWenModel model;
+</span></span><span style="display:flex;"><span>};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#endif </span><span style="color:#75715e">//! MODELING_QWEN_HPP
+</span></span></span></code></pre></div>
+		</div>
+		<footer class="post__footer">
+			
+<div class="post__tags tags clearfix">
+	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/llm-server/" rel="tag">LLM Server</a>
+		</li>
+		<li class="tags__item">
+			<a class="tags__link btn" href="/keep-moving-forward/tags/llm/" rel="tag">LLM</a>
+		</li>
+	</ul>
+</div>
+		</footer>
+	</article>
+</main>
+
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About chenghua.wang</span>
+	</div>
+	<div class="authorbox__description">
+		Currently working on AI&amp;Sys, CV (low-level) and LLM topics.
+	</div>
+</div>
+
+<nav class="pager flex">
+	<div class="pager__item pager__item--prev">
+		<a class="pager__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/" rel="prev">
+			<span class="pager__subtitle">«&thinsp;Previous</span>
+			<p class="pager__title">【施工中】6xKx16 SGEMM Kernel on X86-AVX</p>
+		</a>
+	</div>
+</nav>
+
+
+			</div>
+			<aside class="sidebar"><div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="https://google.com/search">
+		<label>
+			<input class="widget-search__field" type="search" placeholder="SEARCH…" value="" name="q" aria-label="SEARCH…">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="don&#39;t use this search" value="don&#39;t use this searchhttps://chenghuawang.github.io/keep-moving-forward/">
+	</form>
+</div>
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/mllm-qwen/">mllm框架浅析-以QWen0.5B为例</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mlsys2024-qmoe/">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/prompt_cache/">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/transformer-lite/">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/awq/">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/">【施工中】6xKx16 SGEMM Kernel on X86-AVX</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
+			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
+		</ul>
+	</div>
+</div>
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/edge/" title="Edge">Edge (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/kernel/" title="Kernel">Kernel (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (5)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-cache-optimize/" title="LLM Cache Optimize">LLM Cache Optimize (1)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (5)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlsys-2024/" title="MLSys 2024">MLSys 2024 (3)</a>
+		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (2)</a>
+	</div>
+</div>
+<div class="toc__block_div">
+	<div class="toc__title">Page content</div>
+	<div class="toc__menu">
+		<nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-简介">1. 简介</a></li>
+    <li><a href="#2-框架执行流程">2. 框架执行流程</a>
+      <ul>
+        <li><a href="#21-以两层linear层运行为例">2.1 以两层Linear层运行为例</a>
+          <ul>
+            <li><a href="#211-加载参数">2.1.1 加载参数</a></li>
+            <li><a href="#212module的operator是如何调用forward函数的">2.1.2Module的Operator()是如何调用Forward函数的？</a></li>
+            <li><a href="#213-linear层的执行">2.1.3 Linear层的执行</a></li>
+          </ul>
+        </li>
+        <li><a href="#22-总结">2.2 总结</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-如何编写op与自定义layer">3. 如何编写Op与自定义Layer</a>
+      <ul>
+        <li><a href="#31-新增对应backend的op文件">3.1 新增对应Backend的Op文件</a></li>
+        <li><a href="#32-op参数自定义">3.2 Op参数自定义</a></li>
+        <li><a href="#33-重载函数">3.3 重载函数</a></li>
+        <li><a href="#34-op是如何被注册和创建的">3.4 Op是如何被注册和创建的？</a>
+          <ul>
+            <li><a href="#341-在backend中注册op">3.4.1 在Backend中注册Op</a></li>
+            <li><a href="#342-在layerhpp中加入对应的op-layer">3.4.2 在Layer.hpp中加入对应的Op Layer</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#4-tokenizer">4. Tokenizer</a></li>
+    <li><a href="#5-如何对新模型进行支持">5. 如何对新模型进行支持</a>
+      <ul>
+        <li><a href="#51-生成mllm支持的vocab和模型参数">5.1 生成mllm支持的vocab和模型参数</a>
+          <ul>
+            <li><a href="#511-模型转换">5.1.1 模型转换</a></li>
+            <li><a href="#512-vocab转换">5.1.2 Vocab转换</a></li>
+            <li><a href="#513-量化">5.1.3 量化</a></li>
+          </ul>
+        </li>
+        <li><a href="#52-configuration">5.2 Configuration</a></li>
+        <li><a href="#53-tokenization">5.3 Tokenization</a></li>
+        <li><a href="#54-modeling">5.4 Modeling</a>
+          <ul>
+            <li><a href="#541-创建该module需要使用的layers">5.4.1 创建该Module需要使用的Layers</a></li>
+            <li><a href="#542-重载forward前向推理函数">5.4.2 重载Forward前向推理函数</a></li>
+          </ul>
+        </li>
+        <li><a href="#55-运行">5.5 运行</a></li>
+      </ul>
+    </li>
+    <li><a href="#6-mllm框架的不足">6. mllm框架的不足</a>
+      <ul>
+        <li><a href="#61-benchmark">6.1 Benchmark</a></li>
+        <li><a href="#62-对于移动端llm推理的特定优化">6.2 对于移动端LLM推理的特定优化</a></li>
+        <li><a href="#63-易用性">6.3 易用性</a></li>
+      </ul>
+    </li>
+    <li><a href="#a1-qwen模型定义">A1. Qwen模型定义</a></li>
+  </ul>
+</nav>
+	</div>
+</div>
+
+</aside>
+		</div>
+		<footer class="footer">
+	<div class="container footer__container flex">
+		
+		<div class="footer__copyright">
+			&copy; 2024 chenghua.wang.
+			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
+		</div>
+	</div>
+</footer>
+	</div>
+<script async defer src="/keep-moving-forward/js/menu.js"></script>
+
+
+
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { fonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+</script>
+</body>
+</html>

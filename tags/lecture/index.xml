@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Lecture on Ubios Home</title>
-    <link>http://localhost:1313/keep-moving-forward/tags/lecture/</link>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tags/lecture/</link>
     <description>Recent content in Lecture on Ubios Home</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
     <lastBuildDate>Fri, 17 Mar 2023 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/keep-moving-forward/tags/lecture/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/lecture/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>XV6 Lab 5: Copy On Write</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab5_cow/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</link>
       <pubDate>Fri, 17 Mar 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab5_cow/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</guid>
       <description>xv6 中的 fork() 系统调用将父进程的所有用户空间内存复制到子进程中。如果父进程很大，复制可能需要很长的时间。更糟糕的是，这项工作通常是无用的：fork() 之后通常是子进程的 exec()，它放弃了复制的内存，没有使用复制过来的大部分内存。如果父代和子代都使用了复制的页面，并且其中一个或两个都写了它，那么这个复制才是真正需要的。
 所以写时复制(copy on write, cow) 这个技术变得十分的重要。在这个 lab 中，我们需要实现一个写时复制的 fork()。我们需要修改原本的 fork() 程序中做内存申请的模块，同时我们还需要实现 usertrap 来在写时(在实际写的时候碰到 cow flag，抛出分页错误)的时候处理这个 trap。
 因为一个程序很可能被 fork() 了很多的分支，所以我们需要一个计数器来确定这个 page 是要被释放还是保留。
@@ -25,9 +25,9 @@ Fig 1. memlayoutXV6 手册
     </item>
     <item>
       <title>XV6 Lab 4: Traps</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab4_trap/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</link>
       <pubDate>Sun, 05 Mar 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab4_trap/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</guid>
       <description>RISC-V assembly Which registers contain arguments to functions? For example, which register holds 13 in main&amp;rsquo;s call to printf?
 Register: a0, a1, a2&amp;hellip;, a7 for integer arguments. Register fa0, fa1, fa2&amp;hellip;, fa7 for float arguments.
 Register a2 holds 13 when we call printf().
@@ -36,9 +36,9 @@ Compiler inlined f(8) and g() in printf() function.</description>
     </item>
     <item>
       <title>XV6 Lab 3: Page Table</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab3_pagetable/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</link>
       <pubDate>Thu, 02 Mar 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab3_pagetable/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</guid>
       <description>MIT 6.S081 Lab3 website
 做 Lab 3 需要提前阅读 XV6 book，了解 RISC-V SR39 的地址格式，并且实验中大量用到了页表的准换函数，需要查阅 XV6 手册。不过，熟记 RISC-V 的地址说实在的没有什么用处，通过这个实验理解页表的工作方式并且 hands on 才是真的。
 Speed up system calls 目前有很多的操作系统(Linux)在用户区和内核区之间共享一块数据(Read-Only for user)，这样用户在进行系统调用的时候就不需要陷入内核态后，由内核态拷贝数据进用户态，而是将数据写在这个共享的区块内。这样可以加快操作系统的运行速度(毕竟大部分系统调用需要的内存消耗是很小的，内存的消耗在当今已经不是问题)。
@@ -50,9 +50,9 @@ struct proc { ... struct usyscall *usyscall; // using read only shared data to a
     </item>
     <item>
       <title>XV6 Lab 2: syscall</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab2_syscall/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</link>
       <pubDate>Sat, 25 Feb 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab2_syscall/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</guid>
       <description>MIT 6.S081 Lab2 website
 为了完成 Syscall 作业，需要阅读:
 XV6-book, Chapter 2, Sections 4.3 and 4.4
@@ -63,9 +63,9 @@ int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &amp;lt; 
     </item>
     <item>
       <title>XV6 Lab 1: Xv6 and Unix utilities</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</link>
       <pubDate>Thu, 23 Feb 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</guid>
       <description>MIT 6.S081 Lab1 website
 本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
 阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式

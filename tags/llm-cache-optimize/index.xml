@@ -2,18 +2,18 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>LLM Cache Optimize on Ubios Home</title>
-    <link>http://localhost:1313/keep-moving-forward/tags/llm-cache-optimize/</link>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tags/llm-cache-optimize/</link>
     <description>Recent content in LLM Cache Optimize on Ubios Home</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
     <lastBuildDate>Fri, 21 Jun 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/keep-moving-forward/tags/llm-cache-optimize/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/llm-cache-optimize/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/prompt_cache/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</link>
       <pubDate>Fri, 21 Jun 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/prompt_cache/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</guid>
       <description>背景和动机 以KV Cache为启发，探索了对time-to-first-token (TTFT) Latency的优化。类似于KV Cache，Prompt Cache(PC)推理加速的核心思想是复用注意力的中间状态(Attention States)。然而与KV Cache不同的是，PC是在不同的prompt之间进行复用。
 在大部分的LLM任务中，prompt有重叠(overlapping)的现象，这些重叠的prompt可以被存储起来，进而在接下来的LLM处理阶段可以像KV Cache一样，提取出来直接使用。在TTFT的推理过程中，免去计算不同prompt中重叠部分的注意力状态，从而缩短TTFT的生成时间。
 与KV Cache不同的点是：

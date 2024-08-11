@@ -2,165 +2,162 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/fundamental_rope/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_rope/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/categories/aisys/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/aisys/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/aisys-fundamental/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/aisys-fundamental/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/categories/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/llm/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/llm-server/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm-server/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/</loc>
     <lastmod>2024-08-10T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/</loc>
     <lastmod>2024-06-28T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/mllm-qwen/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/</loc>
     <lastmod>2024-06-28T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/mlsys2024-qmoe/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</loc>
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/mlsys-2024/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/mlsys-2024/</loc>
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/</loc>
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/quantization/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/quantization/</loc>
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/</loc>
     <lastmod>2024-06-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/prompt_cache/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</loc>
     <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/kv-cache%E4%BC%98%E5%8C%96/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/kv-cache%E4%BC%98%E5%8C%96/</loc>
     <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/llm-cache-optimize/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm-cache-optimize/</loc>
     <lastmod>2024-06-21T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/transformer-lite/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/</loc>
     <lastmod>2024-06-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/edge/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/edge/</loc>
     <lastmod>2024-06-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/%E7%AB%AF%E4%BE%A7%E6%8E%A8%E7%90%86/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/%E7%AB%AF%E4%BE%A7%E6%8E%A8%E7%90%86/</loc>
     <lastmod>2024-06-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/awq/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</loc>
     <lastmod>2024-05-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/x86_avx_sgemm_6x16/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/x86_avx_sgemm_6x16/</loc>
     <lastmod>2023-06-16T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/kernel-impl/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/kernel-impl/</loc>
     <lastmod>2023-06-16T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/%E7%AE%97%E5%AD%90%E5%AE%9E%E7%8E%B0/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/%E7%AE%97%E5%AD%90%E5%AE%9E%E7%8E%B0/</loc>
     <lastmod>2023-06-16T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/parallel/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/parallel/</loc>
     <lastmod>2023-05-02T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/</loc>
     <lastmod>2023-05-02T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/cuda/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/cuda/</loc>
     <lastmod>2023-04-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/</loc>
     <lastmod>2023-04-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tags/lecture/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/lecture/</loc>
     <lastmod>2023-03-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/series/mit-6.s081-xv6/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/mit-6.s081-xv6/</loc>
     <lastmod>2023-03-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/categories/operating-system/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/operating-system/</loc>
     <lastmod>2023-03-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/xv6_lab5_cow/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</loc>
     <lastmod>2023-03-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/xv6_lab4_trap/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</loc>
     <lastmod>2023-03-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/xv6_lab3_pagetable/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</loc>
     <lastmod>2023-03-02T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/xv6_lab2_syscall/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</loc>
     <lastmod>2023-02-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</loc>
     <lastmod>2023-02-23T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/categories/distributed-sys/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/</loc>
     <lastmod>2023-01-19T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/ft-vm/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/</loc>
     <lastmod>2023-01-19T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/gfs/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/gfs/</loc>
     <lastmod>2023-01-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/papers/mapreduce/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/</loc>
     <lastmod>2023-01-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/about/news/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/news/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/about/about/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/about/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/about/paper_posts/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/about/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/about/hpc_ai/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/categories/paper-posts/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/about/tech_posts/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/categories/utils/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/categories/utils/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/about/thingking/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/about/thingking/</loc>
-    <lastmod>2023-01-01T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/keep-moving-forward/search/</loc>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/search/</loc>
   </url>
 </urlset>

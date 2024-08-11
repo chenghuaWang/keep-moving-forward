@@ -2,25 +2,25 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Distributed Sys on Ubios Home</title>
-    <link>http://localhost:1313/keep-moving-forward/categories/distributed-sys/</link>
+    <link>https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/</link>
     <description>Recent content in Distributed Sys on Ubios Home</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
     <lastBuildDate>Thu, 19 Jan 2023 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/keep-moving-forward/categories/distributed-sys/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>The Design of a Practical System for Fault-Tolerant Virtual Machines</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/ft-vm/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/</link>
       <pubDate>Thu, 19 Jan 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/ft-vm/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/</guid>
       <description>notes of paper, ACM SIGOPS Operating Systems Review, 2010, 44(4): 30-39.</description>
     </item>
     <item>
       <title>Google File System(GFS)</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/gfs/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/gfs/</link>
       <pubDate>Wed, 18 Jan 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/gfs/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/gfs/</guid>
       <description>go back to home
 Paper link
 Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp. 20-43
@@ -34,9 +34,9 @@ Architecture Fig 1. GFS ArchGoole File System. Sanjay Ghemawat, Howard Gobioff, 
     </item>
     <item>
       <title>MapReduce</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/mapreduce/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/</link>
       <pubDate>Tue, 17 Jan 2023 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/mapreduce/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/</guid>
       <description>OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
 go back to home
 Paper link

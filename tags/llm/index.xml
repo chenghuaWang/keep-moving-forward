@@ -2,39 +2,39 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>LLM on Ubios Home</title>
-    <link>http://localhost:1313/keep-moving-forward/tags/llm/</link>
+    <link>https://chenghuawang.github.io/keep-moving-forward/tags/llm/</link>
     <description>Recent content in LLM on Ubios Home</description>
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
     <lastBuildDate>Sun, 11 Aug 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/keep-moving-forward/tags/llm/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/llm/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>[Fundamental] 旋转位置编码(RoPE)</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/fundamental_rope/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_rope/</link>
       <pubDate>Sun, 11 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/fundamental_rope/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_rope/</guid>
       <description>Flash Attention from Fundamental Series</description>
     </item>
     <item>
       <title>[Fundamental] From Online Softmax to Flash Attention V3</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/</link>
       <pubDate>Sat, 10 Aug 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/</guid>
       <description>Flash Attention from Fundamental Series</description>
     </item>
     <item>
       <title>mllm框架浅析(一)-以QWen0.5B为例</title>
-      <link>http://localhost:1313/keep-moving-forward/tech/mllm-qwen/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/</link>
       <pubDate>Fri, 28 Jun 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/tech/mllm-qwen/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/</guid>
       <description>以Qwen0.5B为例解析mllm的基本实现，CPU Backend</description>
     </item>
     <item>
       <title>✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/mlsys2024-qmoe/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</link>
       <pubDate>Tue, 25 Jun 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/mlsys2024-qmoe/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</guid>
       <description>http://arxiv.org/abs/2310.16795
 MLSys 2024
 1.背景和动机 为了解决大型模型的高推理成本问题，MoE架构被提出。MoE通过稀疏路由的方式，将输入分配给多个专家（experts）中的一小部分，以实现更快的推理速度和更高的模型质量。但这种架构也带来了巨大的参数量，例如SwitchTransformer-c2048模型就有1.6万亿参数。MoE模型的参数量巨大，需要数TB级的存储空间，这使得它们在实际部署时面临内存和成本的挑战，尤其是在需要大规模并行计算的场合。
@@ -55,9 +55,9 @@ Fig 3. list bufferinghttp://arxiv.org/abs/2310.16795
     </item>
     <item>
       <title>✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/prompt_cache/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</link>
       <pubDate>Fri, 21 Jun 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/prompt_cache/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/</guid>
       <description>背景和动机 以KV Cache为启发，探索了对time-to-first-token (TTFT) Latency的优化。类似于KV Cache，Prompt Cache(PC)推理加速的核心思想是复用注意力的中间状态(Attention States)。然而与KV Cache不同的是，PC是在不同的prompt之间进行复用。
 在大部分的LLM任务中，prompt有重叠(overlapping)的现象，这些重叠的prompt可以被存储起来，进而在接下来的LLM处理阶段可以像KV Cache一样，提取出来直接使用。在TTFT的推理过程中，免去计算不同prompt中重叠部分的注意力状态，从而缩短TTFT的生成时间。
 与KV Cache不同的点是：
@@ -69,16 +69,16 @@ Fig 2. 原始LLM/KV Cache/Prompt Cache 我们来对比下普通的自回归LLM�
     </item>
     <item>
       <title>✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/transformer-lite/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/</link>
       <pubDate>Mon, 17 Jun 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/transformer-lite/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/</guid>
       <description>Transformer-Lite from OPPO</description>
     </item>
     <item>
       <title>✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</title>
-      <link>http://localhost:1313/keep-moving-forward/papers/awq/</link>
+      <link>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</link>
       <pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/keep-moving-forward/papers/awq/</guid>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</guid>
       <description>Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
 1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ 原有的Round方法(图a)：
 $$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$

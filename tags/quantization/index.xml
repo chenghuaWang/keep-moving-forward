@@ -1,42 +1,44 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Quantization on Ubios Home</title>
-    <link>https://chenghuawang.github.io/keep-moving-forward/tags/quantization/</link>
+    <link>http://localhost:1313/keep-moving-forward/tags/quantization/</link>
     <description>Recent content in Quantization on Ubios Home</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Tue, 25 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/quantization/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Tue, 25 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/tags/quantization/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</link>
+      <link>http://localhost:1313/keep-moving-forward/papers/mlsys2024-qmoe/</link>
       <pubDate>Tue, 25 Jun 2024 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/papers/mlsys2024-qmoe/</guid>
       <description>http://arxiv.org/abs/2310.16795
 MLSys 2024
 1.背景和动机 为了解决大型模型的高推理成本问题，MoE架构被提出。MoE通过稀疏路由的方式，将输入分配给多个专家（experts）中的一小部分，以实现更快的推理速度和更高的模型质量。但这种架构也带来了巨大的参数量，例如SwitchTransformer-c2048模型就有1.6万亿参数。MoE模型的参数量巨大，需要数TB级的存储空间，这使得它们在实际部署时面临内存和成本的挑战，尤其是在需要大规模并行计算的场合。
 为了降低MoE模型的内存和存储需求，同时保持模型性能，模型压缩成为了一个重要的研究方向。传统的压缩技术，如量化和稀疏性，虽然在一定程度上有效，但对于参数量达到万亿级别的模型来说，仍然不足以实现高效的压缩。
 本文提出了QMoE，一种新的压缩和执行框架，旨在实现对万亿参数MoE模型的高效压缩和推理。QMoE通过设计一种可扩展的算法，将模型压缩到每个参数不到1比特的大小，并与定制的GPU解码内核协同设计，以实现端到端的高效压缩推理，且运行时开销相对较小。
-Fig 1. 量化结果作者首先考虑了Huffman和LZW两种常用于文件压缩的方法。但是Huffman方法的解码依赖于上文已经被解析的参数，并行性低；且变长的编码方式在实现上和存储的时候也是较为困难的。作者总结出了MoE量化的4个难点：
-现有的压缩方法，如量化和稀疏性，通常只能在不显著损失精度的情况下将模型的精度降低到每个参数3或4比特，或者达到大约50%的稀疏度。然而，要使万亿参数的MoE模型实用化，需要比16位精度高出10到20倍的压缩率，即平均每个参数少于1比特。 将现有的压缩方法应用于比大型dense模型大一个数量级的MoE模型时，会遇到内存、性能和可靠性方面的障碍。MoE模型由于其稀疏性，需要处理的内存和数据量巨大。即量化过程需要的内存太大，且可能会出现因为corner case导致量化失败的问题。 实现每个参数少于1比特的压缩率需要一个非平凡的自定义压缩格式，并且这种格式需要配备在GPU等加速器上高效的解码算法，以避免在压缩模型上进行推理时出现重大的处理延迟（比如要避免Huffman方法的同步）。 为了应对上述挑战，需要在系统级别进行设计和优化，包括优化激活卸载、使用列表缓冲区来支持样本访问、延迟权重获取以减少内存占用、专家分组以提高GPU利用率，以及进行鲁棒性修改以处理在压缩具有数万个层的模型时可能遇到的罕见corner case。 2. 算法 2.1 使用GPTQ量化 Fig 2. 使用GPTQ量化流程具体来说，我们维护一个大型缓冲区$B$，并按以下方式更新 Transformer 块的Dense部分：
+Fig 1. 量化结果http://arxiv.org/abs/2310.16795
+作者首先考虑了Huffman和LZW两种常用于文件压缩的方法。但是Huffman方法的解码依赖于上文已经被解析的参数，并行性低；且变长的编码方式在实现上和存储的时候也是较为困难的。作者总结出了MoE量化的4个难点：
+现有的压缩方法，如量化和稀疏性，通常只能在不显著损失精度的情况下将模型的精度降低到每个参数3或4比特，或者达到大约50%的稀疏度。然而，要使万亿参数的MoE模型实用化，需要比16位精度高出10到20倍的压缩率，即平均每个参数少于1比特。 将现有的压缩方法应用于比大型dense模型大一个数量级的MoE模型时，会遇到内存、性能和可靠性方面的障碍。MoE模型由于其稀疏性，需要处理的内存和数据量巨大。即量化过程需要的内存太大，且可能会出现因为corner case导致量化失败的问题。 实现每个参数少于1比特的压缩率需要一个非平凡的自定义压缩格式，并且这种格式需要配备在GPU等加速器上高效的解码算法，以避免在压缩模型上进行推理时出现重大的处理延迟（比如要避免Huffman方法的同步）。 为了应对上述挑战，需要在系统级别进行设计和优化，包括优化激活卸载、使用列表缓冲区来支持样本访问、延迟权重获取以减少内存占用、专家分组以提高GPU利用率，以及进行鲁棒性修改以处理在压缩具有数万个层的模型时可能遇到的罕见corner case。 2. 算法 2.1 使用GPTQ量化 Fig 2. 使用GPTQ量化流程http://arxiv.org/abs/2310.16795
+具体来说，我们维护一个大型缓冲区$B$，并按以下方式更新 Transformer 块的Dense部分：
 从CPU到GPU抓取一个 &amp;ldquo;样本&amp;rdquo; $X$，其中包含数百个Token 通过相应的Dense Layer，得到结果$Y$ 计算并存储$Y$中标记的专家分配 将$Y$送回CPU并覆盖$B$中的$X$ 并且对于稀疏部分，分别对专家进行循环：
 从CPU到GPU获取$B$中所有被分配给专家$E$的单独Token，记作$X_{E}$ 使用它们来生成压缩后的专家$E^{&amp;rsquo;}$（例如，使用GPTQ算法） 通过$E^{&amp;rsquo;}$模块以获得$Y_{E^{&amp;rsquo;}}$ 将$Y_{E^{&amp;rsquo;}}$发送回CPU，并在B中覆盖$X_{E}$ 作者在这里还引入了List Buffering、Lazy Weight Fetching和Expert Grouping技巧
 2.1.1 List Buffering 为了有效地支持对Dense模型的访问，以及对专家tokens的完全向量化查询，我们将$B$存储为列表缓冲数据结构。这可以被看作是一个包含所有tokens隐藏状态的巨大连续缓冲区，以及分隔符索引，这些索引标志着各个样本之间的边界。下图展示了这种存储格式。这种数据结构对效率至关重要；对于大量样本计数，通过掩码迭代样本并获取相关tokens的方法是很慢的，而作者提出的方法则有大幅度改进。
-Fig 3. list buffering2.1.2 Lazy Weight Fetching 由于1.6万亿参数模型的权重占用了超过3TB的存储空间，它们甚至无法存储在CPU的RAM中。因此，我们按需直接从磁盘存储中懒加载它们。按照推理的流程，我们需要将所有的参数从磁盘搬移到内存中完整的一整次。
+Fig 3. list bufferinghttp://arxiv.org/abs/2310.16795
+2.1.2 Lazy Weight Fetching 由于1.6万亿参数模型的权重占用了超过3TB的存储空间，它们甚至无法存储在CPU的RAM中。因此，我们按需直接从磁盘存储中懒加载它们。按照推理的流程，我们需要将所有的参数从磁盘搬移到内存中完整的一整次。
 2.1.3 Experts Grouping 此外，为了避免GPU的利用率不足，作者将多个专家组合在一起，并应用GPTQ算法的联合批处理变体。
 2.2 字典生成 对于量化后得到的Ternary Pair ${w_{min}, 0, w_{max}}$，在很多的情况下，是0居多的，也就是说是稀疏的，那么对于稀疏矩阵可以用CSR等方法来存储。但是使用传统的稀疏矩阵存储方法压缩比还是不够，作者团队使用了一种更加偏向于文件压缩的思路来进行量化后的参数压缩，这个方法就使用到了字典查找的方法。字典查找的方法还是比较通俗易懂的，以下面的例子来举例：
 对于“001002003&amp;hellip;”我们可以统计该串里面的子串的出现频率，比如001，002，003出现的频率高，那么我们可以将他们编码成 A,B,C然后仅需要三个char的空间“ABC”就可以表示一个压缩后的文件。</description>
     </item>
-    
     <item>
       <title>✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</link>
+      <link>http://localhost:1313/keep-moving-forward/papers/awq/</link>
       <pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/papers/awq/</guid>
       <description>Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
-1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ原有的Round方法(图a)：
+1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ 原有的Round方法(图a)：
 $$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$
 其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。
 改进后的量化方法(图c)：
@@ -47,6 +49,5 @@ $$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;amp;=\Delta\cdot\operatorname{Ro
 由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{&amp;rsquo;} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{&amp;rsquo;}}{\Delta} \times \frac{1}{s}$。
 2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$</description>
     </item>
-    
   </channel>
 </rss>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Kernel Impl on Ubios Home</title>
+    <link>http://localhost:1313/keep-moving-forward/tags/kernel-impl/</link>
+    <description>Recent content in Kernel Impl on Ubios Home</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Fri, 16 Jun 2023 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/tags/kernel-impl/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>【施工中】6xKx16 SGEMM Kernel on X86-AVX</title>
+      <link>http://localhost:1313/keep-moving-forward/tech/x86_avx_sgemm_6x16/</link>
+      <pubDate>Fri, 16 Jun 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/tech/x86_avx_sgemm_6x16/</guid>
+      <description>How to impl high performance 6xKx16 micro kernel</description>
+    </item>
+    <item>
+      <title>CUDA: NSight System</title>
+      <link>http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/</link>
+      <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/</guid>
+      <description>Usage of Nsight System</description>
+    </item>
+  </channel>
+</rss>

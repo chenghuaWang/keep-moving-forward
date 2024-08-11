@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Mllm框架浅析 on Ubios Home</title>
+    <link>http://localhost:1313/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/</link>
+    <description>Recent content in Mllm框架浅析 on Ubios Home</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Fri, 28 Jun 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>mllm框架浅析(一)-以QWen0.5B为例</title>
+      <link>http://localhost:1313/keep-moving-forward/tech/mllm-qwen/</link>
+      <pubDate>Fri, 28 Jun 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/tech/mllm-qwen/</guid>
+      <description>以Qwen0.5B为例解析mllm的基本实现，CPU Backend</description>
+    </item>
+  </channel>
+</rss>

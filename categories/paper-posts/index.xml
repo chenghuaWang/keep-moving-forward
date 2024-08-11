@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Paper Posts on Ubios Home</title>
+    <link>http://localhost:1313/keep-moving-forward/categories/paper-posts/</link>
+    <description>Recent content in Paper Posts on Ubios Home</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Sun, 01 Jan 2023 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/categories/paper-posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/keep-moving-forward/about/paper_posts/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/about/paper_posts/</guid>
+      <description>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) Distributed System 2023-01-17, MapReduce
+2023-01-18, Google File System(GFS)
+2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines
+MLSys 2024 2024-05-25, ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
+Best Paper，量化
+2024-06-21, ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference
+prompt cache优化
+2024-06-25, ✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</description>
+    </item>
+  </channel>
+</rss>

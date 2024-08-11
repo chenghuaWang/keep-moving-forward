@@ -1,180 +1,307 @@
 <!DOCTYPE html>
-<html class="no-js" lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>XV6 Lab 1: Xv6 and Unix utilities - Ubios Home</title>
-	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
-	<meta name="description" content="">
-		<meta property="og:title" content="XV6 Lab 1: Xv6 and Unix utilities" />
+<html lang="en" dir="auto">
+
+<head><script src="/keep-moving-forward/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=keep-moving-forward/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>XV6 Lab 1: Xv6 and Unix utilities | Ubios Home</title>
+<meta name="keywords" content="Lecture">
+<meta name="description" content="MIT 6.S081 Lab1 website
+本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
+阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
+sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
+/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!">
+<meta name="author" content="chenghua.Wang">
+<link rel="canonical" href="http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/">
+<link crossorigin="anonymous" href="/keep-moving-forward/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/keep-moving-forward/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/keep-moving-forward/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/keep-moving-forward/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/keep-moving-forward/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/keep-moving-forward/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+</script>
+
+
+
+  
+
+<meta property="og:title" content="XV6 Lab 1: Xv6 and Unix utilities" />
 <meta property="og:description" content="MIT 6.S081 Lab1 website
 本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
 阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
 sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
 /** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/" /><meta property="article:section" content="Tech" />
+<meta property="og:url" content="http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/" /><meta property="article:section" content="tech" />
 <meta property="article:published_time" content="2023-02-23T00:00:00+00:00" />
 <meta property="article:modified_time" content="2023-02-23T00:00:00+00:00" />
 
-		<meta itemprop="name" content="XV6 Lab 1: Xv6 and Unix utilities">
-<meta itemprop="description" content="MIT 6.S081 Lab1 website
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="XV6 Lab 1: Xv6 and Unix utilities"/>
+<meta name="twitter:description" content="MIT 6.S081 Lab1 website
 本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
 阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
 sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
-/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!"><meta itemprop="datePublished" content="2023-02-23T00:00:00+00:00" />
-<meta itemprop="dateModified" content="2023-02-23T00:00:00+00:00" />
-<meta itemprop="wordCount" content="855">
-<meta itemprop="keywords" content="Lecture," />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="dns-prefetch" href="//fonts.googleapis.com">
-	<link rel="dns-prefetch" href="//fonts.gstatic.com">
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
+/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!"/>
 
-	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
-	
 
-	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
-		
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Technique",
+      "item": "http://localhost:1313/keep-moving-forward/tech/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "XV6 Lab 1: Xv6 and Unix utilities",
+      "item": "http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "XV6 Lab 1: Xv6 and Unix utilities",
+  "name": "XV6 Lab 1: Xv6 and Unix utilities",
+  "description": "MIT 6.S081 Lab1 website\n本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。\n阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式\nsleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。\n/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include \u0026#34;kernel/types.h\u0026#34; #include \u0026#34;kernel/stat.h\u0026#34; #include \u0026#34;user/user.h\u0026#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(\u0026#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!",
+  "keywords": [
+    "Lecture"
+  ],
+  "articleBody": "MIT 6.S081 Lab1 website\n本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。\n阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式\nsleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。\n/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include \"kernel/types.h\" #include \"kernel/stat.h\" #include \"user/user.h\" int main(int argc, char *argv[]){ if (argc != 2){ printf(\"[ error ] you should follow anw integer with sleep prog to indicate ticks times!\\n\"); exit(1); // failure } sleep(atoi(argv[1])); // sys call provided by user.h exit(0); // success } 下面以 sleep(int) 系统调用来阐述 XV6 中调用的流程。sleep 函数在 user/user.h 中声明，具体的函数定义则通过其他模块的动态连接最终合成可执行文件 _sleep.\n在 user/usys.S 中 sleep 调用的汇编代码是这样的:\n.global sleep\rsleep:\rli a7, SYS_sleep\recall\rret 这里的 sleep 就是上面那个 sleep 函数的定义，就是说执行 sleep 时，就是执行这段汇编代码。可以看到在用户空间 sleep 函数的任务就是将 SYS_sleep 放入 a7 中，然后中断。SYS_sleep 在 kernel/syscall.h 中宏定义为一个系统调用号。可以看到这个 usys.S 文件也包含了这个头文件。\n// kernel/syscall.h #define SYS_sleep 13 接下来在 kernel/syscall.c 中，可以看到 SYS_sleep 转换为了对应的 sys_sleep:\n// kernel/syscall.c // An array mapping syscall numbers from syscall.h // to the function that handles the system call. static uint64 (*syscalls[])(void) = { [SYS_fork] sys_fork, [SYS_exit] sys_exit, [SYS_wait] sys_wait, [SYS_pipe] sys_pipe, [SYS_read] sys_read, [SYS_kill] sys_kill, [SYS_exec] sys_exec, [SYS_fstat] sys_fstat, [SYS_chdir] sys_chdir, [SYS_dup] sys_dup, [SYS_getpid] sys_getpid, [SYS_sbrk] sys_sbrk, [SYS_sleep] sys_sleep, [SYS_uptime] sys_uptime, [SYS_open] sys_open, [SYS_write] sys_write, [SYS_mknod] sys_mknod, [SYS_unlink] sys_unlink, [SYS_link] sys_link, [SYS_mkdir] sys_mkdir, [SYS_close] sys_close, }; pingpong 使用 pipe 进行父进程和子进程之间的调用。注意管道 0, 1 的关闭。\n/** * @author chenghua.wang * @brief Lab-1-utilities pingpong. Using the pipe syscall. * */ #include \"kernel/types.h\" #include \"kernel/stat.h\" #include \"user/user.h\" char* buf[8]; int main() { int p[2]; pipe(p); // using syscall to create pipe. // 1. child if (fork() == 0){ int id = getpid(); read(p[0], buf, 1); close(p[0]); printf(\"%d: received ping\\n\", id); write(p[1], \"c\", 1); close(p[1]); } else { // 2. parent int id = getpid(); write(p[1], \"p\", 1); close(p[1]); wait(0); read(p[0], buf, 1); close(p[0]); printf(\"%d: received pong\\n\", id); } exit(0); } prime 通过管道作为不同进程之间通信的渠道来进行多进程求解素数，实现素数筛。这里因为 XV6 的限制只能开 34 个进程。\n算法的具体流程非常的简单:\n有管道 p_{0} 把数据(2-\u003e35)全都填入\np_{0} 右端连接一个进程，这个进程筛去 p_{0} 中 %2==0的，将剩下的数传递给 p_{1} 管道。\n以此类推。\n只需要注意两次管道的关闭就好了。\n/** * @author chenghua.wang * @brief using concurrency to get primes. * @time Feb 23, 2023 * */ #include \"kernel/types.h\" #include \"kernel/stat.h\" #include \"user/user.h\" int child(int previous_pipe[2]) { int child_pipe[2]; int prime; close(previous_pipe[1]); // child do not need write data to previous pipe. int len = read(previous_pipe[0], \u0026prime, 1); if (!len) { close(previous_pipe[0]); // no data need to read anymore. exit(0); // success. } pipe(child_pipe); printf(\"prime %d\\n\", prime); int num; if (fork() == 0) { close(previous_pipe[0]); child(child_pipe); } else { close(child_pipe[0]); while(1) { int len = read(previous_pipe[0], \u0026num, 1); if (len == 0) break; if (num % prime != 0) { write(child_pipe[1], \u0026num, 1); } } close(child_pipe[1]); close(previous_pipe[0]); wait(0); } exit(0); // success } int main() { int parent_pipe[2]; pipe(parent_pipe); if (fork() == 0) { child(parent_pipe); } else { close(parent_pipe[0]); // parent do not need to read data. for (int i = 2; i \u003c 36; ++i) { write(parent_pipe[1], \u0026i, sizeof(int)); } close(parent_pipe[1]); // parent do not need to write anymore. wait(0); // wait for child process done. } exit(0); } find 基本上就是 XV6 中 ls 程序的改版。只不过判断是文件夹的话要递归。\n/** * @author chenghua.wang * @brief Lab1-utilities find * @time Feb 23, 2023 * */ #include \"kernel/types.h\" #include \"kernel/stat.h\" #include \"user/user.h\" #include \"kernel/fs.h\" // for file system. DIRSIZ, etc. char* fmtname(char *path) { char *p; for (p = path + strlen(path); p \u003e= path \u0026\u0026 *p != '/'; --p); p++; return p; } void find(char *directory, char *file_name) { char buf[512], *p; int fd; struct dirent de; struct stat st; // open file. if ((fd = open(directory, 0)) \u003c 0) { fprintf(2, \"find: cannot open %s\\n\", directory); return; } // get the state of this file if (fstat(fd, \u0026st) \u003c 0) { fprintf(2, \"find: cannot get stat of %s\\n\", directory); close(fd); return; } // find the correct type need to check. // 1. path-\u003e find if file_name is same. // 2. directory-\u003e run find func again. // 3. others('.', '..')-\u003e skip. switch(st.type) { case T_DEVICE: case T_FILE: if (strcmp(file_name, fmtname(directory)) == 0) { printf(\"%s\\n\", directory); } break; case T_DIR: strcpy(buf, directory); p = buf + strlen(buf); *p++ = '/'; while(read(fd, \u0026de, sizeof(de)) == sizeof(de)) { if (de.inum == 0 || strcmp(de.name, \"..\") == 0 || strcmp(de.name, \".\") == 0) continue; memmove(p, de.name, DIRSIZ); p[DIRSIZ] = 0; find(buf, file_name); } break; } close(fd); } int main(int argc, char *argv[]) { if (argc != 3) { printf(\"[ error ] find [directory] ['name']\\n\"); exit(1); // failure } find(argv[1], argv[2]); exit(0); // success } xargs 我想 XV6 这个实验主要是想考察 exec 的作用。xargs 从标准输入得到数据，然后对每一行数据重新填入 argv 再执行。\n/** * @author chenghua.wang * @brief Lab1-utilities xargs. * @time Feb 23, 2023 * */ #include \"kernel/types.h\" #include \"kernel/stat.h\" #include \"user/user.h\" char buf[512]; int main(int argc, char *argv[]) { char *pass_argv[64]; for (int i = 0; i \u003c argc; ++i) { pass_argv[i] = argv[i + 1]; // the terminate 0 is also moved. } for (;;) { // to read a line int i = 0; for(;;++i) { int len = read(0, \u0026buf[i], 1); // read from stdin. if (len == 0 || buf[i] == '\\n') break; } if (i == 0) break; // exec a line buf[i] = 0; pass_argv[argc - 1] = buf; if (fork() == 0) { exec(pass_argv[0], pass_argv); exit(0); // success } else { wait(0); } } exit(0); // success } ",
+  "wordCount" : "855",
+  "inLanguage": "en",
+  "datePublished": "2023-02-23T00:00:00Z",
+  "dateModified": "2023-02-23T00:00:00Z",
+  "author":[{
+    "@type": "Person",
+    "name": "chenghua.Wang"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Ubios Home",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/keep-moving-forward/favicon.ico"
+    }
+  }
+}
+</script>
 </head>
-<body class="body">
-	<div class="container container--outer">
-		
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
 <header class="header">
-	<div class="container header__container">
-		
-	<div class="logo logo--mixed" >
-		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
-			
-			<div class="logo__item logo__text" >
-					<div class="logo__title" >Ubios Home</div>
-					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
-				</div>
-		</a>
-	</div>
-		
-<nav class="menu">
-	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
-		<span class="menu__btn-title" tabindex="-1">Menu</span>
-	</button>
-	<ul class="menu__list">
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/about/">
-				
-				<span class="menu__text">About</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/hpc_ai/">
-				
-				<span class="menu__text">HPC &amp; AI 入坑</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
-				
-				<span class="menu__text">Lecture-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
-				
-				<span class="menu__text">Paper-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
-				
-				<span class="menu__text">Tech-Posts</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
-				
-				<span class="menu__text">Thinking</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/news/">
-				
-				<span class="menu__text">🎉News🎉</span>
-				
-			</a>
-		</li>
-	</ul>
-</nav>
-
-	</div>
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/keep-moving-forward/" accesskey="h" title="Ubios Home (Alt + H)">Ubios Home</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/about/" title="关于我">
+                    <span>关于我</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/tech_posts/" title="技术相关">
+                    <span>技术相关</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/paper_posts/" title="论文解析">
+                    <span>论文解析</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/news/" title="🎉News🎉">
+                    <span>🎉News🎉</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/thingking/" title="思考">
+                    <span>思考</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/hpc_ai/" title="AI&amp;Sys 入门">
+                    <span>AI&amp;Sys 入门</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/series" title="系列文章">
+                    <span>系列文章</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </header>
-		<div class="wrapper flex">
-			<div class="primary">
-			
+<main class="main">
 
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/keep-moving-forward/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/keep-moving-forward/tech/">Technique</a></div>
+    <h1 class="post-title entry-hint-parent">
+      XV6 Lab 1: Xv6 and Unix utilities
+    </h1>
+    <div class="post-meta"><span title='2023-02-23 00:00:00 +0000 UTC'>February 23, 2023</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;chenghua.Wang
 
-<main class="main" role="main">
-	<article class="post">
-		<header class="post__header">
-			<h1 class="post__title">XV6 Lab 1: Xv6 and Unix utilities</h1>
-			<p class="post__lead">notes of MIT6.S081 Lab 1</p>
-			<div class="post__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
-<div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-02-23T00:00:00Z">2023-02-23</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/operating-system/" rel="category">Operating system</a>
-	</span>
-</div></div>
-		</header>
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
 
-		
-<div class="post__toc toc">
-	<div class="toc__title">Page content</div>
-	<div class="toc__menu">
-		<nav id="TableOfContents">
-  <ul>
-    <li>
-      <ul>
-        <li><a href="#sleep">sleep</a></li>
-        <li><a href="#pingpong">pingpong</a></li>
-        <li><a href="#prime">prime</a></li>
-        <li><a href="#find">find</a></li>
-        <li><a href="#xargs">xargs</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-	</div>
-</div><div class="content post__content clearfix">
-			<p><a href="https://pdos.csail.mit.edu/6.S081/2022/labs/util.html">MIT 6.S081 Lab1 website</a></p>
+        <div class="inner"><ul>
+                <li>
+                    <a href="#sleep" aria-label="sleep">sleep</a></li>
+                <li>
+                    <a href="#pingpong" aria-label="pingpong">pingpong</a></li>
+                <li>
+                    <a href="#prime" aria-label="prime">prime</a></li>
+                <li>
+                    <a href="#find" aria-label="find">find</a></li>
+                <li>
+                    <a href="#xargs" aria-label="xargs">xargs</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><a href="https://pdos.csail.mit.edu/6.S081/2022/labs/util.html">MIT 6.S081 Lab1 website</a></p>
 <p>本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。</p>
 <p>阅读 <code>book-riscv-ref3</code> 熟悉 XV6 的系统组织形式</p>
-<h2 id="sleep">sleep</h2>
+<h2 id="sleep">sleep<a hidden class="anchor" aria-hidden="true" href="#sleep">#</a></h2>
 <p>通过调用 <code>user.h</code> 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab1-utilities. sleep prog using syscall.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]){
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>){
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>); <span style="color:#75715e">// failure
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">sleep</span>(<span style="color:#a6e22e">atoi</span>(argv[<span style="color:#ae81ff">1</span>])); <span style="color:#75715e">// sys call provided by user.h
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @author chenghua.wang
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @brief Lab1-utilities. sleep prog using syscall.
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @time Feb 23, 2023
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/types.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/stat.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;user/user.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[]){</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// failure
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">sleep</span><span class="p">(</span><span class="nf">atoi</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]));</span> <span class="c1">// sys call provided by user.h
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// success
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
 </span></span></code></pre></div><p>下面以 <code>sleep(int)</code> 系统调用来阐述 XV6 中调用的流程。<code>sleep</code> 函数在 <code>user/user.h</code> 中声明，具体的函数定义则通过其他模块的动态连接最终合成可执行文件 <code>_sleep</code>.</p>
 <p>在 <code>user/usys.S</code> 中 <code>sleep</code> 调用的汇编代码是这样的:</p>
 <pre tabindex="0"><code>.global sleep
@@ -183,77 +310,77 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
   ecall
   ret
 </code></pre><p>这里的 <code>sleep</code> 就是上面那个 <code>sleep</code> 函数的定义，就是说执行 <code>sleep</code> 时，就是执行这段汇编代码。可以看到在用户空间 <code>sleep</code> 函数的任务就是将 <code>SYS_sleep</code> 放入 <code>a7</code> 中，然后中断。<code>SYS_sleep</code> 在 <code>kernel/syscall.h</code> 中宏定义为一个系统调用号。可以看到这个 <code>usys.S</code> 文件也包含了这个头文件。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// kernel/syscall.h
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e">#define SYS_sleep  13
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// kernel/syscall.h
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="cp">#define SYS_sleep  13
 </span></span></span></code></pre></div><p>接下来在 <code>kernel/syscall.c</code> 中，可以看到 <code>SYS_sleep</code> 转换为了对应的 <code>sys_sleep</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// kernel/syscall.c
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// An array mapping syscall numbers from syscall.h
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// to the function that handles the system call.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">static</span> <span style="color:#a6e22e">uint64</span> (<span style="color:#f92672">*</span>syscalls[])(<span style="color:#66d9ef">void</span>) <span style="color:#f92672">=</span> {
-</span></span><span style="display:flex;"><span>[SYS_fork]    sys_fork,
-</span></span><span style="display:flex;"><span>[SYS_exit]    sys_exit,
-</span></span><span style="display:flex;"><span>[SYS_wait]    sys_wait,
-</span></span><span style="display:flex;"><span>[SYS_pipe]    sys_pipe,
-</span></span><span style="display:flex;"><span>[SYS_read]    sys_read,
-</span></span><span style="display:flex;"><span>[SYS_kill]    sys_kill,
-</span></span><span style="display:flex;"><span>[SYS_exec]    sys_exec,
-</span></span><span style="display:flex;"><span>[SYS_fstat]   sys_fstat,
-</span></span><span style="display:flex;"><span>[SYS_chdir]   sys_chdir,
-</span></span><span style="display:flex;"><span>[SYS_dup]     sys_dup,
-</span></span><span style="display:flex;"><span>[SYS_getpid]  sys_getpid,
-</span></span><span style="display:flex;"><span>[SYS_sbrk]    sys_sbrk,
-</span></span><span style="display:flex;"><span>[SYS_sleep]   sys_sleep,
-</span></span><span style="display:flex;"><span>[SYS_uptime]  sys_uptime,
-</span></span><span style="display:flex;"><span>[SYS_open]    sys_open,
-</span></span><span style="display:flex;"><span>[SYS_write]   sys_write,
-</span></span><span style="display:flex;"><span>[SYS_mknod]   sys_mknod,
-</span></span><span style="display:flex;"><span>[SYS_unlink]  sys_unlink,
-</span></span><span style="display:flex;"><span>[SYS_link]    sys_link,
-</span></span><span style="display:flex;"><span>[SYS_mkdir]   sys_mkdir,
-</span></span><span style="display:flex;"><span>[SYS_close]   sys_close,
-</span></span><span style="display:flex;"><span>};
-</span></span></code></pre></div><h2 id="pingpong">pingpong</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// kernel/syscall.c
+</span></span></span><span class="line"><span class="cl"><span class="c1">// An array mapping syscall numbers from syscall.h
+</span></span></span><span class="line"><span class="cl"><span class="c1">// to the function that handles the system call.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">static</span> <span class="nf">uint64</span> <span class="p">(</span><span class="o">*</span><span class="n">syscalls</span><span class="p">[])(</span><span class="kt">void</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_fork</span><span class="p">]</span>    <span class="n">sys_fork</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_exit</span><span class="p">]</span>    <span class="n">sys_exit</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_wait</span><span class="p">]</span>    <span class="n">sys_wait</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_pipe</span><span class="p">]</span>    <span class="n">sys_pipe</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_read</span><span class="p">]</span>    <span class="n">sys_read</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_kill</span><span class="p">]</span>    <span class="n">sys_kill</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_exec</span><span class="p">]</span>    <span class="n">sys_exec</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_fstat</span><span class="p">]</span>   <span class="n">sys_fstat</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_chdir</span><span class="p">]</span>   <span class="n">sys_chdir</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_dup</span><span class="p">]</span>     <span class="n">sys_dup</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_getpid</span><span class="p">]</span>  <span class="n">sys_getpid</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_sbrk</span><span class="p">]</span>    <span class="n">sys_sbrk</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_sleep</span><span class="p">]</span>   <span class="n">sys_sleep</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_uptime</span><span class="p">]</span>  <span class="n">sys_uptime</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_open</span><span class="p">]</span>    <span class="n">sys_open</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_write</span><span class="p">]</span>   <span class="n">sys_write</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_mknod</span><span class="p">]</span>   <span class="n">sys_mknod</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_unlink</span><span class="p">]</span>  <span class="n">sys_unlink</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_link</span><span class="p">]</span>    <span class="n">sys_link</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_mkdir</span><span class="p">]</span>   <span class="n">sys_mkdir</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="n">SYS_close</span><span class="p">]</span>   <span class="n">sys_close</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><h2 id="pingpong">pingpong<a hidden class="anchor" aria-hidden="true" href="#pingpong">#</a></h2>
 <p>使用 pipe 进行父进程和子进程之间的调用。注意管道 0, 1 的关闭。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab-1-utilities pingpong. Using the pipe syscall.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> buf[<span style="color:#ae81ff">8</span>];
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>() {
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> p[<span style="color:#ae81ff">2</span>];
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(p); <span style="color:#75715e">// using syscall to create pipe.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 1. child
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> id <span style="color:#f92672">=</span> <span style="color:#a6e22e">getpid</span>();
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">read</span>(p[<span style="color:#ae81ff">0</span>], buf, <span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d: received ping</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, id);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">write</span>(p[<span style="color:#ae81ff">1</span>], <span style="color:#e6db74">&#34;c&#34;</span>, <span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">1</span>]);
-</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> { <span style="color:#75715e">// 2. parent
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> id <span style="color:#f92672">=</span> <span style="color:#a6e22e">getpid</span>();
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">write</span>(p[<span style="color:#ae81ff">1</span>], <span style="color:#e6db74">&#34;p&#34;</span>, <span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">1</span>]);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">read</span>(p[<span style="color:#ae81ff">0</span>], buf, <span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(p[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%d: received pong</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, id);
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><h2 id="prime">prime</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @author chenghua.wang
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @brief Lab-1-utilities pingpong. Using the pipe syscall.
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/types.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/stat.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;user/user.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span><span class="o">*</span> <span class="n">buf</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">pipe</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="c1">// using syscall to create pipe.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 1. child
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="nf">fork</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="nf">getpid</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">read</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;%d: received ping</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">id</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">write</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#34;c&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="c1">// 2. parent
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="nf">getpid</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">write</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#34;p&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">wait</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nf">read</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;%d: received pong</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">id</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="prime">prime<a hidden class="anchor" aria-hidden="true" href="#prime">#</a></h2>
 <p>通过管道作为不同进程之间通信的渠道来进行多进程求解素数，实现素数筛。这里因为 XV6 的限制只能开 34 个进程。</p>
 <p>算法的具体流程非常的简单:</p>
 <ol>
@@ -268,253 +395,402 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
 </li>
 </ol>
 <p>只需要注意两次管道的关闭就好了。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief using concurrency to get primes.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">child</span>(<span style="color:#66d9ef">int</span> previous_pipe[<span style="color:#ae81ff">2</span>]) {
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> child_pipe[<span style="color:#ae81ff">2</span>];
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> prime;
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">1</span>]); <span style="color:#75715e">// child do not need write data to previous pipe.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(previous_pipe[<span style="color:#ae81ff">0</span>], <span style="color:#f92672">&amp;</span>prime, <span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>len) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">0</span>]); <span style="color:#75715e">// no data need to read anymore.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(child_pipe);
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;prime %d</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, prime);
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> num;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">child</span>(child_pipe);
-</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(child_pipe[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>) {
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(previous_pipe[<span style="color:#ae81ff">0</span>], <span style="color:#f92672">&amp;</span>num, <span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (len <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (num <span style="color:#f92672">%</span> prime <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">write</span>(child_pipe[<span style="color:#ae81ff">1</span>], <span style="color:#f92672">&amp;</span>num, <span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>      }
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(child_pipe[<span style="color:#ae81ff">1</span>]);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(previous_pipe[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>() {
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> parent_pipe[<span style="color:#ae81ff">2</span>];
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">pipe</span>(parent_pipe);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">child</span>(parent_pipe);
-</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(parent_pipe[<span style="color:#ae81ff">0</span>]); <span style="color:#75715e">// parent do not need to read data.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>; i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">36</span>; <span style="color:#f92672">++</span>i) {
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">write</span>(parent_pipe[<span style="color:#ae81ff">1</span>], <span style="color:#f92672">&amp;</span>i, <span style="color:#66d9ef">sizeof</span>(<span style="color:#66d9ef">int</span>));
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(parent_pipe[<span style="color:#ae81ff">1</span>]); <span style="color:#75715e">// parent do not need to write anymore.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// wait for child process done.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><h2 id="find">find</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @author chenghua.wang
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @brief using concurrency to get primes.
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @time Feb 23, 2023
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/types.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/stat.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;user/user.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">child</span><span class="p">(</span><span class="kt">int</span> <span class="n">previous_pipe</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">child_pipe</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">prime</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">close</span><span class="p">(</span><span class="n">previous_pipe</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span> <span class="c1">// child do not need write data to previous pipe.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="nf">read</span><span class="p">(</span><span class="n">previous_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">prime</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">len</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">previous_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span> <span class="c1">// no data need to read anymore.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// success.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">pipe</span><span class="p">(</span><span class="n">child_pipe</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;prime %d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">prime</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">num</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="nf">fork</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">previous_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">child</span><span class="p">(</span><span class="n">child_pipe</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">child_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="nf">read</span><span class="p">(</span><span class="n">previous_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">num</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="n">prime</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">write</span><span class="p">(</span><span class="n">child_pipe</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">num</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">child_pipe</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">previous_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">wait</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// success
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">parent_pipe</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">pipe</span><span class="p">(</span><span class="n">parent_pipe</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="nf">fork</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">child</span><span class="p">(</span><span class="n">parent_pipe</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">parent_pipe</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span> <span class="c1">// parent do not need to read data.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">36</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">write</span><span class="p">(</span><span class="n">parent_pipe</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">parent_pipe</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span> <span class="c1">// parent do not need to write anymore.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nf">wait</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// wait for child process done.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="find">find<a hidden class="anchor" aria-hidden="true" href="#find">#</a></h2>
 <p>基本上就是 XV6 中 <code>ls</code> 程序的改版。只不过判断是文件夹的话要递归。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab1-utilities find
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/fs.h&#34; // for file system. DIRSIZ, etc.</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span><span style="color:#f92672">*</span> <span style="color:#a6e22e">fmtname</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>path) {
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (p <span style="color:#f92672">=</span> path <span style="color:#f92672">+</span> <span style="color:#a6e22e">strlen</span>(path); p <span style="color:#f92672">&gt;=</span> path <span style="color:#f92672">&amp;&amp;</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#39;/&#39;</span>; <span style="color:#f92672">--</span>p);
-</span></span><span style="display:flex;"><span>  p<span style="color:#f92672">++</span>;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> p;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">find</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>directory, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>file_name) {
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">512</span>], <span style="color:#f92672">*</span>p;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> fd;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> dirent de;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> stat st;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// open file.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> ((fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(directory, <span style="color:#ae81ff">0</span>)) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(<span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;find: cannot open %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, directory);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// get the state of this file
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fstat</span>(fd, <span style="color:#f92672">&amp;</span>st) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">fprintf</span>(<span style="color:#ae81ff">2</span>, <span style="color:#e6db74">&#34;find: cannot get stat of %s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, directory);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">close</span>(fd);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span>;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// find the correct type need to check.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 1. path-&gt; find if file_name is same.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 2. directory-&gt; run find func again.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#75715e">// 3. others(&#39;.&#39;, &#39;..&#39;)-&gt; skip.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  <span style="color:#66d9ef">switch</span>(st.type) {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> T_DEVICE:
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> T_FILE:
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">strcmp</span>(file_name, <span style="color:#a6e22e">fmtname</span>(directory)) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;%s</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>, directory);
-</span></span><span style="display:flex;"><span>      }
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">case</span> T_DIR:
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">strcpy</span>(buf, directory);
-</span></span><span style="display:flex;"><span>      p <span style="color:#f92672">=</span> buf <span style="color:#f92672">+</span> <span style="color:#a6e22e">strlen</span>(buf);
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">*</span>p<span style="color:#f92672">++</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;/&#39;</span>;
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">while</span>(<span style="color:#a6e22e">read</span>(fd, <span style="color:#f92672">&amp;</span>de, <span style="color:#66d9ef">sizeof</span>(de)) <span style="color:#f92672">==</span> <span style="color:#66d9ef">sizeof</span>(de)) {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (de.inum <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">strcmp</span>(de.name, <span style="color:#e6db74">&#34;..&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> <span style="color:#a6e22e">strcmp</span>(de.name, <span style="color:#e6db74">&#34;.&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">continue</span>;
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">memmove</span>(p, de.name, DIRSIZ);
-</span></span><span style="display:flex;"><span>        p[DIRSIZ] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">find</span>(buf, file_name);
-</span></span><span style="display:flex;"><span>      }
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">close</span>(fd);
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (argc <span style="color:#f92672">!=</span> <span style="color:#ae81ff">3</span>) {
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;[ error ] find [directory] [&#39;name&#39;]</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>); <span style="color:#75715e">// failure
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">find</span>(argv[<span style="color:#ae81ff">1</span>], argv[<span style="color:#ae81ff">2</span>]);
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
-</span></span></code></pre></div><h2 id="xargs">xargs</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @author chenghua.wang
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @brief Lab1-utilities find
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @time Feb 23, 2023
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/types.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/stat.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;user/user.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/fs.h&#34; // for file system. DIRSIZ, etc.</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span><span class="o">*</span> <span class="nf">fmtname</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(</span><span class="n">p</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="nf">strlen</span><span class="p">(</span><span class="n">path</span><span class="p">);</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="n">path</span> <span class="o">&amp;&amp;</span> <span class="o">*</span><span class="n">p</span> <span class="o">!=</span> <span class="sc">&#39;/&#39;</span><span class="p">;</span> <span class="o">--</span><span class="n">p</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">p</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">p</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">find</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">directory</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">file_name</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">512</span><span class="p">],</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">fd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">struct</span> <span class="n">dirent</span> <span class="n">de</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">struct</span> <span class="n">stat</span> <span class="n">st</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// open file.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">((</span><span class="n">fd</span> <span class="o">=</span> <span class="nf">open</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">fprintf</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#34;find: cannot open %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">directory</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="c1">// get the state of this file
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">if</span> <span class="p">(</span><span class="nf">fstat</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">st</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">fprintf</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#34;find: cannot get stat of %s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">directory</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// find the correct type need to check.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 1. path-&gt; find if file_name is same.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 2. directory-&gt; run find func again.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="c1">// 3. others(&#39;.&#39;, &#39;..&#39;)-&gt; skip.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="k">switch</span><span class="p">(</span><span class="n">st</span><span class="p">.</span><span class="n">type</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">T_DEVICE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">T_FILE</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">      <span class="k">if</span> <span class="p">(</span><span class="nf">strcmp</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="nf">fmtname</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;%s</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">directory</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="nl">T_DIR</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">strcpy</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">directory</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">p</span> <span class="o">=</span> <span class="n">buf</span> <span class="o">+</span> <span class="nf">strlen</span><span class="p">(</span><span class="n">buf</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;/&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">while</span><span class="p">(</span><span class="nf">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">de</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">de</span><span class="p">))</span> <span class="o">==</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">de</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">de</span><span class="p">.</span><span class="n">inum</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nf">strcmp</span><span class="p">(</span><span class="n">de</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#34;..&#34;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nf">strcmp</span><span class="p">(</span><span class="n">de</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#34;.&#34;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">memmove</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">de</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="n">DIRSIZ</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">p</span><span class="p">[</span><span class="n">DIRSIZ</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nf">find</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">file_name</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">close</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">printf</span><span class="p">(</span><span class="s">&#34;[ error ] find [directory] [&#39;name&#39;]</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// failure
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">find</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// success
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></div><h2 id="xargs">xargs<a hidden class="anchor" aria-hidden="true" href="#xargs">#</a></h2>
 <p>我想 XV6 这个实验主要是想考察 <code>exec</code> 的作用。<code>xargs</code> 从标准输入得到数据，然后对每一行数据重新填入 <code>argv</code> 再执行。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">/**
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @author chenghua.wang
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @brief Lab1-utilities xargs.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * @time Feb 23, 2023
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"> * */</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/types.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;kernel/stat.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&#34;user/user.h&#34;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">512</span>];
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span>
-</span></span><span style="display:flex;"><span><span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">int</span> argc, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>argv[]) {
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>pass_argv[<span style="color:#ae81ff">64</span>];
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> argc; <span style="color:#f92672">++</span>i) {
-</span></span><span style="display:flex;"><span>    pass_argv[i] <span style="color:#f92672">=</span> argv[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>]; <span style="color:#75715e">// the terminate 0 is also moved.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (;;) {
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// to read a line
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span>(;;<span style="color:#f92672">++</span>i) {
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">int</span> len <span style="color:#f92672">=</span> <span style="color:#a6e22e">read</span>(<span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>buf[i], <span style="color:#ae81ff">1</span>); <span style="color:#75715e">// read from stdin.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>      <span style="color:#66d9ef">if</span> (len <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">||</span> buf[i] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;\n&#39;</span>) <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// exec a line
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    buf[i] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>    pass_argv[argc <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> buf;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">exec</span>(pass_argv[<span style="color:#ae81ff">0</span>], pass_argv);
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    } <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>      <span style="color:#a6e22e">wait</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>); <span style="color:#75715e">// success
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @author chenghua.wang
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @brief Lab1-utilities xargs.
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @time Feb 23, 2023
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/types.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;kernel/stat.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;user/user.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">512</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">char</span> <span class="o">*</span><span class="n">pass_argv</span><span class="p">[</span><span class="mi">64</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">argc</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">pass_argv</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">argv</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span> <span class="c1">// the terminate 0 is also moved.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(;;)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// to read a line
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="p">(;;</span><span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="nf">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">buf</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">1</span><span class="p">);</span> <span class="c1">// read from stdin.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">buf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;\n&#39;</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// exec a line
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">buf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">pass_argv</span><span class="p">[</span><span class="n">argc</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">buf</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="nf">fork</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">exec</span><span class="p">(</span><span class="n">pass_argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pass_argv</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// success
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nf">wait</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="nf">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// success
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
 </span></span></code></pre></div>
-		</div>
-		<footer class="post__footer">
-			
-<div class="post__tags tags clearfix">
-	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
-	<ul class="tags__list">
-		<li class="tags__item">
-			<a class="tags__link btn" href="/keep-moving-forward/tags/lecture/" rel="tag">Lecture</a>
-		</li>
-	</ul>
-</div>
-		</footer>
-	</article>
-</main>
 
-<div class="authorbox clearfix">
-	<figure class="authorbox__avatar">
-		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
-	</figure>
-	<div class="authorbox__header">
-		<span class="authorbox__name">About chenghua.wang</span>
-	</div>
-	<div class="authorbox__description">
-		Currently working on AI&amp;Sys, CV (low-level) and LLM topics.
-	</div>
-</div>
+  </div>
 
-<nav class="pager flex">
-	<div class="pager__item pager__item--prev">
-		<a class="pager__link" href="/keep-moving-forward/tech/xv6_overall/" rel="prev">
-			<span class="pager__subtitle">«&thinsp;Previous</span>
-			<p class="pager__title"></p>
-		</a>
-	</div>
-	<div class="pager__item pager__item--next">
-		<a class="pager__link" href="/keep-moving-forward/tech/xv6_lab2_syscall/" rel="next">
-			<span class="pager__subtitle">Next&thinsp;»</span>
-			<p class="pager__title">XV6 Lab 2: syscall</p>
-		</a>
-	</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/keep-moving-forward/tags/lecture/">Lecture</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/keep-moving-forward/tech/xv6_lab2_syscall/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>XV6 Lab 2: syscall</span>
+  </a>
+  <a class="next" href="http://localhost:1313/keep-moving-forward/papers/ft-vm/">
+    <span class="title">Next »</span>
+    <br>
+    <span>The Design of a Practical System for Fault-Tolerant Virtual Machines</span>
+  </a>
 </nav>
 
 
-			</div>
-			
-		</div>
-		<footer class="footer">
-	<div class="container footer__container flex">
-		
-		<div class="footer__copyright">
-			&copy; 2024 chenghua.wang.
-			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
-		</div>
-	</div>
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share XV6 Lab 1: Xv6 and Unix utilities on x"
+            href="https://x.com/intent/tweet/?text=XV6%20Lab%201%3a%20Xv6%20and%20Unix%20utilities&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f&amp;hashtags=Lecture">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share XV6 Lab 1: Xv6 and Unix utilities on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f&amp;title=XV6%20Lab%201%3a%20Xv6%20and%20Unix%20utilities&amp;summary=XV6%20Lab%201%3a%20Xv6%20and%20Unix%20utilities&amp;source=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share XV6 Lab 1: Xv6 and Unix utilities on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f&title=XV6%20Lab%201%3a%20Xv6%20and%20Unix%20utilities">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share XV6 Lab 1: Xv6 and Unix utilities on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share XV6 Lab 1: Xv6 and Unix utilities on whatsapp"
+            href="https://api.whatsapp.com/send?text=XV6%20Lab%201%3a%20Xv6%20and%20Unix%20utilities%20-%20http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share XV6 Lab 1: Xv6 and Unix utilities on telegram"
+            href="https://telegram.me/share/url?text=XV6%20Lab%201%3a%20Xv6%20and%20Unix%20utilities&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share XV6 Lab 1: Xv6 and Unix utilities on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=XV6%20Lab%201%3a%20Xv6%20and%20Unix%20utilities&u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fxv6_lab1_utility%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>© <a href="https://github.com/chenghuaWang">chenghua.wang</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
 </footer>
-	</div>
-<script async defer src="/keep-moving-forward/js/menu.js"></script>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a><script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.6/medium-zoom.min.js" integrity="sha512-N9IJRoc3LaP3NDoiGkcPa4gG94kapGpaA5Zq9/Dr04uf5TbLFU5q0o8AbRhLKUUlp8QFS2u7S+Yti0U7QtuZvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-
-
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    extensions: ["tex2jax.js"],
-    jax: ["input/TeX", "output/HTML-CSS"],
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
-      processEscapes: true
-    },
-    "HTML-CSS": { fonts: ["TeX"] }
+<script>
+const images = Array.from(document.querySelectorAll(".post-content img"));
+images.forEach(img => {
+  mediumZoom(img, {
+    margin: 0,  
+    scrollOffset: 40,  
+    container: null,  
+    template: null,  
+    background: 'rgba(0, 0, 0, 0.8)'
   });
+});
 </script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/8.js?i=5j20jf9ml5x&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
 </script>
 </body>
+
 </html>

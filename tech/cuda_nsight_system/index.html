@@ -1,161 +1,270 @@
 <!DOCTYPE html>
-<html class="no-js" lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>CUDA: NSight System - Ubios Home</title>
-	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
-	<meta name="description" content="">
-		<meta property="og:title" content="CUDA: NSight System" />
-<meta property="og:description" content="NSight System Document
-WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 WSL2 User guide 。
-1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：
-NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC)." />
+<html lang="en" dir="auto">
+
+<head><script src="/keep-moving-forward/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=keep-moving-forward/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>CUDA: NSight System | Ubios Home</title>
+<meta name="keywords" content="Kernel Impl, CUDA">
+<meta name="description" content="Usage of Nsight System">
+<meta name="author" content="chenghua.Wang">
+<link rel="canonical" href="http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/">
+<link crossorigin="anonymous" href="/keep-moving-forward/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/keep-moving-forward/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/keep-moving-forward/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/keep-moving-forward/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/keep-moving-forward/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/keep-moving-forward/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+</script>
+
+
+
+  
+
+<meta property="og:title" content="CUDA: NSight System" />
+<meta property="og:description" content="Usage of Nsight System" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/" /><meta property="article:section" content="Tech" />
+<meta property="og:url" content="http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/" /><meta property="article:section" content="tech" />
 <meta property="article:published_time" content="2023-04-18T00:00:00+00:00" />
 <meta property="article:modified_time" content="2023-04-18T00:00:00+00:00" />
 
-		<meta itemprop="name" content="CUDA: NSight System">
-<meta itemprop="description" content="NSight System Document
-WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 WSL2 User guide 。
-1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：
-NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC)."><meta itemprop="datePublished" content="2023-04-18T00:00:00+00:00" />
-<meta itemprop="dateModified" content="2023-04-18T00:00:00+00:00" />
-<meta itemprop="wordCount" content="1190">
-<meta itemprop="keywords" content="CUDA," />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="dns-prefetch" href="//fonts.googleapis.com">
-	<link rel="dns-prefetch" href="//fonts.gstatic.com">
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
 
-	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
-	
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="CUDA: NSight System"/>
+<meta name="twitter:description" content="Usage of Nsight System"/>
 
-	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
-		
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Technique",
+      "item": "http://localhost:1313/keep-moving-forward/tech/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "CUDA: NSight System",
+      "item": "http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CUDA: NSight System",
+  "name": "CUDA: NSight System",
+  "description": "Usage of Nsight System",
+  "keywords": [
+    "Kernel Impl", "CUDA"
+  ],
+  "articleBody": "NSight System Document\nWSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 WSL2 User guide 。\n1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：\nNVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC).\n如 gperoftools 一样，这是个性能调优工具，聚焦在 N 家的 GPU 上，当然，CPU 也是在其性能分析的范围内。Nsight system 更多的时候是查看 Memory Stream(Host2Device, Device2Host) 和 计算 Kernel 之间的关系，查看有无合理的填充满流水线，更好的利用 GPU 的并行性。\nNsight system 主要是通过采样和追踪来做抓取系统信息：\nsampling 是硬件层面的实现 ，利用了Linux OS’ perf subsystem，跟Linux perf工具用的一样，周期性地停止目标程序（比如每100w个cycle），收集每个线程的 CPU Instruction Pointers(IP, 指令指针)，便于了解某一时刻系统的执行状态。 tracing 是精确地采集各个活动开始和结束的时间，便于了解系统各个环节的时间开销和运转情况。 2. 如何使用 Nsight System 我以 BGR 2 YUV 的例子(代码来自于[1])来展示了 Nsight system 的信息。该示例使用了两种方式：1. 单 Stream 执行；2. 16 Stream 执行(Stream 的数量没有明确的限制，但是貌似在我的机器上，性能最优的结果就是 16，应该 stream 多了以后就后会被加入调度队列了)。\n一般在调优的时候先使用 Nsight system 来大体的看一下同步，overlap 数据搬运和计算等是不是合理。对于 Kernel 的调优一般是在 Nsight compute 中。当然，该工具实际上也可以来监测 Graphic 相关的东西，不仅仅是只有 CUDA。\n为了便利，直接使用 GUI 界面来操作，个人也推荐 GUI 启动，毕竟最终还是要看时间轴图来的直观。对于没装 GUI 的机器，也可以使用 SSH 远程连接它，便于操作。\n对于 BGR 2 YUV 的例子，我们通过在 GUI 中设置程序的位置和程序的启动命令即可配置完成一个 Nsight system Project。(可以看到，这个perf工具还支持很多的信息统计，如 Vulkan 和 OpenGL)\nFig 1. NSight System Project Settings. 在配置完采样信息，需要追踪的信息后，点击 Start 就愉快的开始程序的分析了。在分析后的 Timeline View 中，我们可以清晰的看到每个阶段的时间消耗。\nFig 2. 1 Stream. 比如在 BGR 2 YUV 的第一个例子中(上图，只使用单个Stream)，从时间轴上可以看到并行性并没有起来，我们可以多开几个 Stream 让数据传输和计算并行起来。通让每个 Stream 做不同的工作(数据搬运，计算)，来最大化并行。如下图所示:\nFig 3. 16 streams. code:\n[Click to expand] 主项目 CMake 设置\ncmake_minimum_required(VERSION 3.18) project( cmake_learn LANGUAGES CXX CUDA ) if(CUDA_ENABLE) enable_language(CUDA) endif() set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL \"\") message(STATUS \"cuda version: \" ${CUDA_VERSION_STRING}) include_directories(${CUDA_INCLUDE_DIRS}) add_subdirectory(\"./stream\") 子项目 CMake 设置\nproject(cuda_stream) add_executable(cuda_stream main.cu) add_compile_options(--cuda-gpu-arch=sm_20) main.cu\n#include #include #include #include #include #ifdef DEBUG #define CUDA_CALL(F) if( (F) != cudaSuccess ) \\ {printf(\"Error %s at %s:%d\\n\", cudaGetErrorString(cudaGetLastError()), \\ __FILE__,__LINE__); exit(-1);} #define CUDA_CHECK() if( (cudaPeekAtLastError()) != cudaSuccess ) \\ {printf(\"Error %s at %s:%d\\n\", cudaGetErrorString(cudaGetLastError()), \\ __FILE__,__LINE__-1); exit(-1);} #else #define CUDA_CALL(F) (F) #define CUDA_CHECK() #endif void PrintDeviceInfo(); void GenerateBgra8K(uint8_t* buffer, int dataSize); void convertPixelFormatCpu(uint8_t* inputBgra, uint8_t* outputYuv, int numPixels); __global__ void convertPixelFormat(uint8_t* inputBgra, uint8_t* outputYuv, int numPixels); int main() { PrintDeviceInfo(); uint8_t* bgraBuffer; uint8_t* yuvBuffer; uint8_t* deviceBgraBuffer; uint8_t* deviceYuvBuffer; const int dataSizeBgra = 7680 * 4320 * 4; const int dataSizeYuv = 7680 * 4320 * 3; CUDA_CALL(cudaMallocHost(\u0026bgraBuffer, dataSizeBgra)); CUDA_CALL(cudaMallocHost(\u0026yuvBuffer, dataSizeYuv)); CUDA_CALL(cudaMalloc(\u0026deviceBgraBuffer, dataSizeBgra)); CUDA_CALL(cudaMalloc(\u0026deviceYuvBuffer, dataSizeYuv)); std::vector\u003cuint8_t\u003e yuvCpuBuffer(dataSizeYuv); cudaEvent_t start, stop; float elapsedTime; float elapsedTimeTotal; float dataRate; CUDA_CALL(cudaEventCreate(\u0026start)); CUDA_CALL(cudaEventCreate(\u0026stop)); std::cout \u003c\u003c \" \" \u003c\u003c std::endl; std::cout \u003c\u003c \"Generating 7680 x 4320 BRGA8888 image, data size: \" \u003c\u003c dataSizeBgra \u003c\u003c std::endl; GenerateBgra8K(bgraBuffer, dataSizeBgra); std::cout \u003c\u003c \" \" \u003c\u003c std::endl; std::cout \u003c\u003c \"Computing results using CPU.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" \" \u003c\u003c std::endl; CUDA_CALL(cudaEventRecord(start, 0)); convertPixelFormatCpu(bgraBuffer, yuvCpuBuffer.data(), 7680*4320); CUDA_CALL(cudaEventRecord(stop, 0)); CUDA_CALL(cudaEventSynchronize(stop)); CUDA_CALL(cudaEventElapsedTime(\u0026elapsedTime, start, stop)); std::cout \u003c\u003c \" Whole process took \" \u003c\u003c elapsedTime \u003c\u003c \"ms.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" \" \u003c\u003c std::endl; std::cout \u003c\u003c \"Computing results using GPU, default stream.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" \" \u003c\u003c std::endl; std::cout \u003c\u003c \" Move data to GPU.\" \u003c\u003c std::endl; CUDA_CALL(cudaEventRecord(start, 0)); CUDA_CALL(cudaMemcpy(deviceBgraBuffer, bgraBuffer, dataSizeBgra, cudaMemcpyHostToDevice)); CUDA_CALL(cudaEventRecord(stop, 0)); CUDA_CALL(cudaEventSynchronize(stop)); CUDA_CALL(cudaEventElapsedTime(\u0026elapsedTime, start, stop)); dataRate = dataSizeBgra/(elapsedTime/1000.0)/1.0e9; elapsedTimeTotal = elapsedTime; std::cout \u003c\u003c \" Data transfer took \" \u003c\u003c elapsedTime \u003c\u003c \"ms.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" Performance is \" \u003c\u003c dataRate \u003c\u003c \"GB/s.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" Convert 8-bit BGRA to 8-bit YUV.\" \u003c\u003c std::endl; CUDA_CALL(cudaEventRecord(start, 0)); convertPixelFormat\u003c\u003c\u003c32400, 1024\u003e\u003e\u003e(deviceBgraBuffer, deviceYuvBuffer, 7680*4320); CUDA_CHECK(); CUDA_CALL(cudaDeviceSynchronize()); CUDA_CALL(cudaEventRecord(stop, 0)); CUDA_CALL(cudaEventSynchronize(stop)); CUDA_CALL(cudaEventElapsedTime(\u0026elapsedTime, start, stop)); dataRate = dataSizeBgra/(elapsedTime/1000.0)/1.0e9; elapsedTimeTotal += elapsedTime; std::cout \u003c\u003c \" Processing of 8K image took \" \u003c\u003c elapsedTime \u003c\u003c \"ms.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" Performance is \" \u003c\u003c dataRate \u003c\u003c \"GB/s.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" Move data to CPU.\" \u003c\u003c std::endl; CUDA_CALL(cudaEventRecord(start, 0)); CUDA_CALL(cudaMemcpy(yuvBuffer, deviceYuvBuffer, dataSizeYuv, cudaMemcpyDeviceToHost)); CUDA_CALL(cudaEventRecord(stop, 0)); CUDA_CALL(cudaEventSynchronize(stop)); CUDA_CALL(cudaEventElapsedTime(\u0026elapsedTime, start, stop)); dataRate = dataSizeYuv/(elapsedTime/1000.0)/1.0e9; elapsedTimeTotal += elapsedTime; std::cout \u003c\u003c \" Data transfer took \" \u003c\u003c elapsedTime \u003c\u003c \"ms.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" Performance is \" \u003c\u003c dataRate \u003c\u003c \"GB/s.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" Whole process took \" \u003c\u003c elapsedTimeTotal \u003c\u003c \"ms.\" \u003c\u003cstd::endl; std::cout \u003c\u003c \" Compare CPU and GPU results ...\" \u003c\u003c std::endl; bool foundMistake = false; for(int i=0; i\u003cdataSizeYuv; i++){ if(yuvCpuBuffer[i]!=yuvBuffer[i]){ foundMistake = true; break; } } if(foundMistake){ std::cout \u003c\u003c \" Results are NOT the same.\" \u003c\u003c std::endl; } else { std::cout \u003c\u003c \" Results are the same.\" \u003c\u003c std::endl; } const int nStreams = 16; std::cout \u003c\u003c \" \" \u003c\u003c std::endl; std::cout \u003c\u003c \"Computing results using GPU, using \"\u003c\u003c nStreams \u003c\u003c\" streams.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" \" \u003c\u003c std::endl; cudaStream_t streams[nStreams]; std::cout \u003c\u003c \" Creating \" \u003c\u003c nStreams \u003c\u003c \" CUDA streams.\" \u003c\u003c std::endl; for (int i = 0; i \u003c nStreams; i++) { CUDA_CALL(cudaStreamCreate(\u0026streams[i])); } int brgaOffset = 0; int yuvOffset = 0; const int brgaChunkSize = dataSizeBgra / nStreams; const int yuvChunkSize = dataSizeYuv / nStreams; CUDA_CALL(cudaEventRecord(start, 0)); for(int i=0; i\u003cnStreams; i++) { std::cout \u003c\u003c \" Launching stream \" \u003c\u003c i \u003c\u003c \".\" \u003c\u003c std::endl; brgaOffset = brgaChunkSize*i; yuvOffset = yuvChunkSize*i; CUDA_CALL(cudaMemcpyAsync( deviceBgraBuffer+brgaOffset, bgraBuffer+brgaOffset, brgaChunkSize, cudaMemcpyHostToDevice, streams[i] )); convertPixelFormat\u003c\u003c\u003c4096, 1024, 0, streams[i]\u003e\u003e\u003e(deviceBgraBuffer+brgaOffset, deviceYuvBuffer+yuvOffset, brgaChunkSize/4); CUDA_CALL(cudaMemcpyAsync( yuvBuffer+yuvOffset, deviceYuvBuffer+yuvOffset, yuvChunkSize, cudaMemcpyDeviceToHost, streams[i] )); } CUDA_CHECK(); CUDA_CALL(cudaDeviceSynchronize()); CUDA_CALL(cudaEventRecord(stop, 0)); CUDA_CALL(cudaEventSynchronize(stop)); CUDA_CALL(cudaEventElapsedTime(\u0026elapsedTime, start, stop)); std::cout \u003c\u003c \" Whole process took \" \u003c\u003c elapsedTime \u003c\u003c \"ms.\" \u003c\u003c std::endl; std::cout \u003c\u003c \" Compare CPU and GPU results ...\" \u003c\u003c std::endl; for(int i=0; i\u003cdataSizeYuv; i++){ if(yuvCpuBuffer[i]!=yuvBuffer[i]){ foundMistake = true; break; } } if(foundMistake){ std::cout \u003c\u003c \" Results are NOT the same.\" \u003c\u003c std::endl; } else { std::cout \u003c\u003c \" Results are the same.\" \u003c\u003c std::endl; } CUDA_CALL(cudaFreeHost(bgraBuffer)); CUDA_CALL(cudaFreeHost(yuvBuffer)); CUDA_CALL(cudaFree(deviceBgraBuffer)); CUDA_CALL(cudaFree(deviceYuvBuffer)); return 0; } void PrintDeviceInfo(){ int deviceCount = 0; cudaGetDeviceCount(\u0026deviceCount); std::cout \u003c\u003c \"Number of device(s): \" \u003c\u003c deviceCount \u003c\u003c std::endl; if (deviceCount == 0) { std::cout \u003c\u003c \"There is no device supporting CUDA\" \u003c\u003c std::endl; return; } cudaDeviceProp info; for(int i=0; i\u003cdeviceCount; i++){ cudaGetDeviceProperties(\u0026info, i); std::cout \u003c\u003c \"Device \" \u003c\u003c i \u003c\u003c std::endl; std::cout \u003c\u003c \" Name: \" \u003c\u003c std::string(info.name) \u003c\u003c std::endl; std::cout \u003c\u003c \" Glocbal memory: \" \u003c\u003c info.totalGlobalMem/1024.0/1024.0 \u003c\u003c \" MB\"\u003c\u003c std::endl; std::cout \u003c\u003c \" Shared memory per block: \" \u003c\u003c info.sharedMemPerBlock/1024.0 \u003c\u003c \" KB\"\u003c\u003c std::endl; std::cout \u003c\u003c \" Warp size: \" \u003c\u003c info.warpSize\u003c\u003c std::endl; std::cout \u003c\u003c \" Max thread per block: \" \u003c\u003c info.maxThreadsPerBlock\u003c\u003c std::endl; std::cout \u003c\u003c \" Thread dimension limits: \" \u003c\u003c info.maxThreadsDim[0]\u003c\u003c \" x \" \u003c\u003c info.maxThreadsDim[1]\u003c\u003c \" x \" \u003c\u003c info.maxThreadsDim[2]\u003c\u003c std::endl; std::cout \u003c\u003c \" Max grid size: \" \u003c\u003c info.maxGridSize[0]\u003c\u003c \" x \" \u003c\u003c info.maxGridSize[1]\u003c\u003c \" x \" \u003c\u003c info.maxGridSize[2]\u003c\u003c std::endl; std::cout \u003c\u003c \" Compute capability: \" \u003c\u003c info.major \u003c\u003c \".\" \u003c\u003c info.minor \u003c\u003c std::endl; } } void GenerateBgra8K(uint8_t* buffer, int dataSize){ std::random_device rd; std::mt19937 gen(rd()); std::uniform_int_distribution\u003c\u003e sampler(0, 255); for(int i=0; i\u003cdataSize/4; i++){ buffer[i*4] = sampler(gen); buffer[i*4+1] = sampler(gen); buffer[i*4+2] = sampler(gen); buffer[i*4+3] = 255; } } void convertPixelFormatCpu(uint8_t* inputBgra, uint8_t* outputYuv, int numPixels){ short3 yuv16; char3 yuv8; for(int idx=0; idx\u003cnumPixels; idx++){ yuv16.x = 66*inputBgra[idx*4+2] + 129*inputBgra[idx*4+1] + 25*inputBgra[idx*4]; yuv16.y = -38*inputBgra[idx*4+2] + -74*inputBgra[idx*4+1] + 112*inputBgra[idx*4]; yuv16.z = 112*inputBgra[idx*4+2] + -94*inputBgra[idx*4+1] + -18*inputBgra[idx*4]; yuv8.x = (yuv16.x\u003e\u003e8)+16; yuv8.y = (yuv16.y\u003e\u003e8)+128; yuv8.z = (yuv16.z\u003e\u003e8)+128; *(reinterpret_cast\u003cchar3*\u003e(\u0026outputYuv[idx*3])) = yuv8; } } __global__ void convertPixelFormat(uint8_t* inputBgra, uint8_t* outputYuv, int numPixels){ int stride = gridDim.x * blockDim.x; int idx = threadIdx.x + blockIdx.x * blockDim.x; short3 yuv16; char3 yuv8; while(idx\u003c=numPixels){ if(idx\u003cnumPixels){ yuv16.x = 66*inputBgra[idx*4+2] + 129*inputBgra[idx*4+1] + 25*inputBgra[idx*4]; yuv16.y = -38*inputBgra[idx*4+2] + -74*inputBgra[idx*4+1] + 112*inputBgra[idx*4]; yuv16.z = 112*inputBgra[idx*4+2] + -94*inputBgra[idx*4+1] + -18*inputBgra[idx*4]; yuv8.x = (yuv16.x\u003e\u003e8)+16; yuv8.y = (yuv16.y\u003e\u003e8)+128; yuv8.z = (yuv16.z\u003e\u003e8)+128; *(reinterpret_cast\u003cchar3*\u003e(\u0026outputYuv[idx*3])) = yuv8; } idx += stride; } } Reference:\n[1] CUDA随笔之Stream的使用\n",
+  "wordCount" : "1190",
+  "inLanguage": "en",
+  "datePublished": "2023-04-18T00:00:00Z",
+  "dateModified": "2023-04-18T00:00:00Z",
+  "author":[{
+    "@type": "Person",
+    "name": "chenghua.Wang"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Ubios Home",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/keep-moving-forward/favicon.ico"
+    }
+  }
+}
+</script>
 </head>
-<body class="body">
-	<div class="container container--outer">
-		
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
 <header class="header">
-	<div class="container header__container">
-		
-	<div class="logo logo--mixed" >
-		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
-			
-			<div class="logo__item logo__text" >
-					<div class="logo__title" >Ubios Home</div>
-					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
-				</div>
-		</a>
-	</div>
-		
-<nav class="menu">
-	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
-		<span class="menu__btn-title" tabindex="-1">Menu</span>
-	</button>
-	<ul class="menu__list">
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/about/">
-				
-				<span class="menu__text">About</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/hpc_ai/">
-				
-				<span class="menu__text">HPC &amp; AI 入坑</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
-				
-				<span class="menu__text">Lecture-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
-				
-				<span class="menu__text">Paper-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
-				
-				<span class="menu__text">Tech-Posts</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
-				
-				<span class="menu__text">Thinking</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/news/">
-				
-				<span class="menu__text">🎉News🎉</span>
-				
-			</a>
-		</li>
-	</ul>
-</nav>
-
-	</div>
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/keep-moving-forward/" accesskey="h" title="Ubios Home (Alt + H)">Ubios Home</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/about/" title="关于我">
+                    <span>关于我</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/tech_posts/" title="技术相关">
+                    <span>技术相关</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/paper_posts/" title="论文解析">
+                    <span>论文解析</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/news/" title="🎉News🎉">
+                    <span>🎉News🎉</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/thingking/" title="思考">
+                    <span>思考</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/hpc_ai/" title="AI&amp;Sys 入门">
+                    <span>AI&amp;Sys 入门</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/series" title="系列文章">
+                    <span>系列文章</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </header>
-		<div class="wrapper flex">
-			<div class="primary">
-			
+<main class="main">
 
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/keep-moving-forward/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/keep-moving-forward/tech/">Technique</a></div>
+    <h1 class="post-title entry-hint-parent">
+      CUDA: NSight System
+    </h1>
+    <div class="post-meta"><span title='2023-04-18 00:00:00 +0000 UTC'>April 18, 2023</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;chenghua.Wang
 
-<main class="main" role="main">
-	<article class="post">
-		<header class="post__header">
-			<h1 class="post__title">CUDA: NSight System</h1>
-			<p class="post__lead">Usage of Nsight System</p>
-			<div class="post__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
-<div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-04-18T00:00:00Z">2023-04-18</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/" rel="category">HPC&#43;AI Tools</a>
-	</span>
-</div></div>
-		</header>
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
 
-		
-<div class="post__toc toc">
-	<div class="toc__title">Page content</div>
-	<div class="toc__menu">
-		<nav id="TableOfContents">
-  <ul>
-    <li>
-      <ul>
-        <li>
-          <ul>
-            <li><a href="#1-什么是-nsight-system">1. 什么是 Nsight System</a></li>
-            <li><a href="#2-如何使用-nsight-system">2. 如何使用 Nsight System</a></li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-	</div>
-</div><div class="content post__content clearfix">
-			<p><a href="https://docs.nvidia.com/nsight-systems/UserGuide/index.html">NSight System Document</a></p>
+        <div class="inner"><ul>
+                <li>
+                    <a href="#1-%e4%bb%80%e4%b9%88%e6%98%af-nsight-system" aria-label="1. 什么是 Nsight System">1. 什么是 Nsight System</a></li>
+                <li>
+                    <a href="#2-%e5%a6%82%e4%bd%95%e4%bd%bf%e7%94%a8-nsight-system" aria-label="2. 如何使用 Nsight System">2. 如何使用 Nsight System</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p><a href="https://docs.nvidia.com/nsight-systems/UserGuide/index.html">NSight System Document</a></p>
 <blockquote>
 <p>WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 <a href="https://docs.nvidia.com/cuda/wsl-user-guide/index.html#known-limitations-for-linux-cuda-applications">WSL2 User guide</a> 。</p>
 </blockquote>
 <hr>
-<h3 id="1-什么是-nsight-system">1. 什么是 Nsight System</h3>
+<h3 id="1-什么是-nsight-system">1. 什么是 Nsight System<a hidden class="anchor" aria-hidden="true" href="#1-什么是-nsight-system">#</a></h3>
 <p>我们先看下 Nsight System 官网对该工具的描述：</p>
 <blockquote>
 <p>NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC).</p>
@@ -166,407 +275,551 @@ NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to 
 <li>sampling 是硬件层面的实现 ，利用了Linux OS&rsquo; perf subsystem，跟Linux perf工具用的一样，周期性地停止目标程序（比如每100w个cycle），收集每个线程的 CPU Instruction Pointers(IP, 指令指针)，便于了解某一时刻系统的执行状态。</li>
 <li>tracing 是精确地采集各个活动开始和结束的时间，便于了解系统各个环节的时间开销和运转情况。</li>
 </ul>
-<h3 id="2-如何使用-nsight-system">2. 如何使用 Nsight System</h3>
+<h3 id="2-如何使用-nsight-system">2. 如何使用 Nsight System<a hidden class="anchor" aria-hidden="true" href="#2-如何使用-nsight-system">#</a></h3>
 <p>我以 BGR 2 YUV 的例子(代码来自于[1])来展示了 Nsight system 的信息。该示例使用了两种方式：1. 单 Stream 执行；2. 16 Stream 执行(Stream 的数量没有明确的限制，但是貌似在我的机器上，性能最优的结果就是 16，应该 stream 多了以后就后会被加入调度队列了)。</p>
 <p>一般在调优的时候先使用 Nsight system 来大体的看一下同步，overlap 数据搬运和计算等是不是合理。对于 Kernel 的调优一般是在 Nsight compute 中。当然，该工具实际上也可以来监测 Graphic 相关的东西，不仅仅是只有 CUDA。</p>
 <p>为了便利，直接使用 GUI 界面来操作，个人也推荐 GUI 启动，毕竟最终还是要看时间轴图来的直观。对于没装 GUI 的机器，也可以使用 SSH 远程连接它，便于操作。</p>
 <p>对于 BGR 2 YUV 的例子，我们通过在 GUI 中设置程序的位置和程序的启动命令即可配置完成一个 Nsight system Project。(可以看到，这个perf工具还支持很多的信息统计，如 Vulkan 和 OpenGL)</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/nsight_system_project_setting.png" width = "60%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Fig 1. NSight System Project Settings.</div>
-</div>
+<figure>
+    <img loading="lazy" src="nsight_system_project_setting.png"/> <figcaption>
+            Fig 1. NSight System Project Settings.
+        </figcaption>
+</figure>
+
 <p>在配置完采样信息，需要追踪的信息后，点击 Start 就愉快的开始程序的分析了。在分析后的 Timeline View 中，我们可以清晰的看到每个阶段的时间消耗。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/nsight_system_no_stream.png" width = "80%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Fig 2. 1 Stream.</div>
-</div>
+<figure>
+    <img loading="lazy" src="nsight_system_no_stream.png"/> <figcaption>
+            Fig 2. 1 Stream.
+        </figcaption>
+</figure>
+
 <p>比如在 BGR 2 YUV 的第一个例子中(上图，只使用单个Stream)，从时间轴上可以看到并行性并没有起来，我们可以多开几个 Stream 让数据传输和计算并行起来。通让每个 Stream 做不同的工作(数据搬运，计算)，来最大化并行。如下图所示:</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/nsight_system_16_stream.png" width = "80%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Fig 3. 16 streams.</div>
-</div>
+<figure>
+    <img loading="lazy" src="nsight_system_16_stream.png"/> <figcaption>
+            Fig 3. 16 streams.
+        </figcaption>
+</figure>
+
 <hr>
 <p><strong>code:</strong></p>
 <details><summary>[Click to expand]</summary>
 <p>主项目 CMake 设置</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>cmake_minimum_required(<span style="color:#e6db74">VERSION</span> <span style="color:#e6db74">3.18</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>project(
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">cmake_learn</span> 
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">LANGUAGES</span> <span style="color:#e6db74">CXX</span> <span style="color:#e6db74">CUDA</span>
-</span></span><span style="display:flex;"><span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>if(<span style="color:#e6db74">CUDA_ENABLE</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    enable_language(<span style="color:#e6db74">CUDA</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>endif()<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>set(<span style="color:#e6db74">CMAKE_EXPORT_COMPILE_COMMANDS</span> <span style="color:#e6db74">ON</span> <span style="color:#e6db74">CACHE</span> <span style="color:#e6db74">BOOL</span> <span style="color:#e6db74">&#34;&#34;</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>message(<span style="color:#e6db74">STATUS</span> <span style="color:#e6db74">&#34;cuda version: &#34;</span> <span style="color:#f92672">${</span>CUDA_VERSION_STRING<span style="color:#f92672">}</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>include_directories(<span style="color:#f92672">${</span>CUDA_INCLUDE_DIRS<span style="color:#f92672">}</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>add_subdirectory(<span style="color:#e6db74">&#34;./stream&#34;</span>)<span style="color:#960050;background-color:#1e0010">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cmake" data-lang="cmake"><span class="line"><span class="cl"><span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="s">VERSION</span> <span class="s">3.18</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">project</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">cmake_learn</span> 
+</span></span><span class="line"><span class="cl">    <span class="s">LANGUAGES</span> <span class="s">CXX</span> <span class="s">CUDA</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">if</span><span class="p">(</span><span class="s">CUDA_ENABLE</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span>    <span class="nb">enable_language</span><span class="p">(</span><span class="s">CUDA</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">endif</span><span class="p">()</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_EXPORT_COMPILE_COMMANDS</span> <span class="s">ON</span> <span class="s">CACHE</span> <span class="s">BOOL</span> <span class="s2">&#34;&#34;</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">message</span><span class="p">(</span><span class="s">STATUS</span> <span class="s2">&#34;cuda version: &#34;</span> <span class="o">${</span><span class="nv">CUDA_VERSION_STRING</span><span class="o">}</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">include_directories</span><span class="p">(</span><span class="o">${</span><span class="nv">CUDA_INCLUDE_DIRS</span><span class="o">}</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">add_subdirectory</span><span class="p">(</span><span class="s2">&#34;./stream&#34;</span><span class="p">)</span><span class="err">
 </span></span></span></code></pre></div><p>子项目 CMake 设置</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cmake" data-lang="cmake"><span style="display:flex;"><span>project(<span style="color:#e6db74">cuda_stream</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>add_executable(<span style="color:#e6db74">cuda_stream</span> <span style="color:#e6db74">main.cu</span>)<span style="color:#960050;background-color:#1e0010">
-</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>add_compile_options(<span style="color:#e6db74">--cuda-gpu-arch=sm_20</span>)<span style="color:#960050;background-color:#1e0010">
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cmake" data-lang="cmake"><span class="line"><span class="cl"><span class="nb">project</span><span class="p">(</span><span class="s">cuda_stream</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">add_executable</span><span class="p">(</span><span class="s">cuda_stream</span> <span class="s">main.cu</span><span class="p">)</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="nb">add_compile_options</span><span class="p">(</span><span class="s">--cuda-gpu-arch=sm_20</span><span class="p">)</span><span class="err">
 </span></span></span></code></pre></div><p>main.cu</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;vector&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;random&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;iostream&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;cuda.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;cuda_runtime.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#ifdef DEBUG
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define CUDA_CALL(F)  if( (F) != cudaSuccess ) \
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  {printf(&#34;Error %s at %s:%d\n&#34;, cudaGetErrorString(cudaGetLastError()), \
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">   __FILE__,__LINE__); exit(-1);}
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define CUDA_CHECK()  if( (cudaPeekAtLastError()) != cudaSuccess ) \
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  {printf(&#34;Error %s at %s:%d\n&#34;, cudaGetErrorString(cudaGetLastError()), \
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">   __FILE__,__LINE__-1); exit(-1);}
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#else
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define CUDA_CALL(F) (F)
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#define CUDA_CHECK()
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#endif
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">PrintDeviceInfo</span>();
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">GenerateBgra8K</span>(<span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> buffer, <span style="color:#66d9ef">int</span> dataSize);
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">convertPixelFormatCpu</span>(<span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> inputBgra, <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> outputYuv, <span style="color:#66d9ef">int</span> numPixels);
-</span></span><span style="display:flex;"><span>__global__ <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">convertPixelFormat</span>(<span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> inputBgra, <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> outputYuv, <span style="color:#66d9ef">int</span> numPixels);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
-</span></span><span style="display:flex;"><span>  PrintDeviceInfo();
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> bgraBuffer;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> yuvBuffer;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> deviceBgraBuffer;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> deviceYuvBuffer;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> dataSizeBgra <span style="color:#f92672">=</span> <span style="color:#ae81ff">7680</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">4320</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">4</span>;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> dataSizeYuv <span style="color:#f92672">=</span> <span style="color:#ae81ff">7680</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">4320</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>;
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaMallocHost(<span style="color:#f92672">&amp;</span>bgraBuffer, dataSizeBgra));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaMallocHost(<span style="color:#f92672">&amp;</span>yuvBuffer, dataSizeYuv));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaMalloc(<span style="color:#f92672">&amp;</span>deviceBgraBuffer, dataSizeBgra));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaMalloc(<span style="color:#f92672">&amp;</span>deviceYuvBuffer, dataSizeYuv));
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>vector<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">&gt;</span> yuvCpuBuffer(dataSizeYuv);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  cudaEvent_t start, stop;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">float</span> elapsedTime;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">float</span> elapsedTimeTotal;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">float</span> dataRate;
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventCreate(<span style="color:#f92672">&amp;</span>start));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventCreate(<span style="color:#f92672">&amp;</span>stop));
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Generating 7680 x 4320 BRGA8888 image, data size: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> dataSizeBgra <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  GenerateBgra8K(bgraBuffer, dataSizeBgra);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Computing results using CPU.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(start, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  convertPixelFormatCpu(bgraBuffer, yuvCpuBuffer.data(), <span style="color:#ae81ff">7680</span><span style="color:#f92672">*</span><span style="color:#ae81ff">4320</span>);
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(stop, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventSynchronize(stop));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventElapsedTime(<span style="color:#f92672">&amp;</span>elapsedTime, start, stop));
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Whole process took &#34;</span> <span style="color:#f92672">&lt;&lt;</span> elapsedTime <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;ms.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Computing results using GPU, default stream.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Move data to GPU.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(start, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaMemcpy(deviceBgraBuffer, bgraBuffer, dataSizeBgra, cudaMemcpyHostToDevice));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(stop, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventSynchronize(stop));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventElapsedTime(<span style="color:#f92672">&amp;</span>elapsedTime, start, stop));
-</span></span><span style="display:flex;"><span>  dataRate <span style="color:#f92672">=</span> dataSizeBgra<span style="color:#f92672">/</span>(elapsedTime<span style="color:#f92672">/</span><span style="color:#ae81ff">1000.0</span>)<span style="color:#f92672">/</span><span style="color:#ae81ff">1.0e9</span>;
-</span></span><span style="display:flex;"><span>  elapsedTimeTotal <span style="color:#f92672">=</span> elapsedTime;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Data transfer took &#34;</span> <span style="color:#f92672">&lt;&lt;</span> elapsedTime <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;ms.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Performance is &#34;</span> <span style="color:#f92672">&lt;&lt;</span> dataRate <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;GB/s.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Convert 8-bit BGRA to 8-bit YUV.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(start, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  convertPixelFormat<span style="color:#f92672">&lt;&lt;&lt;</span><span style="color:#ae81ff">32400</span>, <span style="color:#ae81ff">1024</span><span style="color:#f92672">&gt;&gt;&gt;</span>(deviceBgraBuffer, deviceYuvBuffer, <span style="color:#ae81ff">7680</span><span style="color:#f92672">*</span><span style="color:#ae81ff">4320</span>);
-</span></span><span style="display:flex;"><span>  CUDA_CHECK();
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaDeviceSynchronize());
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(stop, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventSynchronize(stop));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventElapsedTime(<span style="color:#f92672">&amp;</span>elapsedTime, start, stop));
-</span></span><span style="display:flex;"><span>  dataRate <span style="color:#f92672">=</span> dataSizeBgra<span style="color:#f92672">/</span>(elapsedTime<span style="color:#f92672">/</span><span style="color:#ae81ff">1000.0</span>)<span style="color:#f92672">/</span><span style="color:#ae81ff">1.0e9</span>;
-</span></span><span style="display:flex;"><span>  elapsedTimeTotal <span style="color:#f92672">+=</span> elapsedTime;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Processing of 8K image took &#34;</span> <span style="color:#f92672">&lt;&lt;</span> elapsedTime <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;ms.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Performance is &#34;</span> <span style="color:#f92672">&lt;&lt;</span> dataRate <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;GB/s.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Move data to CPU.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(start, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaMemcpy(yuvBuffer, deviceYuvBuffer, dataSizeYuv, cudaMemcpyDeviceToHost));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(stop, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventSynchronize(stop));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventElapsedTime(<span style="color:#f92672">&amp;</span>elapsedTime, start, stop));
-</span></span><span style="display:flex;"><span>  dataRate <span style="color:#f92672">=</span> dataSizeYuv<span style="color:#f92672">/</span>(elapsedTime<span style="color:#f92672">/</span><span style="color:#ae81ff">1000.0</span>)<span style="color:#f92672">/</span><span style="color:#ae81ff">1.0e9</span>;
-</span></span><span style="display:flex;"><span>  elapsedTimeTotal <span style="color:#f92672">+=</span> elapsedTime;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Data transfer took &#34;</span> <span style="color:#f92672">&lt;&lt;</span> elapsedTime <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;ms.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Performance is &#34;</span> <span style="color:#f92672">&lt;&lt;</span> dataRate <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;GB/s.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Whole process took &#34;</span> <span style="color:#f92672">&lt;&lt;</span> elapsedTimeTotal <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;ms.&#34;</span> <span style="color:#f92672">&lt;&lt;</span>std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Compare CPU and GPU results ...&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">bool</span> foundMistake <span style="color:#f92672">=</span> false;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>dataSizeYuv; i<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(yuvCpuBuffer[i]<span style="color:#f92672">!=</span>yuvBuffer[i]){
-</span></span><span style="display:flex;"><span>      foundMistake <span style="color:#f92672">=</span> true;
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span>(foundMistake){
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Results are NOT the same.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Results are the same.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> nStreams <span style="color:#f92672">=</span> <span style="color:#ae81ff">16</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Computing results using GPU, using &#34;</span><span style="color:#f92672">&lt;&lt;</span> nStreams <span style="color:#f92672">&lt;&lt;</span><span style="color:#e6db74">&#34; streams.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  cudaStream_t streams[nStreams];
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Creating &#34;</span> <span style="color:#f92672">&lt;&lt;</span> nStreams <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; CUDA streams.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> nStreams; i<span style="color:#f92672">++</span>) {
-</span></span><span style="display:flex;"><span>    CUDA_CALL(cudaStreamCreate(<span style="color:#f92672">&amp;</span>streams[i]));
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> brgaOffset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> yuvOffset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> brgaChunkSize <span style="color:#f92672">=</span> dataSizeBgra <span style="color:#f92672">/</span> nStreams;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">int</span> yuvChunkSize <span style="color:#f92672">=</span> dataSizeYuv <span style="color:#f92672">/</span> nStreams;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(start, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>nStreams; i<span style="color:#f92672">++</span>)
-</span></span><span style="display:flex;"><span>  {
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Launching stream &#34;</span> <span style="color:#f92672">&lt;&lt;</span> i <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    brgaOffset <span style="color:#f92672">=</span> brgaChunkSize<span style="color:#f92672">*</span>i;
-</span></span><span style="display:flex;"><span>    yuvOffset <span style="color:#f92672">=</span> yuvChunkSize<span style="color:#f92672">*</span>i;
-</span></span><span style="display:flex;"><span>    CUDA_CALL(cudaMemcpyAsync(  deviceBgraBuffer<span style="color:#f92672">+</span>brgaOffset,
-</span></span><span style="display:flex;"><span>                                bgraBuffer<span style="color:#f92672">+</span>brgaOffset,
-</span></span><span style="display:flex;"><span>                                brgaChunkSize,
-</span></span><span style="display:flex;"><span>                                cudaMemcpyHostToDevice,
-</span></span><span style="display:flex;"><span>                                streams[i] ));
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    convertPixelFormat<span style="color:#f92672">&lt;&lt;&lt;</span><span style="color:#ae81ff">4096</span>, <span style="color:#ae81ff">1024</span>, <span style="color:#ae81ff">0</span>, streams[i]<span style="color:#f92672">&gt;&gt;&gt;</span>(deviceBgraBuffer<span style="color:#f92672">+</span>brgaOffset, deviceYuvBuffer<span style="color:#f92672">+</span>yuvOffset, brgaChunkSize<span style="color:#f92672">/</span><span style="color:#ae81ff">4</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    CUDA_CALL(cudaMemcpyAsync(  yuvBuffer<span style="color:#f92672">+</span>yuvOffset,
-</span></span><span style="display:flex;"><span>                                deviceYuvBuffer<span style="color:#f92672">+</span>yuvOffset,
-</span></span><span style="display:flex;"><span>                                yuvChunkSize,
-</span></span><span style="display:flex;"><span>                                cudaMemcpyDeviceToHost,
-</span></span><span style="display:flex;"><span>                                streams[i] ));
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  CUDA_CHECK();
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaDeviceSynchronize());
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventRecord(stop, <span style="color:#ae81ff">0</span>));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventSynchronize(stop));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaEventElapsedTime(<span style="color:#f92672">&amp;</span>elapsedTime, start, stop));
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Whole process took &#34;</span> <span style="color:#f92672">&lt;&lt;</span> elapsedTime <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;ms.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Compare CPU and GPU results ...&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>dataSizeYuv; i<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(yuvCpuBuffer[i]<span style="color:#f92672">!=</span>yuvBuffer[i]){
-</span></span><span style="display:flex;"><span>      foundMistake <span style="color:#f92672">=</span> true;
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span>(foundMistake){
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Results are NOT the same.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  } <span style="color:#66d9ef">else</span> {
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;        Results are the same.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaFreeHost(bgraBuffer));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaFreeHost(yuvBuffer));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaFree(deviceBgraBuffer));
-</span></span><span style="display:flex;"><span>  CUDA_CALL(cudaFree(deviceYuvBuffer));
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">PrintDeviceInfo</span>(){
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> deviceCount <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>  cudaGetDeviceCount(<span style="color:#f92672">&amp;</span>deviceCount);
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Number of device(s): &#34;</span> <span style="color:#f92672">&lt;&lt;</span> deviceCount <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (deviceCount <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
-</span></span><span style="display:flex;"><span>      std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;There is no device supporting CUDA&#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">return</span>;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  cudaDeviceProp info;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>deviceCount; i<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>    cudaGetDeviceProperties(<span style="color:#f92672">&amp;</span>info, i);
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;Device &#34;</span> <span style="color:#f92672">&lt;&lt;</span> i <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Name:                    &#34;</span> <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>string(info.name) <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Glocbal memory:          &#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.totalGlobalMem<span style="color:#f92672">/</span><span style="color:#ae81ff">1024.0</span><span style="color:#f92672">/</span><span style="color:#ae81ff">1024.0</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; MB&#34;</span><span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Shared memory per block: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.sharedMemPerBlock<span style="color:#f92672">/</span><span style="color:#ae81ff">1024.0</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; KB&#34;</span><span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Warp size:               &#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.warpSize<span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Max thread per block:    &#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.maxThreadsPerBlock<span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Thread dimension limits: &#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.maxThreadsDim[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; x &#34;</span>
-</span></span><span style="display:flex;"><span>                                                 <span style="color:#f92672">&lt;&lt;</span> info.maxThreadsDim[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; x &#34;</span>
-</span></span><span style="display:flex;"><span>                                                 <span style="color:#f92672">&lt;&lt;</span> info.maxThreadsDim[<span style="color:#ae81ff">2</span>]<span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Max grid size:           &#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.maxGridSize[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; x &#34;</span>
-</span></span><span style="display:flex;"><span>                                                 <span style="color:#f92672">&lt;&lt;</span> info.maxGridSize[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34; x &#34;</span>
-</span></span><span style="display:flex;"><span>                                                 <span style="color:#f92672">&lt;&lt;</span> info.maxGridSize[<span style="color:#ae81ff">2</span>]<span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>    std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;    Compute capability:      &#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.major <span style="color:#f92672">&lt;&lt;</span> <span style="color:#e6db74">&#34;.&#34;</span> <span style="color:#f92672">&lt;&lt;</span> info.minor <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">GenerateBgra8K</span>(<span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> buffer, <span style="color:#66d9ef">int</span> dataSize){
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>random_device rd;
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>mt19937 gen(rd());
-</span></span><span style="display:flex;"><span>  std<span style="color:#f92672">::</span>uniform_int_distribution<span style="color:#f92672">&lt;&gt;</span> sampler(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">255</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; i<span style="color:#f92672">&lt;</span>dataSize<span style="color:#f92672">/</span><span style="color:#ae81ff">4</span>; i<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>    buffer[i<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> sampler(gen);
-</span></span><span style="display:flex;"><span>    buffer[i<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> sampler(gen);
-</span></span><span style="display:flex;"><span>    buffer[i<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">=</span> sampler(gen);
-</span></span><span style="display:flex;"><span>    buffer[i<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">3</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">255</span>;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">convertPixelFormatCpu</span>(<span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> inputBgra, <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> outputYuv, <span style="color:#66d9ef">int</span> numPixels){
-</span></span><span style="display:flex;"><span>  short3 yuv16;
-</span></span><span style="display:flex;"><span>  char3 yuv8;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> idx<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>; idx<span style="color:#f92672">&lt;</span>numPixels; idx<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>    yuv16.x <span style="color:#f92672">=</span> <span style="color:#ae81ff">66</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">+</span> <span style="color:#ae81ff">129</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> <span style="color:#ae81ff">25</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span>];
-</span></span><span style="display:flex;"><span>    yuv16.y <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">38</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">+</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">74</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> <span style="color:#ae81ff">112</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span>];
-</span></span><span style="display:flex;"><span>    yuv16.z <span style="color:#f92672">=</span> <span style="color:#ae81ff">112</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">+</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">94</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">18</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span>];
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    yuv8.x <span style="color:#f92672">=</span> (yuv16.x<span style="color:#f92672">&gt;&gt;</span><span style="color:#ae81ff">8</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">16</span>;
-</span></span><span style="display:flex;"><span>    yuv8.y <span style="color:#f92672">=</span> (yuv16.y<span style="color:#f92672">&gt;&gt;</span><span style="color:#ae81ff">8</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">128</span>;
-</span></span><span style="display:flex;"><span>    yuv8.z <span style="color:#f92672">=</span> (yuv16.z<span style="color:#f92672">&gt;&gt;</span><span style="color:#ae81ff">8</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">128</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>(<span style="color:#66d9ef">reinterpret_cast</span><span style="color:#f92672">&lt;</span>char3<span style="color:#f92672">*&gt;</span>(<span style="color:#f92672">&amp;</span>outputYuv[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">3</span>])) <span style="color:#f92672">=</span> yuv8;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>__global__ <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">convertPixelFormat</span>(<span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> inputBgra, <span style="color:#66d9ef">uint8_t</span><span style="color:#f92672">*</span> outputYuv, <span style="color:#66d9ef">int</span> numPixels){
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> stride <span style="color:#f92672">=</span> gridDim.x <span style="color:#f92672">*</span> blockDim.x;
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> idx <span style="color:#f92672">=</span> threadIdx.x <span style="color:#f92672">+</span> blockIdx.x <span style="color:#f92672">*</span> blockDim.x;
-</span></span><span style="display:flex;"><span>  short3 yuv16;
-</span></span><span style="display:flex;"><span>  char3 yuv8;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">while</span>(idx<span style="color:#f92672">&lt;=</span>numPixels){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(idx<span style="color:#f92672">&lt;</span>numPixels){
-</span></span><span style="display:flex;"><span>      yuv16.x <span style="color:#f92672">=</span> <span style="color:#ae81ff">66</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">+</span> <span style="color:#ae81ff">129</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> <span style="color:#ae81ff">25</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span>];
-</span></span><span style="display:flex;"><span>      yuv16.y <span style="color:#f92672">=</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">38</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">+</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">74</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> <span style="color:#ae81ff">112</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span>];
-</span></span><span style="display:flex;"><span>      yuv16.z <span style="color:#f92672">=</span> <span style="color:#ae81ff">112</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>] <span style="color:#f92672">+</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">94</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span><span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">18</span><span style="color:#f92672">*</span>inputBgra[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">4</span>];
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>      yuv8.x <span style="color:#f92672">=</span> (yuv16.x<span style="color:#f92672">&gt;&gt;</span><span style="color:#ae81ff">8</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">16</span>;
-</span></span><span style="display:flex;"><span>      yuv8.y <span style="color:#f92672">=</span> (yuv16.y<span style="color:#f92672">&gt;&gt;</span><span style="color:#ae81ff">8</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">128</span>;
-</span></span><span style="display:flex;"><span>      yuv8.z <span style="color:#f92672">=</span> (yuv16.z<span style="color:#f92672">&gt;&gt;</span><span style="color:#ae81ff">8</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">128</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>      <span style="color:#f92672">*</span>(<span style="color:#66d9ef">reinterpret_cast</span><span style="color:#f92672">&lt;</span>char3<span style="color:#f92672">*&gt;</span>(<span style="color:#f92672">&amp;</span>outputYuv[idx<span style="color:#f92672">*</span><span style="color:#ae81ff">3</span>])) <span style="color:#f92672">=</span> yuv8;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    idx <span style="color:#f92672">+=</span> stride;
-</span></span><span style="display:flex;"><span>  }
-</span></span><span style="display:flex;"><span>}
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;random&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;cuda.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;cuda_runtime.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef DEBUG
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define CUDA_CALL(F)  if( (F) != cudaSuccess ) \
+</span></span></span><span class="line"><span class="cl"><span class="cp">  {printf(&#34;Error %s at %s:%d\n&#34;, cudaGetErrorString(cudaGetLastError()), \
+</span></span></span><span class="line"><span class="cl"><span class="cp">   __FILE__,__LINE__); exit(-1);}
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define CUDA_CHECK()  if( (cudaPeekAtLastError()) != cudaSuccess ) \
+</span></span></span><span class="line"><span class="cl"><span class="cp">  {printf(&#34;Error %s at %s:%d\n&#34;, cudaGetErrorString(cudaGetLastError()), \
+</span></span></span><span class="line"><span class="cl"><span class="cp">   __FILE__,__LINE__-1); exit(-1);}
+</span></span></span><span class="line"><span class="cl"><span class="cp">#else
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define CUDA_CALL(F) (F)
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define CUDA_CHECK()
+</span></span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">PrintDeviceInfo</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">GenerateBgra8K</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">int</span> <span class="n">dataSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">convertPixelFormatCpu</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">inputBgra</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">outputYuv</span><span class="p">,</span> <span class="kt">int</span> <span class="n">numPixels</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">__global__</span> <span class="kt">void</span> <span class="nf">convertPixelFormat</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">inputBgra</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">outputYuv</span><span class="p">,</span> <span class="kt">int</span> <span class="n">numPixels</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">PrintDeviceInfo</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">bgraBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">yuvBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">deviceBgraBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">deviceYuvBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">const</span> <span class="kt">int</span> <span class="n">dataSizeBgra</span> <span class="o">=</span> <span class="mi">7680</span> <span class="o">*</span> <span class="mi">4320</span> <span class="o">*</span> <span class="mi">4</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">const</span> <span class="kt">int</span> <span class="n">dataSizeYuv</span> <span class="o">=</span> <span class="mi">7680</span> <span class="o">*</span> <span class="mi">4320</span> <span class="o">*</span> <span class="mi">3</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMallocHost</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bgraBuffer</span><span class="p">,</span> <span class="n">dataSizeBgra</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMallocHost</span><span class="p">(</span><span class="o">&amp;</span><span class="n">yuvBuffer</span><span class="p">,</span> <span class="n">dataSizeYuv</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">deviceBgraBuffer</span><span class="p">,</span> <span class="n">dataSizeBgra</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">deviceYuvBuffer</span><span class="p">,</span> <span class="n">dataSizeYuv</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span> <span class="n">yuvCpuBuffer</span><span class="p">(</span><span class="n">dataSizeYuv</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">cudaEvent_t</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">float</span> <span class="n">elapsedTime</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">float</span> <span class="n">elapsedTimeTotal</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">float</span> <span class="n">dataRate</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventCreate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">start</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventCreate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Generating 7680 x 4320 BRGA8888 image, data size: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">dataSizeBgra</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">GenerateBgra8K</span><span class="p">(</span><span class="n">bgraBuffer</span><span class="p">,</span> <span class="n">dataSizeBgra</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Computing results using CPU.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">convertPixelFormatCpu</span><span class="p">(</span><span class="n">bgraBuffer</span><span class="p">,</span> <span class="n">yuvCpuBuffer</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="mi">7680</span><span class="o">*</span><span class="mi">4320</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventSynchronize</span><span class="p">(</span><span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventElapsedTime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">elapsedTime</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Whole process took &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">elapsedTime</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;ms.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Computing results using GPU, default stream.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Move data to GPU.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">deviceBgraBuffer</span><span class="p">,</span> <span class="n">bgraBuffer</span><span class="p">,</span> <span class="n">dataSizeBgra</span><span class="p">,</span> <span class="n">cudaMemcpyHostToDevice</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventSynchronize</span><span class="p">(</span><span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventElapsedTime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">elapsedTime</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">dataRate</span> <span class="o">=</span> <span class="n">dataSizeBgra</span><span class="o">/</span><span class="p">(</span><span class="n">elapsedTime</span><span class="o">/</span><span class="mf">1000.0</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e9</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">elapsedTimeTotal</span> <span class="o">=</span> <span class="n">elapsedTime</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Data transfer took &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">elapsedTime</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;ms.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Performance is &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">dataRate</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;GB/s.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Convert 8-bit BGRA to 8-bit YUV.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">convertPixelFormat</span><span class="o">&lt;&lt;&lt;</span><span class="mi">32400</span><span class="p">,</span> <span class="mi">1024</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">deviceBgraBuffer</span><span class="p">,</span> <span class="n">deviceYuvBuffer</span><span class="p">,</span> <span class="mi">7680</span><span class="o">*</span><span class="mi">4320</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CHECK</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaDeviceSynchronize</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventSynchronize</span><span class="p">(</span><span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventElapsedTime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">elapsedTime</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">dataRate</span> <span class="o">=</span> <span class="n">dataSizeBgra</span><span class="o">/</span><span class="p">(</span><span class="n">elapsedTime</span><span class="o">/</span><span class="mf">1000.0</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e9</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">elapsedTimeTotal</span> <span class="o">+=</span> <span class="n">elapsedTime</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Processing of 8K image took &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">elapsedTime</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;ms.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Performance is &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">dataRate</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;GB/s.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Move data to CPU.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMemcpy</span><span class="p">(</span><span class="n">yuvBuffer</span><span class="p">,</span> <span class="n">deviceYuvBuffer</span><span class="p">,</span> <span class="n">dataSizeYuv</span><span class="p">,</span> <span class="n">cudaMemcpyDeviceToHost</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventSynchronize</span><span class="p">(</span><span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventElapsedTime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">elapsedTime</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">dataRate</span> <span class="o">=</span> <span class="n">dataSizeYuv</span><span class="o">/</span><span class="p">(</span><span class="n">elapsedTime</span><span class="o">/</span><span class="mf">1000.0</span><span class="p">)</span><span class="o">/</span><span class="mf">1.0e9</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">elapsedTimeTotal</span> <span class="o">+=</span> <span class="n">elapsedTime</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Data transfer took &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">elapsedTime</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;ms.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Performance is &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">dataRate</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;GB/s.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Whole process took &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">elapsedTimeTotal</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;ms.&#34;</span> <span class="o">&lt;&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Compare CPU and GPU results ...&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">bool</span> <span class="n">foundMistake</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">dataSizeYuv</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">yuvCpuBuffer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">!=</span><span class="n">yuvBuffer</span><span class="p">[</span><span class="n">i</span><span class="p">]){</span>
+</span></span><span class="line"><span class="cl">      <span class="n">foundMistake</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span><span class="p">(</span><span class="n">foundMistake</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Results are NOT the same.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Results are the same.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">const</span> <span class="kt">int</span> <span class="n">nStreams</span> <span class="o">=</span> <span class="mi">16</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Computing results using GPU, using &#34;</span><span class="o">&lt;&lt;</span> <span class="n">nStreams</span> <span class="o">&lt;&lt;</span><span class="s">&#34; streams.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">cudaStream_t</span> <span class="n">streams</span><span class="p">[</span><span class="n">nStreams</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Creating &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">nStreams</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; CUDA streams.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nStreams</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaStreamCreate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">streams</span><span class="p">[</span><span class="n">i</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">brgaOffset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">yuvOffset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">const</span> <span class="kt">int</span> <span class="n">brgaChunkSize</span> <span class="o">=</span> <span class="n">dataSizeBgra</span> <span class="o">/</span> <span class="n">nStreams</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">const</span> <span class="kt">int</span> <span class="n">yuvChunkSize</span> <span class="o">=</span> <span class="n">dataSizeYuv</span> <span class="o">/</span> <span class="n">nStreams</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">nStreams</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Launching stream &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">brgaOffset</span> <span class="o">=</span> <span class="n">brgaChunkSize</span><span class="o">*</span><span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">yuvOffset</span> <span class="o">=</span> <span class="n">yuvChunkSize</span><span class="o">*</span><span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMemcpyAsync</span><span class="p">(</span>  <span class="n">deviceBgraBuffer</span><span class="o">+</span><span class="n">brgaOffset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">bgraBuffer</span><span class="o">+</span><span class="n">brgaOffset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">brgaChunkSize</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">cudaMemcpyHostToDevice</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">streams</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">convertPixelFormat</span><span class="o">&lt;&lt;&lt;</span><span class="mi">4096</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">streams</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">deviceBgraBuffer</span><span class="o">+</span><span class="n">brgaOffset</span><span class="p">,</span> <span class="n">deviceYuvBuffer</span><span class="o">+</span><span class="n">yuvOffset</span><span class="p">,</span> <span class="n">brgaChunkSize</span><span class="o">/</span><span class="mi">4</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaMemcpyAsync</span><span class="p">(</span>  <span class="n">yuvBuffer</span><span class="o">+</span><span class="n">yuvOffset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">deviceYuvBuffer</span><span class="o">+</span><span class="n">yuvOffset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">yuvChunkSize</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">cudaMemcpyDeviceToHost</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                <span class="n">streams</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CHECK</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaDeviceSynchronize</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventRecord</span><span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventSynchronize</span><span class="p">(</span><span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaEventElapsedTime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">elapsedTime</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Whole process took &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">elapsedTime</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;ms.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Compare CPU and GPU results ...&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">dataSizeYuv</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">yuvCpuBuffer</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">!=</span><span class="n">yuvBuffer</span><span class="p">[</span><span class="n">i</span><span class="p">]){</span>
+</span></span><span class="line"><span class="cl">      <span class="n">foundMistake</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">if</span><span class="p">(</span><span class="n">foundMistake</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Results are NOT the same.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;        Results are the same.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaFreeHost</span><span class="p">(</span><span class="n">bgraBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaFreeHost</span><span class="p">(</span><span class="n">yuvBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaFree</span><span class="p">(</span><span class="n">deviceBgraBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="n">CUDA_CALL</span><span class="p">(</span><span class="n">cudaFree</span><span class="p">(</span><span class="n">deviceYuvBuffer</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">PrintDeviceInfo</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">deviceCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">cudaGetDeviceCount</span><span class="p">(</span><span class="o">&amp;</span><span class="n">deviceCount</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Number of device(s): &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">deviceCount</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="p">(</span><span class="n">deviceCount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;There is no device supporting CUDA&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">cudaDeviceProp</span> <span class="n">info</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">deviceCount</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cudaGetDeviceProperties</span><span class="p">(</span><span class="o">&amp;</span><span class="n">info</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Device &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Name:                    &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Glocbal memory:          &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">totalGlobalMem</span><span class="o">/</span><span class="mf">1024.0</span><span class="o">/</span><span class="mf">1024.0</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; MB&#34;</span><span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Shared memory per block: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">sharedMemPerBlock</span><span class="o">/</span><span class="mf">1024.0</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; KB&#34;</span><span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Warp size:               &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">warpSize</span><span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Max thread per block:    &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">maxThreadsPerBlock</span><span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Thread dimension limits: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">maxThreadsDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;&lt;</span> <span class="s">&#34; x &#34;</span>
+</span></span><span class="line"><span class="cl">                                                 <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">maxThreadsDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;&lt;</span> <span class="s">&#34; x &#34;</span>
+</span></span><span class="line"><span class="cl">                                                 <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">maxThreadsDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Max grid size:           &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">maxGridSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;&lt;</span> <span class="s">&#34; x &#34;</span>
+</span></span><span class="line"><span class="cl">                                                 <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">maxGridSize</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;&lt;</span> <span class="s">&#34; x &#34;</span>
+</span></span><span class="line"><span class="cl">                                                 <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">maxGridSize</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;    Compute capability:      &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">major</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;.&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">info</span><span class="p">.</span><span class="n">minor</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">GenerateBgra8K</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">int</span> <span class="n">dataSize</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">random_device</span> <span class="n">rd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">mt19937</span> <span class="n">gen</span><span class="p">(</span><span class="n">rd</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">  <span class="n">std</span><span class="o">::</span><span class="n">uniform_int_distribution</span><span class="o">&lt;&gt;</span> <span class="n">sampler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">dataSize</span><span class="o">/</span><span class="mi">4</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">sampler</span><span class="p">(</span><span class="n">gen</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sampler</span><span class="p">(</span><span class="n">gen</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sampler</span><span class="p">(</span><span class="n">gen</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">buffer</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">convertPixelFormatCpu</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">inputBgra</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">outputYuv</span><span class="p">,</span> <span class="kt">int</span> <span class="n">numPixels</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">  <span class="n">short3</span> <span class="n">yuv16</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">char3</span> <span class="n">yuv8</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">idx</span><span class="o">&lt;</span><span class="n">numPixels</span><span class="p">;</span> <span class="n">idx</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">yuv16</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="mi">66</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">129</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">25</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">yuv16</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">38</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="o">-</span><span class="mi">74</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">112</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">yuv16</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="mi">112</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="o">-</span><span class="mi">94</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="o">-</span><span class="mi">18</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">yuv8</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">yuv16</span><span class="p">.</span><span class="n">x</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mi">16</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">yuv8</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">yuv16</span><span class="p">.</span><span class="n">y</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mi">128</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">yuv8</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">yuv16</span><span class="p">.</span><span class="n">z</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mi">128</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="o">*</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">char3</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">outputYuv</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">3</span><span class="p">]))</span> <span class="o">=</span> <span class="n">yuv8</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">__global__</span> <span class="kt">void</span> <span class="nf">convertPixelFormat</span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span> <span class="n">inputBgra</span><span class="p">,</span> <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">outputYuv</span><span class="p">,</span> <span class="kt">int</span> <span class="n">numPixels</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">stride</span> <span class="o">=</span> <span class="n">gridDim</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">short3</span> <span class="n">yuv16</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">char3</span> <span class="n">yuv8</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">while</span><span class="p">(</span><span class="n">idx</span><span class="o">&lt;=</span><span class="n">numPixels</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">idx</span><span class="o">&lt;</span><span class="n">numPixels</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">      <span class="n">yuv16</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="mi">66</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">129</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">25</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">      <span class="n">yuv16</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">38</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="o">-</span><span class="mi">74</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">112</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">      <span class="n">yuv16</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="mi">112</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="o">-</span><span class="mi">94</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="o">-</span><span class="mi">18</span><span class="o">*</span><span class="n">inputBgra</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">4</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="n">yuv8</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">yuv16</span><span class="p">.</span><span class="n">x</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mi">16</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="n">yuv8</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">yuv16</span><span class="p">.</span><span class="n">y</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mi">128</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">      <span class="n">yuv8</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="n">yuv16</span><span class="p">.</span><span class="n">z</span><span class="o">&gt;&gt;</span><span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="mi">128</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">      <span class="o">*</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">char3</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">outputYuv</span><span class="p">[</span><span class="n">idx</span><span class="o">*</span><span class="mi">3</span><span class="p">]))</span> <span class="o">=</span> <span class="n">yuv8</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">idx</span> <span class="o">+=</span> <span class="n">stride</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></div></details>
 <hr>
 <p><strong>Reference:</strong></p>
 <p>[1] <a href="https://zhuanlan.zhihu.com/p/51402722">CUDA随笔之Stream的使用</a></p>
 
-		</div>
-		<footer class="post__footer">
-			
-<div class="post__tags tags clearfix">
-	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
-	<ul class="tags__list">
-		<li class="tags__item">
-			<a class="tags__link btn" href="/keep-moving-forward/tags/cuda/" rel="tag">CUDA</a>
-		</li>
-	</ul>
-</div>
-		</footer>
-	</article>
-</main>
 
-<div class="authorbox clearfix">
-	<figure class="authorbox__avatar">
-		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
-	</figure>
-	<div class="authorbox__header">
-		<span class="authorbox__name">About chenghua.wang</span>
-	</div>
-	<div class="authorbox__description">
-		Currently working on AI&amp;Sys, CV (low-level) and LLM topics.
-	</div>
-</div>
+  </div>
 
-<nav class="pager flex">
-	<div class="pager__item pager__item--prev">
-		<a class="pager__link" href="/keep-moving-forward/tech/xv6_lab5_cow/" rel="prev">
-			<span class="pager__subtitle">«&thinsp;Previous</span>
-			<p class="pager__title">XV6 Lab 5: Copy On Write</p>
-		</a>
-	</div>
-	<div class="pager__item pager__item--next">
-		<a class="pager__link" href="/keep-moving-forward/tech/introduction_mldistri/" rel="next">
-			<span class="pager__subtitle">Next&thinsp;»</span>
-			<p class="pager__title">浅析机器学习中的并行模型和自动并行方法</p>
-		</a>
-	</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/keep-moving-forward/tags/kernel-impl/">Kernel Impl</a></li>
+      <li><a href="http://localhost:1313/keep-moving-forward/tags/cuda/">CUDA</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>浅析机器学习中的并行模型和自动并行方法</span>
+  </a>
+  <a class="next" href="http://localhost:1313/keep-moving-forward/tech/xv6_lab5_cow/">
+    <span class="title">Next »</span>
+    <br>
+    <span>XV6 Lab 5: Copy On Write</span>
+  </a>
 </nav>
 
 
-			</div>
-			
-		</div>
-		<footer class="footer">
-	<div class="container footer__container flex">
-		
-		<div class="footer__copyright">
-			&copy; 2024 chenghua.wang.
-			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
-		</div>
-	</div>
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA: NSight System on x"
+            href="https://x.com/intent/tweet/?text=CUDA%3a%20NSight%20System&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f&amp;hashtags=KernelImpl%2cCUDA">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA: NSight System on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f&amp;title=CUDA%3a%20NSight%20System&amp;summary=CUDA%3a%20NSight%20System&amp;source=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA: NSight System on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f&title=CUDA%3a%20NSight%20System">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA: NSight System on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA: NSight System on whatsapp"
+            href="https://api.whatsapp.com/send?text=CUDA%3a%20NSight%20System%20-%20http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA: NSight System on telegram"
+            href="https://telegram.me/share/url?text=CUDA%3a%20NSight%20System&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA: NSight System on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=CUDA%3a%20NSight%20System&u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fcuda_nsight_system%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>© <a href="https://github.com/chenghuaWang">chenghua.wang</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
 </footer>
-	</div>
-<script async defer src="/keep-moving-forward/js/menu.js"></script>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a><script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.6/medium-zoom.min.js" integrity="sha512-N9IJRoc3LaP3NDoiGkcPa4gG94kapGpaA5Zq9/Dr04uf5TbLFU5q0o8AbRhLKUUlp8QFS2u7S+Yti0U7QtuZvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-
-
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    extensions: ["tex2jax.js"],
-    jax: ["input/TeX", "output/HTML-CSS"],
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
-      processEscapes: true
-    },
-    "HTML-CSS": { fonts: ["TeX"] }
+<script>
+const images = Array.from(document.querySelectorAll(".post-content img"));
+images.forEach(img => {
+  mediumZoom(img, {
+    margin: 0,  
+    scrollOffset: 40,  
+    container: null,  
+    template: null,  
+    background: 'rgba(0, 0, 0, 0.8)'
   });
+});
 </script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/8.js?i=5j20jf9ml5x&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
 </script>
 </body>
+
 </html>

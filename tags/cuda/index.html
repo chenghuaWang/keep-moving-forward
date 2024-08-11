@@ -1,247 +1,272 @@
 <!DOCTYPE html>
-<html class="no-js" lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>CUDA - Ubios Home</title>
-	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
-	<meta name="description" content="">
-		<meta property="og:title" content="CUDA" />
-<meta property="og:description" content="Ubios&#39; blog, paper&amp;tech" />
+<html lang="en" dir="auto">
+
+<head><script src="/keep-moving-forward/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=keep-moving-forward/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>CUDA | Ubios Home</title>
+<meta name="keywords" content="">
+<meta name="description" content="Ubios&#39; Blog. AI &amp; Sys">
+<meta name="author" content="chenghua.wang">
+<link rel="canonical" href="http://localhost:1313/keep-moving-forward/tags/cuda/">
+<link crossorigin="anonymous" href="/keep-moving-forward/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/keep-moving-forward/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/keep-moving-forward/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/keep-moving-forward/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/keep-moving-forward/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/keep-moving-forward/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="http://localhost:1313/keep-moving-forward/tags/cuda/index.xml">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/keep-moving-forward/tags/cuda/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+
+  
+
+<meta property="og:title" content="CUDA" />
+<meta property="og:description" content="Ubios&#39; Blog. AI &amp; Sys" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tags/cuda/" />
+<meta property="og:url" content="http://localhost:1313/keep-moving-forward/tags/cuda/" />
 
-		<meta itemprop="name" content="CUDA">
-<meta itemprop="description" content="Ubios&#39; blog, paper&amp;tech">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="dns-prefetch" href="//fonts.googleapis.com">
-	<link rel="dns-prefetch" href="//fonts.gstatic.com">
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
 
-	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
-	
-	<link rel="alternate" type="application/rss+xml" href="/keep-moving-forward/tags/cuda/index.xml" title="Ubios Home">
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="CUDA"/>
+<meta name="twitter:description" content="Ubios&#39; Blog. AI &amp; Sys"/>
 
-	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
-		
 </head>
-<body class="body">
-	<div class="container container--outer">
-		
+
+<body class="list" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
 <header class="header">
-	<div class="container header__container">
-		
-	<div class="logo logo--mixed" >
-		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
-			
-			<div class="logo__item logo__text" >
-					<div class="logo__title" >Ubios Home</div>
-					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
-				</div>
-		</a>
-	</div>
-		
-<nav class="menu">
-	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
-		<span class="menu__btn-title" tabindex="-1">Menu</span>
-	</button>
-	<ul class="menu__list">
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/about/">
-				
-				<span class="menu__text">About</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/hpc_ai/">
-				
-				<span class="menu__text">HPC &amp; AI 入坑</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
-				
-				<span class="menu__text">Lecture-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
-				
-				<span class="menu__text">Paper-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
-				
-				<span class="menu__text">Tech-Posts</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
-				
-				<span class="menu__text">Thinking</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/news/">
-				
-				<span class="menu__text">🎉News🎉</span>
-				
-			</a>
-		</li>
-	</ul>
-</nav>
-
-	</div>
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/keep-moving-forward/" accesskey="h" title="Ubios Home (Alt + H)">Ubios Home</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/about/" title="关于我">
+                    <span>关于我</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/tech_posts/" title="技术相关">
+                    <span>技术相关</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/paper_posts/" title="论文解析">
+                    <span>论文解析</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/news/" title="🎉News🎉">
+                    <span>🎉News🎉</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/thingking/" title="思考">
+                    <span>思考</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/hpc_ai/" title="AI&amp;Sys 入门">
+                    <span>AI&amp;Sys 入门</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/series" title="系列文章">
+                    <span>系列文章</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </header>
-		<div class="wrapper flex">
-			<div class="primary">
-			
-<main class="main list" role="main">
-	<header class="main__header">
-		<h1 class="main__title">CUDA</h1>
-	</header><article class="list__item post">
-	
-	<header class="list__header">
-		<h2 class="list__title post__title">
-			<a href="/keep-moving-forward/tech/cuda_nsight_system/" rel="bookmark">
-			CUDA: NSight System
-			</a>
-		</h2>
-		<p class="list__lead post__lead">Usage of Nsight System</p>
-		<div class="list__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
-</div>
-<div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-04-18T00:00:00Z">2023-04-18</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/" rel="category">HPC&#43;AI Tools</a>
-	</span>
-</div></div>
-	</header>
-	<div class="content list__excerpt post__content clearfix">
-		NSight System Document
-WSL 2 的 cudaMallocHost() 不能正常申请到 VM 的内存。也许是 WSL 2 上的 cuda 是 ubuntu20.04 的版本，不是 WSL 2 特供版。WSL 2 的 cuda 也有一些限制，详细见 WSL2 User guide 。
-1. 什么是 Nsight System 我们先看下 Nsight System 官网对该工具的描述：
-NVIDIA Nsight™ Systems is a system-wide performance analysis tool designed to visualize an application’s algorithms, help you identify the largest opportunities to optimize, and tune to scale efficiently across any quantity or size of CPUs and GPUs, from large servers to our smallest system on a chip (SoC).
-	</div>
-	<div class="list__footer clearfix">
-		<a class="list__footer-readmore btn" href="/keep-moving-forward/tech/cuda_nsight_system/">Read more…</a>
-	</div>
+<main class="main"> 
+<header class="page-header"><div class="breadcrumbs"><a href="http://localhost:1313/keep-moving-forward/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/keep-moving-forward/tags/">Tags</a></div>
+  <h1>
+    CUDA
+    <a href="/keep-moving-forward/tags/cuda/index.xml" title="RSS" aria-label="RSS">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" height="23">
+        <path d="M4 11a9 9 0 0 1 9 9" />
+        <path d="M4 4a16 16 0 0 1 16 16" />
+        <circle cx="5" cy="19" r="1" />
+      </svg>
+    </a>
+  </h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">CUDA: NSight System
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Usage of Nsight System</p>
+  </div>
+  <footer class="entry-footer"><span title='2023-04-18 00:00:00 +0000 UTC'>April 18, 2023</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to CUDA: NSight System" href="http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/"></a>
 </article>
-</main>
+    </main>
+    
+<footer class="footer">
+        <span>© <a href="https://github.com/chenghuaWang">chenghua.wang</a></span> · 
 
-
-			</div>
-			
-<aside class="sidebar sidebar--left"><div class="widget-search widget">
-	<form class="widget-search__form" role="search" method="get" action="https://google.com/search">
-		<label>
-			<input class="widget-search__field" type="search" placeholder="SEARCH…" value="" name="q" aria-label="SEARCH…">
-		</label>
-		<input class="widget-search__submit" type="submit" value="Search">
-		<input type="hidden" name="don&#39;t use this search" value="don&#39;t use this searchhttps://chenghuawang.github.io/keep-moving-forward/">
-	</form>
-</div>
-<div class="widget-recent widget">
-	<h4 class="widget__title">Recent Posts</h4>
-	<div class="widget__content">
-		<ul class="widget__list">
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/mllm-qwen/">mllm框架浅析-以QWen0.5B为例</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mlsys2024-qmoe/">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/prompt_cache/">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/transformer-lite/">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/awq/">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/">【施工中】6xKx16 SGEMM Kernel on X86-AVX</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
-		</ul>
-	</div>
-</div>
-<div class="widget-categories widget">
-	<h4 class="widget__title">Categories</h4>
-	<div class="widget__content">
-		<ul class="widget__list">
-			<li class="widget__item">
-				<a class="widget__link" href="/keep-moving-forward/categories/aisys/">AI&amp;Sys</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">6</span>
-				</li>
-			<li class="widget__item">
-				<a class="widget__link" href="/keep-moving-forward/categories/distributed-sys/">distributed sys</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">3</span>
-				</li>
-			<li class="widget__item">
-				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai/">HPC&#43;AI</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">1</span>
-				</li>
-			<li class="widget__item">
-				<a class="widget__link" href="/keep-moving-forward/categories/hpc&#43;ai-tools/">HPC&#43;AI Tools</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">1</span>
-				</li>
-			<li class="widget__item">
-				<a class="widget__link" href="/keep-moving-forward/categories/operating-system/">Operating system</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">5</span>
-				</li>
-			<li class="widget__item">
-				<a class="widget__link" href="/keep-moving-forward/categories/trivial/">trivial</a>&nbsp;
-				<span class="widget__counter widget__counter--bubble">7</span>
-				</li>
-		</ul>
-	</div>
-</div>
-<div class="widget-taglist widget">
-	<h4 class="widget__title">Tags</h4>
-	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/edge/" title="Edge">Edge (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/kernel/" title="Kernel">Kernel (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-cache-optimize/" title="LLM Cache Optimize">LLM Cache Optimize (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlsys-2024/" title="MLSys 2024">MLSys 2024 (3)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (2)</a>
-	</div>
-</div>
-<div class="widget-social widget">
-	<h4 class="widget-social__title widget__title">Social</h4>
-	<div class="widget-social__content widget__content">
-		<div class="widget-social__item widget__item">
-			<a class="widget-social__link widget__link btn" title="GitHub" rel="noopener noreferrer" href="https://github.com/chenghuaWang" target="_blank">
-				<svg class="widget-social__link-icon icon icon-github" width="24" height="24" viewBox="0 0 384 374"><path d="m192 0c-106.1 0-192 85.8-192 191.7 0 84.7 55 156.6 131.3 181.9 9.6 1.8 13.1-4.2 13.1-9.2 0-4.6-.2-16.6-.3-32.6-53.4 11.6-64.7-25.7-64.7-25.7-8.7-22.1-21.3-28-21.3-28-17.4-11.9 1.3-11.6 1.3-11.6 19.3 1.4 29.4 19.8 29.4 19.8 17.1 29.3 44.9 20.8 55.9 15.9 1.7-12.4 6.7-20.8 12.2-25.6-42.6-4.8-87.5-21.3-87.5-94.8 0-20.9 7.5-38 19.8-51.4-2-4.9-8.6-24.3 1.9-50.7 0 0 16.1-5.2 52.8 19.7 15.3-4.2 31.7-6.4 48.1-6.5 16.3.1 32.7 2.2 48.1 6.5 36.7-24.8 52.8-19.7 52.8-19.7 10.5 26.4 3.9 45.9 1.9 50.7 12.3 13.4 19.7 30.5 19.7 51.4 0 73.7-44.9 89.9-87.7 94.6 6.9 5.9 13 17.6 13 35.5 0 25.6-.2 46.3-.2 52.6 0 5.1 3.5 11.1 13.2 9.2 76.2-25.5 131.2-97.3 131.2-182 0-105.9-86-191.7-192-191.7z"/></svg>
-				<span>GitHub</span>
-			</a>
-		</div>
-		<div class="widget-social__item widget__item">
-			<a class="widget-social__link widget__link btn" title="Email" href="mailto:chenghua.wang.edu@gmail.com">
-				<svg class="widget-social__link-icon icon icon-mail" width="24" height="24" viewBox="0 0 416 288"><path d="m0 16v256 16h16 384 16v-16-256-16h-16-384-16zm347 16-139 92.5-139-92.5zm-148 125.5 9 5.5 9-5.5 167-111.5v210h-352v-210z"/></svg>
-				<span>chenghua.wang.edu@gmail.com</span>
-			</a>
-		</div>
-
-		
-	</div>
-	<script type="text/javascript" src="//rf.revolvermaps.com/0/0/8.js?i=5j20jf9ml5x&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
-</div>
-
-</aside>
-		</div>
-		<footer class="footer">
-	<div class="container footer__container flex">
-		
-		<div class="footer__copyright">
-			&copy; 2024 chenghua.wang.
-			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
-		</div>
-	</div>
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
 </footer>
-	</div>
-<script async defer src="/keep-moving-forward/js/menu.js"></script>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a><script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.6/medium-zoom.min.js" integrity="sha512-N9IJRoc3LaP3NDoiGkcPa4gG94kapGpaA5Zq9/Dr04uf5TbLFU5q0o8AbRhLKUUlp8QFS2u7S+Yti0U7QtuZvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+const images = Array.from(document.querySelectorAll(".post-content img"));
+images.forEach(img => {
+  mediumZoom(img, {
+    margin: 0,  
+    scrollOffset: 40,  
+    container: null,  
+    template: null,  
+    background: 'rgba(0, 0, 0, 0.8)'
+  });
+});
+</script>
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/8.js?i=5j20jf9ml5x&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
 </body>
+
 </html>

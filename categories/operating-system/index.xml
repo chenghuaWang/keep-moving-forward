@@ -1,46 +1,44 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Operating system on Ubios Home</title>
-    <link>https://chenghuawang.github.io/keep-moving-forward/categories/operating-system/</link>
-    <description>Recent content in Operating system on Ubios Home</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Fri, 17 Mar 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/operating-system/index.xml" rel="self" type="application/rss+xml" />
+    <title>Operating System on Ubios Home</title>
+    <link>http://localhost:1313/keep-moving-forward/categories/operating-system/</link>
+    <description>Recent content in Operating System on Ubios Home</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Fri, 17 Mar 2023 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/categories/operating-system/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>XV6 Lab 5: Copy On Write</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</link>
+      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab5_cow/</link>
       <pubDate>Fri, 17 Mar 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab5_cow/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab5_cow/</guid>
       <description>xv6 中的 fork() 系统调用将父进程的所有用户空间内存复制到子进程中。如果父进程很大，复制可能需要很长的时间。更糟糕的是，这项工作通常是无用的：fork() 之后通常是子进程的 exec()，它放弃了复制的内存，没有使用复制过来的大部分内存。如果父代和子代都使用了复制的页面，并且其中一个或两个都写了它，那么这个复制才是真正需要的。
 所以写时复制(copy on write, cow) 这个技术变得十分的重要。在这个 lab 中，我们需要实现一个写时复制的 fork()。我们需要修改原本的 fork() 程序中做内存申请的模块，同时我们还需要实现 usertrap 来在写时(在实际写的时候碰到 cow flag，抛出分页错误)的时候处理这个 trap。
 因为一个程序很可能被 fork() 了很多的分支，所以我们需要一个计数器来确定这个 page 是要被释放还是保留。
 一般来说，一个正常运行的程序在写时复制的时候会有下面几个流程:
 fork() 出一个子进程 child。 child 拥有父进程的页的引用，并且页的 flag 有 cow 标识。 并且要把 页 引用 ++ child 需要向自己的页中写入新的数据. 此时需要重新分配内存，页引用 &amp;ndash;。 当 child 返回的时候，可能有内存需要由 kernel 转换到 user。 当父进程销毁的时候，如果计数器为 0，则销毁，反之，不变。 每一页都需要一个计数器来进行计数，所以我们需要在 kernel 中加入一个数组来记录，查阅 xv6 book，我们发现有如下的图:
-Fig 1. memlayout我们需要在 kernel data 之后的区域内申请一块内存来作为计数器存储的数组。我们可以在 kalloc.c 中实现。
+Fig 1. memlayoutXV6 手册
+我们需要在 kernel data 之后的区域内申请一块内存来作为计数器存储的数组。我们可以在 kalloc.c 中实现。
 // ./kernel/kalloc.c struct { struct spinlock lock; struct run *freelist; // lab 5 uint* ref_cnt; struct spinlock ref_cnt_lock; char * pa_start; } kmem; 在这个 kmem 结构体中加入了一个 ref_cnt_lock 来保证计数器的正确引用。一个 ref_cnt pointer 来指示 ref array 的起始位置，使用 pa_start 来表示实际的 free memory 的起始位置。我们还需要修改初始化程序来正确的申请计数器数组，并且对 free memory 填充上一个初始值。</description>
     </item>
-    
     <item>
       <title>XV6 Lab 4: Traps</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</link>
+      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab4_trap/</link>
       <pubDate>Sun, 05 Mar 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab4_trap/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab4_trap/</guid>
       <description>RISC-V assembly Which registers contain arguments to functions? For example, which register holds 13 in main&amp;rsquo;s call to printf?
 Register: a0, a1, a2&amp;hellip;, a7 for integer arguments. Register fa0, fa1, fa2&amp;hellip;, fa7 for float arguments.
 Register a2 holds 13 when we call printf().
 Where is the call to function f in the assembly code for main? Where is the call to g? (Hint: the compiler may inline functions.)
 Compiler inlined f(8) and g() in printf() function.</description>
     </item>
-    
     <item>
       <title>XV6 Lab 3: Page Table</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</link>
+      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab3_pagetable/</link>
       <pubDate>Thu, 02 Mar 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab3_pagetable/</guid>
       <description>MIT 6.S081 Lab3 website
 做 Lab 3 需要提前阅读 XV6 book，了解 RISC-V SR39 的地址格式，并且实验中大量用到了页表的准换函数，需要查阅 XV6 手册。不过，熟记 RISC-V 的地址说实在的没有什么用处，通过这个实验理解页表的工作方式并且 hands on 才是真的。
 Speed up system calls 目前有很多的操作系统(Linux)在用户区和内核区之间共享一块数据(Read-Only for user)，这样用户在进行系统调用的时候就不需要陷入内核态后，由内核态拷贝数据进用户态，而是将数据写在这个共享的区块内。这样可以加快操作系统的运行速度(毕竟大部分系统调用需要的内存消耗是很小的，内存的消耗在当今已经不是问题)。
@@ -50,13 +48,11 @@ struct usyscall { int pid; // Process ID }; 那么我们只需要在 kernel/proc
 在 proc.h 中，我们需要在进程的 PCB 中加入新的数据结构:
 struct proc { ... struct usyscall *usyscall; // using read only shared data to accelerate. ... } 为了让进程的正常创建和释放，我们需要向进程创建和销毁函数中加入对应的页表操作代码。</description>
     </item>
-    
     <item>
       <title>XV6 Lab 2: syscall</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</link>
+      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab2_syscall/</link>
       <pubDate>Sat, 25 Feb 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab2_syscall/</guid>
       <description>MIT 6.S081 Lab2 website
 为了完成 Syscall 作业，需要阅读:
 XV6-book, Chapter 2, Sections 4.3 and 4.4
@@ -65,19 +61,16 @@ system call tracing system call tracing 需要我们补充 kernel 中的一些�
 user/trace.c 的程序如下所示:
 int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &amp;lt; 3 || (argv[1][0] &amp;lt; &amp;#39;0&amp;#39; || argv[1][0] &amp;gt; &amp;#39;9&amp;#39;)){ fprintf(2, &amp;#34;Usage: %s mask command\n&amp;#34;, argv[0]); exit(1); } if (trace(atoi(argv[1])) &amp;lt; 0) { fprintf(2, &amp;#34;%s: trace failed\n&amp;#34;, argv[0]); exit(1); } for(i = 2; i &amp;lt; argc &amp;amp;&amp;amp; i &amp;lt; MAXARG; i++){ nargv[i-2] = argv[i]; } exec(nargv[0], nargv); exit(0); } 我们发现这个程序直接使用了 trace 系统调用来实现。所以接下来的任务是进行 trace 系统调用的实现。再次回顾 Lab 1 中的内容，在 Lab 1 中我们分析系统调用是通过在 usys.</description>
     </item>
-    
     <item>
       <title>XV6 Lab 1: Xv6 and Unix utilities</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</link>
+      <link>http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/</link>
       <pubDate>Thu, 23 Feb 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/tech/xv6_lab1_utility/</guid>
       <description>MIT 6.S081 Lab1 website
 本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
 阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
 sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
 /** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &amp;#34;kernel/types.h&amp;#34; #include &amp;#34;kernel/stat.h&amp;#34; #include &amp;#34;user/user.h&amp;#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&amp;#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!</description>
     </item>
-    
   </channel>
 </rss>

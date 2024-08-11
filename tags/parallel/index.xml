@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Parallel on Ubios Home</title>
+    <link>http://localhost:1313/keep-moving-forward/tags/parallel/</link>
+    <description>Recent content in Parallel on Ubios Home</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Tue, 02 May 2023 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/tags/parallel/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>浅析机器学习中的并行模型和自动并行方法</title>
+      <link>http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/</link>
+      <pubDate>Tue, 02 May 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/</guid>
+      <description>数据并行、模型并行、流水并行、专家混合</description>
+    </item>
+  </channel>
+</rss>

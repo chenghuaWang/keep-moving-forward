@@ -1,90 +1,73 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Abouts on Ubios Home</title>
-    <link>https://chenghuawang.github.io/keep-moving-forward/about/</link>
+    <link>http://localhost:1313/keep-moving-forward/about/</link>
     <description>Recent content in Abouts on Ubios Home</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Sun, 02 Apr 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/about/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Sun, 01 Jan 2023 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/about/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>HPC &amp; AI 入坑</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/</link>
-      <pubDate>Sun, 02 Apr 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/</guid>
-      <description>1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
+      <title>🎉News🎉</title>
+      <link>http://localhost:1313/keep-moving-forward/about/news/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/about/news/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/keep-moving-forward/about/about/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/about/about/</guid>
+      <description>Hi👋, I&amp;rsquo;m Chenghua Wang, currently a postgraduate CS student at BUPT.
+I&amp;rsquo;m interested in AI&amp;amp;Sys. I&amp;rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.wang.edu@gmail.com
+Research Interests Machine Learning Infrastructure
+ML Compiler NNCV(ZJGSU, BS dissertation), it contains an Aten-lang auto-parallel language(using Polyhedra Algorithms) and a set of deep learning compilation pipelines(Based on MLIR). Distributed and Parallel System Design Computer Vision</description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/keep-moving-forward/about/paper_posts/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/about/paper_posts/</guid>
+      <description>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) Distributed System 2023-01-17, MapReduce
+2023-01-18, Google File System(GFS)
+2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines
+MLSys 2024 2024-05-25, ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
+Best Paper，量化
+2024-06-21, ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference
+prompt cache优化
+2024-06-25, ✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</description>
+    </item>
+    <item>
+      <title>AI &amp; Sys 入门</title>
+      <link>http://localhost:1313/keep-moving-forward/about/hpc_ai/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/about/hpc_ai/</guid>
+      <description>本文还没完成修改。
+1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
 1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
 Spring 2023 Homepage
 并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
 1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
 1.1.3 Stanford 143: Compilers Homepage
 现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link </description>
+1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2.</description>
     </item>
-    
     <item>
-      <title>🎉News🎉</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/about/news/</link>
+      <title>Tech Posts</title>
+      <link>http://localhost:1313/keep-moving-forward/about/tech_posts/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/about/news/</guid>
-      <description></description>
+      <guid>http://localhost:1313/keep-moving-forward/about/tech_posts/</guid>
+      <description>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities 2023-02-25, XV6 lab 2 syscall 2023-03-02, XV6 lab 3 page table 2023-03-12, XV6 lab 4 traps 2023-03-17, XV6 lab 5 copy on write Tools 2023-04-18, CUDA: NSight System Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法 Framework 2024-06-28, mllm框架浅析-以QWen0.5B为例 </description>
     </item>
-    
     <item>
-      <title>About</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/about/about/</link>
+      <title>思考</title>
+      <link>http://localhost:1313/keep-moving-forward/about/thingking/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/about/about/</guid>
-      <description>Hi👋, I&amp;rsquo;m Chenghua Wang, currently a postgraduate CS student at BUPT.
-I&amp;rsquo;m interested in AI&amp;amp;Sys. I&amp;rsquo;ve struggled for almost one and half years on computer vision(Dehazing, Multi-label classification. July 1 2021 -&amp;gt; Dec 31 2022) contact me: chenghua.wang.edu@gmail.com
-Research Interests Machine Learning Infrastructure
-ML Compiler NNCV(ZJGSU, BS dissertation), it contains an Aten-lang auto-parallel language(using Polyhedra Algorithms) and a set of deep learning compilation pipelines(Based on MLIR). Distributed and Parallel System Design Computer Vision</description>
+      <guid>http://localhost:1313/keep-moving-forward/about/thingking/</guid>
+      <description>目前头脑还是一片荒芜</description>
     </item>
-    
-    <item>
-      <title>Lecture-Notes</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/about/lecture_notes/</link>
-      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/about/lecture_notes/</guid>
-      <description>Principles of Compiler 2023-05-03, 编译原理通关攻略, link </description>
-    </item>
-    
-    <item>
-      <title>Paper-Notes</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</link>
-      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description>Distributed System 2023-01-17, MapReduce, link 2023-01-18, Google File System(GFS), link 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines, link MLSys 2024 2024-05-25, ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration, link
-Best Paper，量化
-2024-06-21, ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference, link
-prompt cache优化
-2024-06-25, ✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models, link
-MoE量化
-arxiv 2024-06-17, ✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs, link</description>
-    </item>
-    
-    <item>
-      <title>Tech-Posts</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</link>
-      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</guid>
-      <description>MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities, link 2023-02-25, XV6 lab 2 syscall, link 2023-03-02, XV6 lab 3 page table, link 2023-03-12, XV6 lab 4 traps, link 2023-03-17, XV6 lab 5 copy on write, link Tools 2023-04-18, CUDA: NSight System, link Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link Compiler Framework 2024-06-28, mllm框架浅析-以QWen0.5B为例, link </description>
-    </item>
-    
-    <item>
-      <title>Thinking</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/about/thinking/</link>
-      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/about/thinking/</guid>
-      <description></description>
-    </item>
-    
   </channel>
 </rss>

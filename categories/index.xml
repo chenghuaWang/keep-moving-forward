@@ -1,65 +1,48 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Categories on Ubios Home</title>
-    <link>https://chenghuawang.github.io/keep-moving-forward/categories/</link>
+    <link>http://localhost:1313/keep-moving-forward/categories/</link>
     <description>Recent content in Categories on Ubios Home</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Fri, 28 Jun 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Sun, 11 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/keep-moving-forward/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>AI&amp;Sys</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/categories/aisys/</link>
-      <pubDate>Fri, 28 Jun 2024 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/categories/aisys/</guid>
+      <link>http://localhost:1313/keep-moving-forward/categories/aisys/</link>
+      <pubDate>Sun, 11 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/categories/aisys/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>HPC&#43;AI</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai/</link>
-      <pubDate>Tue, 02 May 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>HPC&#43;AI Tools</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai-tools/</link>
-      <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/categories/hpc&#43;ai-tools/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>trivial</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/categories/trivial/</link>
-      <pubDate>Sun, 02 Apr 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/categories/trivial/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Operating system</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/categories/operating-system/</link>
+      <title>Operating System</title>
+      <link>http://localhost:1313/keep-moving-forward/categories/operating-system/</link>
       <pubDate>Fri, 17 Mar 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/categories/operating-system/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/categories/operating-system/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>distributed sys</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/</link>
+      <title>Distributed Sys</title>
+      <link>http://localhost:1313/keep-moving-forward/categories/distributed-sys/</link>
       <pubDate>Thu, 19 Jan 2023 00:00:00 +0000</pubDate>
-      
-      <guid>https://chenghuawang.github.io/keep-moving-forward/categories/distributed-sys/</guid>
+      <guid>http://localhost:1313/keep-moving-forward/categories/distributed-sys/</guid>
       <description></description>
     </item>
-    
+    <item>
+      <title>Paper Posts</title>
+      <link>http://localhost:1313/keep-moving-forward/categories/paper-posts/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/categories/paper-posts/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Utils</title>
+      <link>http://localhost:1313/keep-moving-forward/categories/utils/</link>
+      <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/keep-moving-forward/categories/utils/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

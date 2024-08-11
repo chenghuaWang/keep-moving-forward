@@ -1,186 +1,295 @@
 <!DOCTYPE html>
-<html class="no-js" lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>浅析机器学习中的并行模型和自动并行方法 - Ubios Home</title>
-	<script>(function(d,e){d[e]=d[e].replace("no-js","js");})(document.documentElement,"className");</script>
-	<meta name="description" content="">
-		<meta property="og:title" content="浅析机器学习中的并行模型和自动并行方法" />
-<meta property="og:description" content="人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。
-乍一看，这些并行技术令人生畏，但只需对计算结构进行一些假设，这些技术就会变得清晰：从某些角度来看，这也只是从 A 到 B 传递并不透明的位，就像数据包在网络交换机之间传递一样。
-各种 Parallel 模型 不同的并行技术将训练过程划分为不同的维度，包括：
-数据并行（Data Parallelism）在不同的GPU上运行同一批数据的不同子集 DP（Data Parallel） DDP（Distributed Data Parallel） FSDP（Fully Shared Data Parallel） 流水并行（Pipeline Parallelism）在不同的GPU上运行模型的不同层 模型并行（Tensor Parallelism）将单个数学运算（如矩阵乘法）拆分到不同的GPU上运行 专家混合（Mixture-of-Experts）只用模型每一层中的一小部分来处理数据。 Note：Tensor Parallelism 翻译成模型并行可能并不是非常的恰当🤣
-1. 并行模型 1.1 数据并行 （Data Parallesim） 数据并行是指将相同的参数复制到多个工作节点上，并为每个工作节点分配不同的数据子集同时进行处理。每个工作节点拥有完整的神经网络模型，每次训练仅将一批数据输入模型，进行前向传播、计算误差、反向传播，最后进行参数的更新。储了参数的更新，其余的操作都是互相独立的，所以可以在多个节点上进行并发的执行。
-每个工作节点都有自己的模型和输入，当属于自己的模型参数推理完成后（产生了梯度参数），所有的工作节点会把参数（梯度参数）发给一个 Master，这个 Master 会把所有节点传进来的参数做融合，通过这些梯度参数更新生成新的模型参数，然后把这个模型的参数再发送给每个工作节点，拱他们进行下一轮的计算。
-在 Pytorch 中提供了DP（Data Parallel）、DDP（Distributed Data Parallel）、FSDP（Fully Shared Data Parallel）三种不同的数据并行方法。
-1.1.1 DP（Data Parallel）Parameter Server DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。
-[点击折叠] 李沐老师的 PS 讲解 Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。
-Parameter Server Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。" />
+<html lang="en" dir="auto">
+
+<head><script src="/keep-moving-forward/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=keep-moving-forward/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>浅析机器学习中的并行模型和自动并行方法 | Ubios Home</title>
+<meta name="keywords" content="Parallel">
+<meta name="description" content="数据并行、模型并行、流水并行、专家混合">
+<meta name="author" content="chenghua.Wang">
+<link rel="canonical" href="http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/">
+<link crossorigin="anonymous" href="/keep-moving-forward/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/keep-moving-forward/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/keep-moving-forward/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/keep-moving-forward/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/keep-moving-forward/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/keep-moving-forward/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+</script>
+
+
+
+  
+
+<meta property="og:title" content="浅析机器学习中的并行模型和自动并行方法" />
+<meta property="og:description" content="数据并行、模型并行、流水并行、专家混合" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/" /><meta property="article:section" content="Tech" />
+<meta property="og:url" content="http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/" /><meta property="article:section" content="tech" />
 <meta property="article:published_time" content="2023-05-02T00:00:00+00:00" />
 <meta property="article:modified_time" content="2023-05-02T00:00:00+00:00" />
 
-		<meta itemprop="name" content="浅析机器学习中的并行模型和自动并行方法">
-<meta itemprop="description" content="人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。
-乍一看，这些并行技术令人生畏，但只需对计算结构进行一些假设，这些技术就会变得清晰：从某些角度来看，这也只是从 A 到 B 传递并不透明的位，就像数据包在网络交换机之间传递一样。
-各种 Parallel 模型 不同的并行技术将训练过程划分为不同的维度，包括：
-数据并行（Data Parallelism）在不同的GPU上运行同一批数据的不同子集 DP（Data Parallel） DDP（Distributed Data Parallel） FSDP（Fully Shared Data Parallel） 流水并行（Pipeline Parallelism）在不同的GPU上运行模型的不同层 模型并行（Tensor Parallelism）将单个数学运算（如矩阵乘法）拆分到不同的GPU上运行 专家混合（Mixture-of-Experts）只用模型每一层中的一小部分来处理数据。 Note：Tensor Parallelism 翻译成模型并行可能并不是非常的恰当🤣
-1. 并行模型 1.1 数据并行 （Data Parallesim） 数据并行是指将相同的参数复制到多个工作节点上，并为每个工作节点分配不同的数据子集同时进行处理。每个工作节点拥有完整的神经网络模型，每次训练仅将一批数据输入模型，进行前向传播、计算误差、反向传播，最后进行参数的更新。储了参数的更新，其余的操作都是互相独立的，所以可以在多个节点上进行并发的执行。
-每个工作节点都有自己的模型和输入，当属于自己的模型参数推理完成后（产生了梯度参数），所有的工作节点会把参数（梯度参数）发给一个 Master，这个 Master 会把所有节点传进来的参数做融合，通过这些梯度参数更新生成新的模型参数，然后把这个模型的参数再发送给每个工作节点，拱他们进行下一轮的计算。
-在 Pytorch 中提供了DP（Data Parallel）、DDP（Distributed Data Parallel）、FSDP（Fully Shared Data Parallel）三种不同的数据并行方法。
-1.1.1 DP（Data Parallel）Parameter Server DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。
-[点击折叠] 李沐老师的 PS 讲解 Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。
-Parameter Server Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。"><meta itemprop="datePublished" content="2023-05-02T00:00:00+00:00" />
-<meta itemprop="dateModified" content="2023-05-02T00:00:00+00:00" />
-<meta itemprop="wordCount" content="482">
-<meta itemprop="keywords" content="Distributed System," />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="dns-prefetch" href="//fonts.googleapis.com">
-	<link rel="dns-prefetch" href="//fonts.gstatic.com">
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Sans+SC:400,700">
 
-	<link rel="stylesheet" href="/keep-moving-forward/css/style.css">
-	
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="浅析机器学习中的并行模型和自动并行方法"/>
+<meta name="twitter:description" content="数据并行、模型并行、流水并行、专家混合"/>
 
-	<link rel="shortcut icon" href="/keep-moving-forward/favicon.ico">
-		
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Technique",
+      "item": "http://localhost:1313/keep-moving-forward/tech/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "浅析机器学习中的并行模型和自动并行方法",
+      "item": "http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "浅析机器学习中的并行模型和自动并行方法",
+  "name": "浅析机器学习中的并行模型和自动并行方法",
+  "description": "数据并行、模型并行、流水并行、专家混合",
+  "keywords": [
+    "Parallel"
+  ],
+  "articleBody": "人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。\n乍一看，这些并行技术令人生畏，但只需对计算结构进行一些假设，这些技术就会变得清晰：从某些角度来看，这也只是从 A 到 B 传递并不透明的位，就像数据包在网络交换机之间传递一样。\nFig 1. 各种 Parallel 模型 不同的并行技术将训练过程划分为不同的维度，包括：\n数据并行（Data Parallelism）在不同的GPU上运行同一批数据的不同子集 DP（Data Parallel） DDP（Distributed Data Parallel） FSDP（Fully Shared Data Parallel） 流水并行（Pipeline Parallelism）在不同的GPU上运行模型的不同层 模型并行（Tensor Parallelism）将单个数学运算（如矩阵乘法）拆分到不同的GPU上运行 专家混合（Mixture-of-Experts）只用模型每一层中的一小部分来处理数据。 Note：Tensor Parallelism 翻译成模型并行可能并不是非常的恰当🤣\n1. 并行模型 1.1 数据并行 （Data Parallesim） 数据并行是指将相同的参数复制到多个工作节点上，并为每个工作节点分配不同的数据子集同时进行处理。每个工作节点拥有完整的神经网络模型，每次训练仅将一批数据输入模型，进行前向传播、计算误差、反向传播，最后进行参数的更新。储了参数的更新，其余的操作都是互相独立的，所以可以在多个节点上进行并发的执行。\n每个工作节点都有自己的模型和输入，当属于自己的模型参数推理完成后（产生了梯度参数），所有的工作节点会把参数（梯度参数）发给一个 Master，这个 Master 会把所有节点传进来的参数做融合，通过这些梯度参数更新生成新的模型参数，然后把这个模型的参数再发送给每个工作节点，拱他们进行下一轮的计算。\n在 Pytorch 中提供了DP（Data Parallel）、DDP（Distributed Data Parallel）、FSDP（Fully Shared Data Parallel）三种不同的数据并行方法。\n1.1.1 DP（Data Parallel）Parameter Server DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。\n[点击折叠] 李沐老师的 PS 讲解 Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。\nFig 2. Parameter Server Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。\n在这个模式下，会有负载不均衡的情况出现。因为在 Server 需要大量的显存来保存从 Woker 到来的梯度参数，而 Server 还需要将更新后的参数广播到每一个 Worker 上，那么 Server 的网络带宽就变得是非重要了。随着 Worker 数目的增多，网络的需求会更加大。并且 Server 作为最终处理所有 Worker 传来的梯度参数的机器，其计算消耗时间也是制约其他 Worker 不间断工作的瓶颈。\n1.1.2 DDP（Distributed Data Parallel）Ring-All-Reduce DDP 主要基于 Ring-All-Reduce 算法，该算法主要分两步：\nshare-reduce：会逐步交换彼此的梯度并融合，最后每个 GPU 都会包含完整融合梯度的一部分。 share-only：GPU 会逐步交换彼此不完整的融合梯度，最后所有 GPU 都会得到完整的融合梯度 Fig 3. Ring-All-Reduce 示意图 在 share-reduce 阶段，每个进程 p 将数据发送给进程 (p+1) % p，其中 % 是模运算符。所以进程A会向进程 B 发送。这就是创建类似于环形队列状态的的原因。此外，长度为 n 的数组被划分成 p 块，这些块中的每一个都将以 i 为索引。它看起来会是这样的：\nFig 4. Ring-All-Reduce 1 第一个 share-reduce 操作进程 A 向进程 B 发送 a0，进程 B 将向进程 C 发送 b1，等等。类似这样：\nFig 5. Ring-All-Reduce 2 然后，当每个进程收到前一个进程的数据时，它就会应用 reduce operation，然后继续将其再次发送到环中的下一个进程。如果 reduce operation 是 sum。它看起来就会像这样：\nFig 6. Ring-All-Reduce 3 然后，再进一步：\nFig 7. Ring-All-Reduce 4 第二步，shared-only，这个操作非常的简单，只是以环形方式共享数据，而不应用 reduce operation。这就把每个进程中的每个分块的结果合并起来。\nFig 8. Ring-All-Reduce 5 Ring-All-Reduce 有这些优点：\n负载分散在每个 Worker 上，通讯时间基本是一致的。并且不需要通过 Server 分发全模型的参数到每个 Worker 上。 使用 ring-all-reduce 的方式进行通讯，随着 Worker 数量 N 增加，总传输量恒定。也就是理论上，随着 Worker 数量的增加，ring all-reduce 有线性性能拓展能力。 DP 和 DDP 之间的区别\nData Parallel Distributed Data Parallel 更多的开销；模型在每次参数聚合后需要被复制，并在每次前向传递后被销毁（因为只需要梯度参数被传回就够了）。 模型只会被复制一次 只支持单个节点的 Master 可以拓展到多台机器上 单进程多线程的实现方式 采用多进程的方式 1.1.3 FSDP（Fully Shared Data Parallel） DDP 用起来简单方便，但是要求整个模型能加载一个GPU上，这使得大模型的训练需要使用额外复杂的设置进行模型拆分。Pytorch 的 FSDP 从 DeepSpeed ZeRO [8] 以及 FairScale 的 FSDP 中获取灵感，打破模型分片的障碍（包括模型参数，梯度，优化器状态），同时仍然保持了数据并行的简单性。\nFSDP 是对模型参数、优化器状态和梯度进行分片，可以选择将部分模型参数卸载到 CPU 中。FSDP 是在 DDP 的基础上，将 All-Reduce 操作分解为独立的 Reduce-Scatter 和 All-gather 的操作这种方式能够使得每个工作节点仅需存储一个参数和优化器状态的分片。FSDP 非常类似于 ZeRO-3。\nFig 9. FSDP workflow [3] 如 FSDP 完全流程图所示，通过 All-gather 操作可以从其他工作节点获取模型权重来进行前向传播和反向传播。Reduce-Scatter 操作聚合局部梯度，并在各工作的节点上分片，还可以选择将梯度卸载到CPU 中，等需要时再从 CPU 中加载回来。\nFig 10. Reduce-Scatter and All-gather 原本的 All-Reduce 操作可以拆分成 Reduce-Scatter 和 All-gather 操作。在进行Reduce-Scatter 时，gradients 在相同块的各个 ranks 中被加起来，在进行 All-gather 时，每个 Worker 上可用的聚合梯度分片的部分可供所有 Worker 使用。\n1.2 流水并行（Pipeline Parallesim） 通过流水线机制进行并行训练，我们将模型的参数分配到GPU上。每个GPU只持有一部分参数，因此，同一个模型在每个GPU上消耗的内存成比例减小。\n将大模型分为若干份连续的layer很简单。然而，各层的输入和输出之间存在着顺序上的依赖性，所以一个简单的实现会导致大量的GPU空闲时间，因为 Worker 在等待前一个 Worker 的输出来用作其输入。这些等待时间块被称为 “气泡(bubble)”，而在这些等待的过程中，空闲的机器本可以继续进行计算。。\nFig 11. Naive way for Streaming [1] 为了减少气泡的开销，我们可以重用数据并行的思想，通过让每个 Worker 一次只处理一个数据元素的子集，使我们能够巧妙地将新的计算与等待时间重叠(overlapping)起来。核心思想是将一个批次分成多个微批(microbatches)；每个微批的处理速度应该是成比例的，每个 Worker 在下一个微批可用时就开始工作，从而加速流的执行。有了足够的微批，Worker 可以在大部分时间内被利用，在进程的开始和结束时，气泡最小。梯度是跨微批的平均数，只有在所有微批完成后才会对参数进行更新。\n模型被分割的节点数的数量通常被称为流水线深度(Pipline depth)。\n在前向传递期间，Worker 只需要将其 Layer 的输出（称为激活）发送给下一个 Worker；在反向传递期间，它只将这些激活的梯度发送给前一个 Worker 。如何安排这些传递以及如何在微批中聚集梯度，有很大的设计空间。 GPipe让每个工作者连续处理前向和反向的传递，然后在最后同步聚合来自多个微批的梯度。而 PipeDream 则安排每个 Worker 交替地处理前向和反向 Stream。\nFig 12. GPipe and PipeDream [1] 1.3 模型并行（Tensor Parallesim） 流水并行将一个模型按层“垂直”拆分。也可以在一个 layer 内 “水平” 分割某些操作，这通常被称为模型并行训练。对于许多现代模型（如Transformer）来说，计算的瓶颈是将激活值与大的权重矩阵相乘。矩阵乘法可以被认为是成对的行和列之间的点积：有可能在不同的GPU上计算独立的点积，或者在不同的GPU上计算每个点积的一部分，然后将结果相加。无论采用哪种策略，我们都可以将权重矩阵切成大小均匀的 “块(Shards)”，将每个块放在不同的GPU上。要得到完整矩阵的结果，需要进行通信将不同部分的结果进行整合。\n一个例子是 Megatron-LM，它在 Transformer 的 自注意 和 MLP层内并行化矩阵乘法。 PTD-P 同时使用张量、数据和流水线并行；它的流水线并行将多个不连续的 layer 分配到单设备上运行，以更多网络通信为代价来减少气泡开销。\n有时，网络的输入可以在一个维度上进行并行化，相对于交叉通信来说，并行计算的程度很高。 序列并行就是这样一个想法，一个输入序列在不同时间被分割成多个子集，通过在更细粒度的子集上进行计算，峰值内存消耗可以成比例地减少。\n1.4 混合并行（Mixture-of-Experts） 混合专家（MoE）方法，对于任何一个输入，只有一部分网络被用来计算输出。在有许多套权重的情况下，网络可以在推理时通过门控机制选择使用哪一套。这样就可以在不增加计算成本的情况下增加许多参数。每组权重被称为 “专家(experts)\"，希望网络能够学会将专门的计算任务分配给每个专家。不同的专家可以托管在不同的GPU上，这也为扩大模型使用的GPU数量提供了一个明确的方法。\n混合专家（MoEIllustration of a mixture-of-experts (MoE) layer. Only 2 out of the n experts are selected by the gating network. (Image adapted from: Shazeer et al., 2017)[1]\nGShard将 MoE Transformer 的规模扩大到6000亿个参数，其中MoE layers被拆分到多个TPU上，其他layers是完全重复的。 Switch Transformer 通过将一个输入只路由到一个专家，将模型规模扩展到数万亿的参数，甚至有更高的稀疏度。\n难点：\n现在的设备，比如GPU，比较擅长做运算，不擅长做分支。 大批量是训练模型的必须，但是这种方式下会导致每个小模型的样本数较少，无法训练得到好的模型。 为了控制稀疏性，可能需要在loss上去做些改进，来保障小模型上的均衡负载。 Moe Github, code\n2. 自动并行方法 2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9] Get This Paper\n这篇文章勾勒了自动并行的基本框架，很多解决自动并行的工作都是这样一个流程。\nReference:\n[1] Techniques for training large neural networks (openai.com)\n[2] 先进编译实验室-自动并行-并行划分 - 知乎 (zhihu.com)\n[3] Getting Started with Fully Sharded Data Parallel(FSDP)\n[4] chenzomi12/DeepLearningSystem: Deep Learning System core principles introduction. (github.com)\n[5] Deep Learning in a Nutshell: Core Concepts | NVIDIA Technical Blog\n[6] Visual intuition on ring-Allreduce for distributed Deep Learning | by Edir Garcia Lazo | Towards Data Science\n[7] 数据并行Deep-dive: 从DP 到 Fully Sharded Data Parallel （FSDP）完全分片数据并行 - 知乎 (zhihu.com)\n[8] DeepSpeed: Extreme-scale model training for everyone - Microsoft Research\n[9] Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks\n",
+  "wordCount" : "506",
+  "inLanguage": "en",
+  "datePublished": "2023-05-02T00:00:00Z",
+  "dateModified": "2023-05-02T00:00:00Z",
+  "author":[{
+    "@type": "Person",
+    "name": "chenghua.Wang"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/keep-moving-forward/tech/introduction_mldistri/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Ubios Home",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/keep-moving-forward/favicon.ico"
+    }
+  }
+}
+</script>
 </head>
-<body class="body">
-	<div class="container container--outer">
-		
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
 <header class="header">
-	<div class="container header__container">
-		
-	<div class="logo logo--mixed" >
-		<a class="logo__link" href="/keep-moving-forward/" title="Ubios Home" rel="home" >
-			
-			<div class="logo__item logo__text" >
-					<div class="logo__title" >Ubios Home</div>
-					<div class="logo__tagline">Remember brick walls let us show our dedication. They are there to separate us from the people who don&#39;t really want to achieve their childhood dreams. --Randy Pausch</div>
-				</div>
-		</a>
-	</div>
-		
-<nav class="menu">
-	<button class="menu__btn" aria-haspopup="true" aria-expanded="false" tabindex="0">
-		<span class="menu__btn-title" tabindex="-1">Menu</span>
-	</button>
-	<ul class="menu__list">
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/about/">
-				
-				<span class="menu__text">About</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/hpc_ai/">
-				
-				<span class="menu__text">HPC &amp; AI 入坑</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/lecture_notes/">
-				
-				<span class="menu__text">Lecture-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/paper_posts/">
-				
-				<span class="menu__text">Paper-Notes</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/tech_posts/">
-				
-				<span class="menu__text">Tech-Posts</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/thinking/">
-				
-				<span class="menu__text">Thinking</span>
-				
-			</a>
-		</li>
-		<li class="menu__item">
-			<a class="menu__link" href="/keep-moving-forward/about/news/">
-				
-				<span class="menu__text">🎉News🎉</span>
-				
-			</a>
-		</li>
-	</ul>
-</nav>
-
-	</div>
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/keep-moving-forward/" accesskey="h" title="Ubios Home (Alt + H)">Ubios Home</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/about/" title="关于我">
+                    <span>关于我</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/tech_posts/" title="技术相关">
+                    <span>技术相关</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/paper_posts/" title="论文解析">
+                    <span>论文解析</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/news/" title="🎉News🎉">
+                    <span>🎉News🎉</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/thingking/" title="思考">
+                    <span>思考</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/hpc_ai/" title="AI&amp;Sys 入门">
+                    <span>AI&amp;Sys 入门</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/series" title="系列文章">
+                    <span>系列文章</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </header>
-		<div class="wrapper flex">
-			<div class="primary">
-			
+<main class="main">
 
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/keep-moving-forward/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/keep-moving-forward/tech/">Technique</a></div>
+    <h1 class="post-title entry-hint-parent">
+      浅析机器学习中的并行模型和自动并行方法
+    </h1>
+    <div class="post-meta"><span title='2023-05-02 00:00:00 +0000 UTC'>May 2, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang
 
-<main class="main" role="main">
-	<article class="post">
-		<header class="post__header">
-			<h1 class="post__title">浅析机器学习中的并行模型和自动并行方法</h1>
-			<p class="post__lead">数据并行、模型并行、流水并行、专家混合</p>
-			<div class="post__meta meta"><div class="meta__item-author meta__item">
-	<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2 0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class="meta__text">chenghua.wang</span>
 </div>
-<div class="meta__item-datetime meta__item">
-	<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class="meta__text" datetime="2023-05-02T00:00:00Z">2023-05-02</time></div><div class="meta__item-categories meta__item"><svg class="meta__icon icon icon-category" width="16" height="16" viewBox="0 0 16 16"><path d="m7 2l1 2h8v11h-16v-13z"/></svg><span class="meta__text"><a class="meta__link" href="/keep-moving-forward/categories/hpc&#43;ai/" rel="category">HPC&#43;AI</a>
-	</span>
-</div></div>
-		</header>
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
 
-		
-<div class="post__toc toc">
-	<div class="toc__title">Page content</div>
-	<div class="toc__menu">
-		<nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-并行模型">1. 并行模型</a>
-      <ul>
-        <li><a href="#11-数据并行-data-parallesim">1.1 数据并行 （Data Parallesim）</a>
-          <ul>
-            <li><a href="#111-dpdata-parallelparameter-server">1.1.1 DP（Data Parallel）Parameter Server</a></li>
-            <li><a href="#112-ddpdistributed-data-parallelring-all-reduce">1.1.2 DDP（Distributed Data Parallel）Ring-All-Reduce</a></li>
-            <li><a href="#113-fsdpfully-shared-data-parallel">1.1.3 FSDP（Fully Shared Data Parallel）</a></li>
-          </ul>
-        </li>
-        <li><a href="#12-流水并行pipeline-parallesim">1.2 流水并行（Pipeline Parallesim）</a></li>
-        <li><a href="#13-模型并行tensor-parallesim">1.3 模型并行（Tensor Parallesim）</a></li>
-        <li><a href="#14-混合并行mixture-of-experts">1.4 混合并行（Mixture-of-Experts）</a></li>
-      </ul>
-    </li>
-    <li><a href="#2-自动并行方法">2. 自动并行方法</a>
-      <ul>
-        <li><a href="#21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-	</div>
-</div><div class="content post__content clearfix">
-			<p>人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。</p>
+        <div class="inner"><ul>
+                <li>
+                    <a href="#1-%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b" aria-label="1. 并行模型">1. 并行模型</a><ul>
+                        
+                <li>
+                    <a href="#11-%e6%95%b0%e6%8d%ae%e5%b9%b6%e8%a1%8c-data-parallesim" aria-label="1.1 数据并行 （Data Parallesim）">1.1 数据并行 （Data Parallesim）</a><ul>
+                        
+                <li>
+                    <a href="#111-dpdata-parallelparameter-server" aria-label="1.1.1 DP（Data Parallel）Parameter Server">1.1.1 DP（Data Parallel）Parameter Server</a></li>
+                <li>
+                    <a href="#112-ddpdistributed-data-parallelring-all-reduce" aria-label="1.1.2 DDP（Distributed Data Parallel）Ring-All-Reduce">1.1.2 DDP（Distributed Data Parallel）Ring-All-Reduce</a></li>
+                <li>
+                    <a href="#113-fsdpfully-shared-data-parallel" aria-label="1.1.3 FSDP（Fully Shared Data Parallel）">1.1.3 FSDP（Fully Shared Data Parallel）</a></li></ul>
+                </li>
+                <li>
+                    <a href="#12-%e6%b5%81%e6%b0%b4%e5%b9%b6%e8%a1%8cpipeline-parallesim" aria-label="1.2 流水并行（Pipeline Parallesim）">1.2 流水并行（Pipeline Parallesim）</a></li>
+                <li>
+                    <a href="#13-%e6%a8%a1%e5%9e%8b%e5%b9%b6%e8%a1%8ctensor-parallesim" aria-label="1.3 模型并行（Tensor Parallesim）">1.3 模型并行（Tensor Parallesim）</a></li>
+                <li>
+                    <a href="#14-%e6%b7%b7%e5%90%88%e5%b9%b6%e8%a1%8cmixture-of-experts" aria-label="1.4 混合并行（Mixture-of-Experts）">1.4 混合并行（Mixture-of-Experts）</a></li></ul>
+                </li>
+                <li>
+                    <a href="#2-%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95" aria-label="2. 自动并行方法">2. 自动并行方法</a><ul>
+                        
+                <li>
+                    <a href="#21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9" aria-label="2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><p>人工智能领域的许多最新进展都围绕着大规模神经网络展开，但训练大规模神经网络是一项艰巨的工程和研究挑战，需要协调GPU集群来执行单个同步计算。随着集群数和模型规模的增长，机器学习从业者开发了多项技术，让机器学习模型能在多个GPU上进行并行模型训练。</p>
 <p>乍一看，这些并行技术令人生畏，但只需对计算结构进行一些假设，这些技术就会变得清晰：从某些角度来看，这也只是从 A 到 B 传递并不透明的位，就像数据包在网络交换机之间传递一样。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled.png" width = "100%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">各种 Parallel 模型</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled.png"/> <figcaption>
+            Fig 1. 各种 Parallel 模型
+        </figcaption>
+</figure>
+
 <p>不同的并行技术将训练过程划分为不同的维度，包括：</p>
 <ul>
 <li><strong>数据并行（Data Parallelism）在不同的GPU上运行同一批数据的不同子集</strong>
@@ -195,12 +304,12 @@ Parameter Server Worker 节点的主要功能是各自保存部分训练数据�
 <li><strong>专家混合（Mixture-of-Experts）只用模型每一层中的一小部分来处理数据。</strong></li>
 </ul>
 <p>Note：Tensor Parallelism 翻译成模型并行可能并不是非常的恰当🤣</p>
-<h1 id="1-并行模型">1. 并行模型</h1>
-<h2 id="11-数据并行-data-parallesim">1.1 数据并行 （Data Parallesim）</h2>
+<h1 id="1-并行模型">1. 并行模型<a hidden class="anchor" aria-hidden="true" href="#1-并行模型">#</a></h1>
+<h2 id="11-数据并行-data-parallesim">1.1 数据并行 （Data Parallesim）<a hidden class="anchor" aria-hidden="true" href="#11-数据并行-data-parallesim">#</a></h2>
 <p>数据并行是指将相同的参数复制到多个工作节点上，并为每个工作节点分配不同的数据子集同时进行处理。每个工作节点拥有完整的神经网络模型，每次训练仅将一批数据输入模型，进行前向传播、计算误差、反向传播，最后进行参数的更新。储了参数的更新，其余的操作都是互相独立的，所以可以在多个节点上进行并发的执行。</p>
 <p>每个工作节点都有自己的模型和输入，当属于自己的模型参数推理完成后（产生了梯度参数），所有的工作节点会把参数（梯度参数）发给一个 Master，这个 Master 会把所有节点传进来的参数做融合，通过这些梯度参数更新生成新的模型参数，然后把这个模型的参数再发送给每个工作节点，拱他们进行下一轮的计算。</p>
 <p>在 Pytorch 中提供了DP（Data Parallel）、DDP（Distributed Data Parallel）、FSDP（Fully Shared Data Parallel）三种不同的数据并行方法。</p>
-<h3 id="111-dpdata-parallelparameter-server">1.1.1 DP（Data Parallel）Parameter Server</h3>
+<h3 id="111-dpdata-parallelparameter-server">1.1.1 DP（Data Parallel）Parameter Server<a hidden class="anchor" aria-hidden="true" href="#111-dpdata-parallelparameter-server">#</a></h3>
 <p>DP 使用了 Parameter Server（PS） 作为理论依据。PS 结构是李沐老师提出来的方法，由server节点和worker节点组成。</p>
 <details open><summary>[点击折叠] 李沐老师的 PS 讲解</summary>
 <div align="center">
@@ -211,75 +320,61 @@ Parameter Server Worker 节点的主要功能是各自保存部分训练数据�
 </div>
 </details>
 <p>Server 节点的主要功能是初始化和保存模型参数、接受worker节点计算出的局部梯度、汇总计算全局梯度，并更新模型参数。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%201.png" width = "80%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Parameter Server</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%201.png"/> <figcaption>
+            Fig 2. Parameter Server
+        </figcaption>
+</figure>
+
 <p>Worker 节点的主要功能是各自保存部分训练数据，初始化模型，从 Server 节点拉取（Pull）最新的模型参数，再读取参数，根据训练数据计算局部梯度，上传（Push）给 Server 节点。ps：李沐老师说这个 Pull 和 Push 叫法来源于 Git。</p>
 <p>在这个模式下，会有负载不均衡的情况出现。因为在 Server 需要大量的显存来保存从 Woker 到来的梯度参数，而 Server 还需要将更新后的参数广播到每一个 Worker 上，那么 Server 的网络带宽就变得是非重要了。随着 Worker 数目的增多，网络的需求会更加大。并且 Server 作为最终处理所有 Worker 传来的梯度参数的机器，其计算消耗时间也是制约其他 Worker 不间断工作的瓶颈。</p>
-<h3 id="112-ddpdistributed-data-parallelring-all-reduce">1.1.2 DDP（Distributed Data Parallel）Ring-All-Reduce</h3>
+<h3 id="112-ddpdistributed-data-parallelring-all-reduce">1.1.2 DDP（Distributed Data Parallel）Ring-All-Reduce<a hidden class="anchor" aria-hidden="true" href="#112-ddpdistributed-data-parallelring-all-reduce">#</a></h3>
 <p>DDP 主要基于 Ring-All-Reduce 算法，该算法主要分两步：</p>
 <ol>
 <li>share-reduce：会逐步交换彼此的梯度并融合，最后每个 GPU 都会包含完整融合梯度的一部分。</li>
 <li>share-only：GPU 会逐步交换彼此不完整的融合梯度，最后所有 GPU 都会得到完整的融合梯度</li>
 </ol>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%202.png" width = "60%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Ring-All-Reduce 示意图</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%202.png"/> <figcaption>
+            Fig 3. Ring-All-Reduce 示意图
+        </figcaption>
+</figure>
+
 <p>在 share-reduce 阶段，每个进程 p 将数据发送给进程 (p+1) % p，其中 % 是模运算符。所以进程A会向进程 B 发送。这就是创建类似于环形队列状态的的原因。此外，长度为 n 的数组被划分成 p 块，这些块中的每一个都将以 i 为索引。它看起来会是这样的：</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%203.png" width = "60%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Ring-All-Reduce 1</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%203.png"/> <figcaption>
+            Fig 4. Ring-All-Reduce 1
+        </figcaption>
+</figure>
+
 <p>第一个 share-reduce 操作进程 A 向进程 B 发送 a0，进程 B 将向进程 C 发送 b1，等等。类似这样：</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%204.png" width = "60%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Ring-All-Reduce 2</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%204.png"/> <figcaption>
+            Fig 5. Ring-All-Reduce 2
+        </figcaption>
+</figure>
+
 <p>然后，当每个进程收到前一个进程的数据时，它就会应用 reduce operation，然后继续将其再次发送到环中的下一个进程。如果 reduce operation 是 sum。它看起来就会像这样：</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%205.png" width = "60%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Ring-All-Reduce 3</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%205.png"/> <figcaption>
+            Fig 6. Ring-All-Reduce 3
+        </figcaption>
+</figure>
+
 <p>然后，再进一步：</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%206.png" width = "60%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Ring-All-Reduce 4</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%206.png"/> <figcaption>
+            Fig 7. Ring-All-Reduce 4
+        </figcaption>
+</figure>
+
 <p>第二步，shared-only，这个操作非常的简单，只是以环形方式共享数据，而不应用 reduce operation。这就把每个进程中的每个分块的结果合并起来。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%207.png" width = "60%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Ring-All-Reduce 5</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%207.png"/> <figcaption>
+            Fig 8. Ring-All-Reduce 5
+        </figcaption>
+</figure>
+
 <p>Ring-All-Reduce 有这些优点：</p>
 <ol>
 <li>负载分散在每个 Worker 上，通讯时间基本是一致的。并且不需要通过 Server 分发全模型的参数到每个 Worker 上。</li>
@@ -310,63 +405,54 @@ Parameter Server Worker 节点的主要功能是各自保存部分训练数据�
 </tbody>
 </table>
 </blockquote>
-<h3 id="113-fsdpfully-shared-data-parallel">1.1.3 FSDP（Fully Shared Data Parallel）</h3>
+<h3 id="113-fsdpfully-shared-data-parallel">1.1.3 FSDP（Fully Shared Data Parallel）<a hidden class="anchor" aria-hidden="true" href="#113-fsdpfully-shared-data-parallel">#</a></h3>
 <p>DDP 用起来简单方便，<strong>但是要求整个模型能加载一个GPU上</strong>，这使得大模型的训练需要使用额外复杂的设置进行模型拆分。Pytorch 的 FSDP 从 DeepSpeed ZeRO [8] 以及 FairScale 的 FSDP 中获取灵感，<strong>打破模型分片的障碍</strong>（包括模型参数，梯度，优化器状态），同时仍然保持了数据并行的简单性。</p>
 <p>FSDP 是对模型参数、优化器状态和梯度进行分片，可以选择将部分模型参数卸载到 CPU 中。FSDP 是在 DDP 的基础上，将 All-Reduce 操作分解为独立的 Reduce-Scatter 和 All-gather 的操作这种方式能够使得每个工作节点仅需存储一个参数和优化器状态的分片。FSDP 非常类似于 <strong>ZeRO-3</strong>。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%208.png" width = "100%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">FSDP workflow [3]</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%208.png"/> <figcaption>
+            Fig 9. FSDP workflow [3]
+        </figcaption>
+</figure>
+
 <p>如 FSDP 完全流程图所示，通过 All-gather 操作可以从其他工作节点获取模型权重来进行前向传播和反向传播。Reduce-Scatter 操作聚合局部梯度，并在各工作的节点上分片，还可以选择将梯度卸载到CPU 中，等需要时再从 CPU 中加载回来。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%209.png" width = "80%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Reduce-Scatter and All-gather</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%209.png"/> <figcaption>
+            Fig 10. Reduce-Scatter and All-gather
+        </figcaption>
+</figure>
+
 <p>原本的 All-Reduce 操作可以拆分成 Reduce-Scatter 和 All-gather 操作。在进行Reduce-Scatter 时，gradients 在相同块的各个 ranks 中被加起来，在进行 All-gather 时，每个 Worker 上可用的聚合梯度分片的部分可供所有 Worker 使用。</p>
-<h2 id="12-流水并行pipeline-parallesim">1.2 流水并行（Pipeline Parallesim）</h2>
+<h2 id="12-流水并行pipeline-parallesim">1.2 流水并行（Pipeline Parallesim）<a hidden class="anchor" aria-hidden="true" href="#12-流水并行pipeline-parallesim">#</a></h2>
 <p>通过流水线机制进行并行训练，我们将模型的参数分配到GPU上。每个GPU只持有一部分参数，因此，同一个模型在每个GPU上消耗的内存成比例减小。</p>
 <p>将大模型分为若干份连续的layer很简单。然而，各层的输入和输出之间存在着顺序上的依赖性，所以一个简单的实现会导致大量的GPU空闲时间，因为 Worker 在等待前一个 Worker 的输出来用作其输入。这些等待时间块被称为 <strong>&ldquo;气泡(bubble)&rdquo;</strong>，而在这些等待的过程中，空闲的机器本可以继续进行计算。。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%2010.png" width = "100%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">Naive way for Streaming [1]</div>
-</div>
+<figure>
+    <img loading="lazy" src="Untitled%2010.png"/> <figcaption>
+            Fig 11. Naive way for Streaming [1]
+        </figcaption>
+</figure>
+
 <p>为了减少气泡的开销，我们可以重用数据并行的思想，通过让每个 Worker 一次只处理一个数据元素的子集，使我们能够巧妙地将新的计算与等待时间重叠(overlapping)起来。核心思想是将一个批次分成多个微批(microbatches)；每个微批的处理速度应该是成比例的，每个 Worker 在下一个微批可用时就开始工作，从而加速流的执行。有了足够的微批，Worker 可以在大部分时间内被利用，在进程的开始和结束时，气泡最小。梯度是跨微批的平均数，只有在所有微批完成后才会对参数进行更新。</p>
 <p>模型被分割的节点数的数量通常被称为流水线深度(Pipline depth)。</p>
 <p>在前向传递期间，Worker 只需要将其 Layer 的输出（称为激活）发送给下一个 Worker；在反向传递期间，它只将这些激活的梯度发送给前一个 Worker 。如何安排这些传递以及如何在微批中聚集梯度，有很大的设计空间。 GPipe让每个工作者连续处理前向和反向的传递，然后在最后同步聚合来自多个微批的梯度。而 PipeDream 则安排每个 Worker 交替地处理前向和反向 Stream。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/Untitled%2011.png" width = "100%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">GPipe and PipeDream [1]</div>
-</div>
-<h2 id="13-模型并行tensor-parallesim">1.3 模型并行（Tensor Parallesim）</h2>
+<figure>
+    <img loading="lazy" src="Untitled%2011.png"/> <figcaption>
+            Fig 12. GPipe and PipeDream [1]
+        </figcaption>
+</figure>
+
+<h2 id="13-模型并行tensor-parallesim">1.3 模型并行（Tensor Parallesim）<a hidden class="anchor" aria-hidden="true" href="#13-模型并行tensor-parallesim">#</a></h2>
 <p>流水并行将一个模型按层“垂直”拆分。也可以在一个 layer 内 “水平” 分割某些操作，这通常被称为模型并行训练。对于许多现代模型（如Transformer）来说，计算的瓶颈是将激活值与大的权重矩阵相乘。矩阵乘法可以被认为是成对的行和列之间的点积：有可能在不同的GPU上计算独立的点积，或者在不同的GPU上计算每个点积的一部分，然后将结果相加。无论采用哪种策略，我们都可以将权重矩阵切成大小均匀的 “块(Shards)”，将每个块放在不同的GPU上。要得到完整矩阵的结果，需要进行通信将不同部分的结果进行整合。</p>
 <p>一个例子是 <a href="https://nv-adlr.github.io/MegatronLM">Megatron-LM</a>，它在 Transformer 的 自注意 和 MLP层内并行化矩阵乘法。 <a href="https://arxiv.org/abs/2104.04473">PTD-P</a> 同时使用张量、数据和流水线并行；它的流水线并行将多个不连续的 layer 分配到单设备上运行，以更多网络通信为代价来减少气泡开销。</p>
 <p>有时，网络的输入可以在一个维度上进行并行化，相对于交叉通信来说，并行计算的程度很高。 <a href="https://arxiv.org/abs/2205.05198">序列并行</a>就是这样一个想法，一个输入序列在不同时间被分割成多个子集，通过在更细粒度的子集上进行计算，峰值内存消耗可以成比例地减少。</p>
-<h2 id="14-混合并行mixture-of-experts">1.4 混合并行（Mixture-of-Experts）</h2>
+<h2 id="14-混合并行mixture-of-experts">1.4 混合并行（Mixture-of-Experts）<a hidden class="anchor" aria-hidden="true" href="#14-混合并行mixture-of-experts">#</a></h2>
 <p><a href="https://arxiv.org/abs/1701.06538">混合专家（MoE）</a>方法，对于任何一个输入，只有一部分网络被用来计算输出。在有许多套权重的情况下，网络可以在推理时通过门控机制选择使用哪一套。这样就可以在不增加计算成本的情况下增加许多参数。每组权重被称为 &ldquo;专家(experts)&quot;，希望网络能够学会将专门的计算任务分配给每个专家。不同的专家可以托管在不同的GPU上，这也为扩大模型使用的GPU数量提供了一个明确的方法。</p>
-<div align="center"> 
-<img src="/keep-moving-forward/imgs/introduction_distributed_ml/moe.svg" width = "100%"/>
-<br>
-    <div style="color:orange; border-bottom: 1px solid #d9d9d9;
-    display: inline-block;
-    color: #999;
-    padding: 2px;">混合专家（MoE）Illustration of a mixture-of-experts (MoE) layer. Only 2 out of the n experts are selected by the gating network. (Image adapted from: [Shazeer et al., 2017](https://arxiv.org/abs/1701.06538))[1]</div>
-</div>
+<figure>
+    <img loading="lazy" src="moe.svg"
+         alt="Illustration of a mixture-of-experts (MoE) layer. Only 2 out of the n experts are selected by the gating network. (Image adapted from: Shazeer et al., 2017)[1]"/> <figcaption>
+            混合专家（MoE<p>Illustration of a mixture-of-experts (MoE) layer. Only 2 out of the n experts are selected by the gating network. (Image adapted from: <a href="https://arxiv.org/abs/1701.06538">Shazeer et al., 2017</a>)[1]</p>
+        </figcaption>
+</figure>
+
 <p><a href="https://arxiv.org/abs/2006.16668">GShard</a>将 MoE Transformer 的规模扩大到6000亿个参数，其中MoE layers被拆分到多个TPU上，其他layers是完全重复的。 <a href="https://arxiv.org/abs/2101.03961">Switch Transformer</a> 通过将一个输入只路由到一个专家，将模型规模扩展到数万亿的参数，甚至有更高的稀疏度。</p>
 <blockquote>
 <p>难点：</p>
@@ -377,8 +463,8 @@ Parameter Server Worker 节点的主要功能是各自保存部分训练数据�
 </ul>
 <p><a href="https://github.com/davidmrau/mixture-of-experts">Moe Github, code</a></p>
 </blockquote>
-<h1 id="2-自动并行方法">2. 自动并行方法</h1>
-<h2 id="21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]</h2>
+<h1 id="2-自动并行方法">2. 自动并行方法<a hidden class="anchor" aria-hidden="true" href="#2-自动并行方法">#</a></h1>
+<h2 id="21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]<a hidden class="anchor" aria-hidden="true" href="#21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">#</a></h2>
 <p><a href="https://link.zhihu.com/?target=https%3A//cs.stanford.edu/~zhihao/papers/icml18.pdf">Get This Paper</a></p>
 <p>这篇文章勾勒了自动并行的基本框架，很多解决自动并行的工作都是这样一个流程。</p>
 <hr>
@@ -393,148 +479,229 @@ Parameter Server Worker 节点的主要功能是各自保存部分训练数据�
 <p>[8] <a href="https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-model-training-for-everyone/">DeepSpeed: Extreme-scale model training for everyone - Microsoft Research</a></p>
 <p>[9] <a href="https://link.zhihu.com/?target=https%3A//cs.stanford.edu/~zhihao/papers/icml18.pdf">Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks</a></p>
 
-		</div>
-		<footer class="post__footer">
-			
-<div class="post__tags tags clearfix">
-	<svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5 0 11V3C0 1.5.8.8.8.8S1.5 0 3 0h8c1.5 0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
-	<ul class="tags__list">
-		<li class="tags__item">
-			<a class="tags__link btn" href="/keep-moving-forward/tags/distributed-system/" rel="tag">Distributed System</a>
-		</li>
-	</ul>
-</div>
-		</footer>
-	</article>
-</main>
 
-<div class="authorbox clearfix">
-	<figure class="authorbox__avatar">
-		<img alt="chenghua.wang avatar" src="/keep-moving-forward/img/Cornell_box.png" class="avatar" height="90" width="90">
-	</figure>
-	<div class="authorbox__header">
-		<span class="authorbox__name">About chenghua.wang</span>
-	</div>
-	<div class="authorbox__description">
-		Currently working on AI&amp;Sys, CV (low-level) and LLM topics.
-	</div>
-</div>
+  </div>
 
-<nav class="pager flex">
-	<div class="pager__item pager__item--prev">
-		<a class="pager__link" href="/keep-moving-forward/tech/cuda_nsight_system/" rel="prev">
-			<span class="pager__subtitle">«&thinsp;Previous</span>
-			<p class="pager__title">CUDA: NSight System</p>
-		</a>
-	</div>
-	<div class="pager__item pager__item--next">
-		<a class="pager__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/" rel="next">
-			<span class="pager__subtitle">Next&thinsp;»</span>
-			<p class="pager__title">【施工中】6xKx16 SGEMM Kernel on X86-AVX</p>
-		</a>
-	</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/keep-moving-forward/tags/parallel/">Parallel</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/keep-moving-forward/tech/x86_avx_sgemm_6x16/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>【施工中】6xKx16 SGEMM Kernel on X86-AVX</span>
+  </a>
+  <a class="next" href="http://localhost:1313/keep-moving-forward/tech/cuda_nsight_system/">
+    <span class="title">Next »</span>
+    <br>
+    <span>CUDA: NSight System</span>
+  </a>
 </nav>
 
 
-			</div>
-			<aside class="sidebar"><div class="widget-search widget">
-	<form class="widget-search__form" role="search" method="get" action="https://google.com/search">
-		<label>
-			<input class="widget-search__field" type="search" placeholder="SEARCH…" value="" name="q" aria-label="SEARCH…">
-		</label>
-		<input class="widget-search__submit" type="submit" value="Search">
-		<input type="hidden" name="don&#39;t use this search" value="don&#39;t use this searchhttps://chenghuawang.github.io/keep-moving-forward/">
-	</form>
-</div>
-<div class="widget-recent widget">
-	<h4 class="widget__title">Recent Posts</h4>
-	<div class="widget__content">
-		<ul class="widget__list">
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/mllm-qwen/">mllm框架浅析-以QWen0.5B为例</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/mlsys2024-qmoe/">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/prompt_cache/">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/transformer-lite/">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/papers/awq/">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/x86_avx_sgemm_6x16/">【施工中】6xKx16 SGEMM Kernel on X86-AVX</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/introduction_mldistri/">浅析机器学习中的并行模型和自动并行方法</a></li>
-			<li class="widget__item"><a class="widget__link" href="/keep-moving-forward/tech/cuda_nsight_system/">CUDA: NSight System</a></li>
-		</ul>
-	</div>
-</div>
-<div class="widget-taglist widget">
-	<h4 class="widget__title">Tags</h4>
-	<div class="widget__content">
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/cuda/" title="CUDA">CUDA (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/distributed-system/" title="Distributed System">Distributed System (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/edge/" title="Edge">Edge (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/kernel/" title="Kernel">Kernel (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/lecture/" title="Lecture">Lecture (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm/" title="LLM">LLM (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-cache-optimize/" title="LLM Cache Optimize">LLM Cache Optimize (1)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/llm-server/" title="LLM Server">LLM Server (5)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/mlsys-2024/" title="MLSys 2024">MLSys 2024 (3)</a>
-		<a class="widget-taglist__link widget__link btn" href="/keep-moving-forward/tags/quantization/" title="Quantization">Quantization (2)</a>
-	</div>
-</div>
-<div class="toc__block_div">
-	<div class="toc__title">Page content</div>
-	<div class="toc__menu">
-		<nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-并行模型">1. 并行模型</a>
-      <ul>
-        <li><a href="#11-数据并行-data-parallesim">1.1 数据并行 （Data Parallesim）</a>
-          <ul>
-            <li><a href="#111-dpdata-parallelparameter-server">1.1.1 DP（Data Parallel）Parameter Server</a></li>
-            <li><a href="#112-ddpdistributed-data-parallelring-all-reduce">1.1.2 DDP（Distributed Data Parallel）Ring-All-Reduce</a></li>
-            <li><a href="#113-fsdpfully-shared-data-parallel">1.1.3 FSDP（Fully Shared Data Parallel）</a></li>
-          </ul>
-        </li>
-        <li><a href="#12-流水并行pipeline-parallesim">1.2 流水并行（Pipeline Parallesim）</a></li>
-        <li><a href="#13-模型并行tensor-parallesim">1.3 模型并行（Tensor Parallesim）</a></li>
-        <li><a href="#14-混合并行mixture-of-experts">1.4 混合并行（Mixture-of-Experts）</a></li>
-      </ul>
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share 浅析机器学习中的并行模型和自动并行方法 on x"
+            href="https://x.com/intent/tweet/?text=%e6%b5%85%e6%9e%90%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f&amp;hashtags=Parallel">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
     </li>
-    <li><a href="#2-自动并行方法">2. 自动并行方法</a>
-      <ul>
-        <li><a href="#21-exploring-hidden-dimensions-in-parallelizing-convolutional-neural-networks-9">2.1 Exploring Hidden Dimensions in Parallelizing Convolutional Neural Networks [9]</a></li>
-      </ul>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share 浅析机器学习中的并行模型和自动并行方法 on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f&amp;title=%e6%b5%85%e6%9e%90%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95&amp;summary=%e6%b5%85%e6%9e%90%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95&amp;source=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
     </li>
-  </ul>
-</nav>
-	</div>
-</div>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share 浅析机器学习中的并行模型和自动并行方法 on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f&title=%e6%b5%85%e6%9e%90%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share 浅析机器学习中的并行模型和自动并行方法 on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share 浅析机器学习中的并行模型和自动并行方法 on whatsapp"
+            href="https://api.whatsapp.com/send?text=%e6%b5%85%e6%9e%90%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95%20-%20http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share 浅析机器学习中的并行模型和自动并行方法 on telegram"
+            href="https://telegram.me/share/url?text=%e6%b5%85%e6%9e%90%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share 浅析机器学习中的并行模型和自动并行方法 on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=%e6%b5%85%e6%9e%90%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0%e4%b8%ad%e7%9a%84%e5%b9%b6%e8%a1%8c%e6%a8%a1%e5%9e%8b%e5%92%8c%e8%87%aa%e5%8a%a8%e5%b9%b6%e8%a1%8c%e6%96%b9%e6%b3%95&u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2fintroduction_mldistri%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
 
-</aside>
-		</div>
-		<footer class="footer">
-	<div class="container footer__container flex">
-		
-		<div class="footer__copyright">
-			&copy; 2024 chenghua.wang.
-			<span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad</a> theme.</span>
-		</div>
-	</div>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>© <a href="https://github.com/chenghuaWang">chenghua.wang</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
 </footer>
-	</div>
-<script async defer src="/keep-moving-forward/js/menu.js"></script>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a><script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.6/medium-zoom.min.js" integrity="sha512-N9IJRoc3LaP3NDoiGkcPa4gG94kapGpaA5Zq9/Dr04uf5TbLFU5q0o8AbRhLKUUlp8QFS2u7S+Yti0U7QtuZvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-
-
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    extensions: ["tex2jax.js"],
-    jax: ["input/TeX", "output/HTML-CSS"],
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
-      processEscapes: true
-    },
-    "HTML-CSS": { fonts: ["TeX"] }
+<script>
+const images = Array.from(document.querySelectorAll(".post-content img"));
+images.forEach(img => {
+  mediumZoom(img, {
+    margin: 0,  
+    scrollOffset: 40,  
+    container: null,  
+    template: null,  
+    background: 'rgba(0, 0, 0, 0.8)'
   });
+});
 </script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async>
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/8.js?i=5j20jf9ml5x&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
 </script>
 </body>
+
 </html>

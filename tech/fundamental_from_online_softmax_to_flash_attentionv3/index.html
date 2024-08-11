@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/keep-moving-forward/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=keep-moving-forward/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>[Fundamental] From Online Softmax to Flash Attention V3 | Ubios Home</title>
+<meta name="keywords" content="LLM Server, LLM">
+<meta name="description" content="Flash Attention from Fundamental Series">
+<meta name="author" content="chenghua.Wang">
+<link rel="canonical" href="http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/">
+<link crossorigin="anonymous" href="/keep-moving-forward/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/keep-moving-forward/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/keep-moving-forward/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/keep-moving-forward/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/keep-moving-forward/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/keep-moving-forward/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+</script>
+
+
+
+  
+
+<meta property="og:title" content="[Fundamental] From Online Softmax to Flash Attention V3" />
+<meta property="og:description" content="Flash Attention from Fundamental Series" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/" /><meta property="article:section" content="tech" />
+<meta property="article:published_time" content="2024-08-10T00:00:00+00:00" />
+<meta property="article:modified_time" content="2024-08-10T00:00:00+00:00" />
+
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[Fundamental] From Online Softmax to Flash Attention V3"/>
+<meta name="twitter:description" content="Flash Attention from Fundamental Series"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Technique",
+      "item": "http://localhost:1313/keep-moving-forward/tech/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "[Fundamental] From Online Softmax to Flash Attention V3",
+      "item": "http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "[Fundamental] From Online Softmax to Flash Attention V3",
+  "name": "[Fundamental] From Online Softmax to Flash Attention V3",
+  "description": "Flash Attention from Fundamental Series",
+  "keywords": [
+    "LLM Server", "LLM"
+  ],
+  "articleBody": "0x00 Materials 本文是对Flash Attention的学习笔记，其中有不少内容是摘自业内的前辈们的文章，在此一并感谢。所参考的资料、摘录的文章来源在下面列出：\nFrom Online Softmax to FlashAttention(CSE599m, ML for ML System) ,本文的行文逻辑也是按照这篇文章来的。强烈安利CSE599m给入门ML System的新人。\nFlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness\nFlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning\n【BBuf的CUDA笔记】十四，OpenAI Triton入门笔记三 FusedAttention\n[Attention优化][2w字]🔥原理\u0026图解: 从Online-Softmax到FlashAttention V1/V2/V3\n0x01 问题定义 $$ \\text{Attention} = \\text{Softmax}(\\frac{QK^T}{\\sqrt{d_k}})V $$\n$$ Q,K,V \\in \\mathbb{R}^{N\\times D} $$\n其中$N$表示Sequence Length,$D$表示Dimension。我们先来考虑最简单的计算方式：\n$$ S = QK^T $$\n$$ P = \\text{Softmax}(S) $$\n$$ O = PV $$\n在这个Naive的计算方式中，$P,S \\in \\mathbb R^{N\\times N}$，这意味着为了计算P，我们需要多保存一个$N\\times N$的矩阵，这个情况下内存的需求是$O(N^2)$的，很容易爆显存；且为了计算$S和P$势必需要从HBM中进行大量的读写操作，IO的访问次数是$O(N^2 + ND)$复杂度的。随着现在的Context Length需求越来越大，在$N$变大的时候，是很容易爆显存的。总结问题，主要有：\nSequence Length($N$)越大，传统的Attention计算方法很容易爆显存。 传统的Attention计算方式对HBM的访问复杂度是平方级别的，越长的$N$，耗时越长。 HBM / Shared Mem IO BandwidthFrom FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness\n考虑到HBM，Shared Memory的速度差异，我们希望能够减少HBM Access而将更多的IO Access操作放在Shared Memory中。\n0x02 Online Softmax 我们再来看下Safe Softmax的逻辑:\n$$ S_i = \\frac{e^{x_i - M}}{\\sum_{i=0}^N e^{x_i - M}}, M = \\max{X},X \\in \\mathbb{R}^{N} $$ 。我们先用一个非常naive的思路来实现这个Softmax，这里使用From Online Softmax to FlashAttention文章中的伪代码来解释：\nOnline Softmax 伪代码From From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n在这个简单的例子中，我们使用了三个循环来进行计算，这要求我们对$[1; N]$进行三次迭代。而Self-Attention中，因为SRAM放不下那么多的数据，所以我们需要三次访问$Q$和 $K$（并且重新计算），这在$I/O$效率上是不利的。\n那么，有没有一种方法可以合并一些Pass，就像是我们经常在Kernel Fusion中做的那样呢？初看似乎困难，因为公式(8)依赖于公式(7)所得到的计算结果，但是，使用一些变换，可以允许我们以重计算一部分数据为代价来合并公式(7, 8)。\n现在，我们来推导下公式，\n$$ \\begin{aligned} d_{i}^{\\prime}\u0026 =\\sum_{j=1}^ie^{x_j-m_i} \\\\ \u0026= \\left(\\sum_{j=1}^{i-1} e^{x_j-m_i}\\right)+e^{x_i-m_i} \\\\ \u0026= \\left(\\sum_{j=1}^{i-1} e^{x_j-m_{i-1}}\\right)e^{m_{i-1}-m_i}+e^{x_i-m_i} \\\\ \u0026= d_{i-1}’ e^{m_{i-1}-m_i}+e^{x_i-m_i} \\end{aligned} $$\n我们可以得到一个递推的公式，其中$d_N^{\\prime}$为最后我们需要的加和，即$\\sum_{i=0}^{N}e^{x_i-m_N}$。在这个递推公式中，我们使用新的$m$来修正之前的$d_i^{\\prime}$，之前错误的$m$可以通过幂相乘的计算规则消去。总的计算流程被缩减为2个Pass，如下图所示：\nOnline Softmax 2 passes 伪代码From From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n但是，这个计算方式还是有两个Pass，我们能不能将所有的计算Fuse到一个Pass中去呢？\n在Online Softmax中很难做到这一点，因为$a_i$所需要的$m_N,d_N^{\\prime}$依赖于全局更新。而$a_i$是一个无法全局更新的变量，除非在第一个Pass中再嵌套一个循环，这样违背了我们简化计算的初衷。但是，将问题放在Self-Attention的计算的时候，就变得不一样了。\n我们在这里再理解下，为什么2Pass的Online Safe Softmax是重要的，在Self-Attention的计算中，我们有下面2个主要的问题：\n需要提前计算好$QK^T$，保存在全局显存中，需要$O(N^2)$的显存，容易爆显存。 在算法中Online计算，每次循环中去加载一部分$Q,K$到片上内存，计算得到部分的$QK^T$。 总的来说，Online Softmax解决的是显存不足的问题，但是因为有两个Pass，还是存在HBM R/W次数较多，有Memory Bound，所以我们需要消除这个瓶颈。虽然现在我们需要对每一个$d_i^{\\prime}$做Scale，但是考虑到目前显卡并不是Compute Bound，这多余的计算是可以暂时不去考虑的。\n0x03 FA1 虽然在Online Softmax中，我们没有办法得到一个1 Pass的算法，但是在Self-Attention中，我们需要的是计算出$O=A\\times V$，而不是$A$，这有什么不同呢？我们来推导下公式，不过首先，我们先来看一下原始的Self-Attention是怎么求解的：\n原始的Self-Attention 伪代码From From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n这张未打码流程图仍然是从CSE 599m中借用的。可以看到，在第一个Pass中，就是0x02章节中提及的Online Softmax；在第二个Pass中，$o_i$的计算可能稍有点难以理解，可以画张图。实际上就是遍历$a_i$就是$\\text{Attention}$矩阵的一行，拿每一行的每个值$a_i$去乘$V$矩阵的每一行，就是行乘列操作。这个操作可以同时把$O$矩阵的一行给算出来。\n$$o_i^{\\prime}:=\\left(\\sum_{j=1}^i\\frac{e^{x_j-m_i}}{d_i^{\\prime}}V[j,:]\\right)$$\n上面的公式就是把Pass2内部的计算整合在了一起，和0x02章节的推导一样，我们也去尝试做递推：\n$$ \\begin{aligned} o_i^{\\prime}\u0026 =\\sum_{j=1}^i\\frac{e^{x_j-m_i}}{d_i'}V[j,:] \\\\ \u0026= \\left(\\sum_{j=1}^{i-1}\\frac{e^{x_j-m_i}}{d_i'}V[j,:] \\right)+\\frac{e^{x_i-m_i}}{d_i'}V[i,: ] \\\\ \u0026= \\left(\\sum_{j=1}^{i-1}\\frac{e^{x_j-m_{i-1}}}{d_{i-1}^{\\prime}}\\frac{e^{x_j-m_i}}{e^{x_j-m_{i-1}}}\\frac{d_{i-1}^{\\prime}}{d_i^{\\prime}}V[j,.]\\right)+\\frac{e^{x_i-m_i}}{d_i^{\\prime}}V[i,.] \\\\ \u0026= \\left(\\sum_{j=1}^{i-1}\\frac{e^{x_j-m_{i-1}}}{d_{i-1}^{\\prime}}V[j,:]\\right)\\frac{d_{i-1}^{\\prime}}{d_i^{\\prime}}e^{m_{i-1}-m_i}+\\frac{e^{x_i-m_i}}{d_i^{\\prime}}V[i,:] \\\\ \u0026=\\begin{array}{c}\\boldsymbol{o}_{i-1}^{\\prime}\\frac{d_{i-1}^{\\prime}e^{m_{i-1}-m_i}}{d_i^{\\prime}}+\\frac{e^{x_i-m_i}}{d_i^{\\prime}}V[i,:]\\end{array} \\end{aligned} $$ 可以推导出和Online Softmax相似的形式，至此，我们推导出了FA算法。\nFA1 伪代码From From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n可以看出，在FA算法中，$Q,K,V$都可以分块载入，我们可以进一步得到FA的Tiling方法：\nFA1 TiledFrom From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n在这种改进的Tiling技术中，K矩阵被划分为多个较小的区块，同样的方法也适用于Q矩阵。这些较小的区块可以被加载到SRAM中，以便于进行高效的计算。一旦这些区块被加载，就可以在kernel内部完成整个注意力机制的计算过程。从算法的角度来看，现在只需要一次性加载Q、K、V矩阵，就能在内核中完成所有的注意力计算。这种优化方法将原始3-pass Self Attention转变为1-pass FlashAttention，不仅节省了存储中间矩阵所需的显存，还减少了对Q和K矩阵的HBM R/W的次数。\n最终，FA的算法可以被下面的伪代码来表示：\nFA1 tiled 伪代码From From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n此时，我们再看FA的算法流程图，就不感觉陌生了。和上文中的推导思路一致：\nFA1 原文 伪代码From FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness\n在第6行，FA载入$K,V$分块，然后在第8行遍历完成所有的$Q$（这里有个显而易见的问题，$Q$的遍历放在最外面会好很多）。我们在这里再探讨下为什么分块$B_c=\\lceil \\frac{M}{4d} \\rceil, B_r=\\min (\\lceil \\frac{M}{4d} \\rceil, d)$。\n这样设置的目的是，为了确保SRAM能够放下所有$Q, K, V$的小块，其中$M$就是系统可用的SRAM上限。那么，对于每一个$Q$的分块$Q_i,O_i$以及$K, V$的分块$K_i, V_i$需要的共享内存为：\n$$ \\begin{gathered} SRAM(Q_{i})=B_{r}\\times d=\\min\\left(\\left\\lceil\\frac{M}{4d}\\right\\rceil,d\\right)\\times d\u003c\\lceil\\frac{M}{4}\\rceil \\\\ SRAM(O_i)=B_r\\times d=\\min\\left(\\left\\lceil\\frac{M}{4d}\\right\\rceil,d\\right)\\times d\u003c\\lceil\\frac{M}{4}\\rceil \\\\ SRAM(K_{j},V_{j})=2\\times B_{c}\\times d=2\\times\\left\\lceil\\frac{M}{4d}\\right\\rceil\\times d\u003c\\lceil\\frac{M}{2}\\rceil \\end{gathered} $$\n在这个情况下，SRAM基本上可以被占满。FA1原始论文中说道，Block Size 越大，HBM Accesses 越低，在256附近基本就是效率最优的转折点。\nFA1 Block Size 实验From FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness\n文中的实验条件是A100GPU，GPT-2 medium (seq. length 1024, head dim. 64, 16 heads, batch size 64)\n0x04 FA2 在0x03章节中我们提到：然后在第8行遍历完成所有的$Q$（这里有个显而易见的问题，$Q$的遍历放在最外面会好很多），这点就是FA2优化的很重要的一点。\nFA2一共做了主要的几种优化：\n优化了Scale的时机，使得除法的次数被大大减少\nForward优化了循环的顺序，使得HBM Access更加的高效。Backward没有\nForward/Backward均增加了Seq维度的并行\nWarp的分配更加的合理，避免Split-K(不是很理解？)\n优化了Scale的时机，使得除法的次数被大大减少 虽然一般来说，非matmul运算FLOPs要比matmul低，但是非matmul计算使用的是CUDA Cores，而矩阵计算可以利用Tensor Cores加速。基于Tensor Cores的matmul运算吞吐是不使用Tensor Cores的非matmul运算吞吐的16x。\n与FA1相比，FA2的主要不同点是计算每一次的$\\boldsymbol{O}^{(n)}$的逻辑，这里以$\\boldsymbol{O}^{(1)},\\boldsymbol{O}^{(2)}$为例来说明，在FA2中：\n$$ \\begin{gathered} \\tilde{\\mathbf{o}}^{(1)} =e^{s^{(1)}-m^{(1)}}\\mathbf{V}^{(1)}\\in\\mathbb{R}^{B_{r}\\times d} \\\\ \\tilde{\\mathrm{o}}^{(2)} =e^{s^{(1)}-m}\\mathbf{V}^{(1)}+e^{s^{(2)}-m}\\mathbf{V}^{(2)} \\\\ \\mathrm{o}^{(2)} =\\mathrm{diag}\\left(\\ell^{(2)}\\right)^{-1}\\tilde{\\mathbf{O}}^{(2)}=\\mathbf{O} \\end{gathered} $$\n其中，$\\tilde{\\mathrm{o}}^{(2)} =e^{s^{(1)}-m}\\mathbf{V}^{(1)}+e^{s^{(2)}-m}\\mathbf{V}^{(2)}$在计算的时候，$e^{s^{(1)}-m}\\mathbf{V}^{(1)}$这一项是对$\\tilde{\\mathbf{o}}^{(1)}$做了缩放，缩放因子是$e^{m^{(1)} - m}$。也就是：\n$$\\tilde{\\mathrm{o}}^{(2)} = e^{m^{(1)} - m} \\tilde{\\mathbf{o}}^{(1)} +e^{s^{(2)}-m}\\mathbf{V}^{(2)}$$\n相比于原来的FA1，我们首先计算Softmax的分子部分，在最后才算上分母。这样减少了每次迭代而必须的分母缩放。而原本的FA1的计算过程如下式所示：\n$$ \\mathbf{O}_{i}\\leftarrow\\mathrm{diag}\\left(\\ell_{i}^{\\mathrm{new}}\\right)^{-1}\\left(\\mathrm{diag}(\\ell_{i})e^{{m_{i}-m_{i}^{\\mathrm{new}}}}\\mathbf{O}_{i}+e^{{\\tilde{m}_{ij}-m_{i}^{\\mathrm{new}}}}\\mathbf{\\tilde{P}}_{ij}\\mathbf{V}_{j}\\right) $$ FA2的计算中，先不在每个block的每次迭代计算中执行全部的rescale操作，而是最后执行一次rescale。每次计算可以减少一次除法运算。\nFA2 伪代码From From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n可以看到在原文的伪代码中，在$T_c$循环结束后，才去做了分母上的计算。\n第十行的$\\text{diag}^{-1}$是错的，把$^{-1}$去掉。\n优化了循环的顺序，增加了Seq维度的并行 FA1的两重循环中，是先外层循环load K, V，然后内层循环再load Q。这就会导致内层循环，每次计算的只是Qi的一部分，每次内循环的迭代都需要对Oi进行全局内存的读写。而且，一个显而易见的事实就是，在Attention的计算中，不同query的Attention计算是完全独立的。也就是说，如果外部循环是先load Q，那么就可以把不同的query块的Attention分配不同thread block进行计算，这些thread block之间是不需要通信的。没错，在FA2中，正是这样做的，对于forward pass，算法调换了循环的顺序，先load Q，再load K, V。\nFA2增加seqlen并行，提高了occupancy，并且对于forward pass，Q*K^T在【行】方向的seqlen上天然可以并行，thread block之间不需要额外的通信。\nWarp的分配更加的合理，避免Split-K 摘自 FlashAttention核心逻辑以及V1 V2差异总结\nWarp Split-KFrom From Online Softmax to FlashAttention(CSE599m, ML for ML System)\n首先看fwd，相比V1，V2改进了Warp Partition：4个warp会从smem的K/V tile load同样的数据做mma计算，但是load 不同Q，把V1 sliced-K sliced-V 改成了v2 sliced-Q，V1的做法是需要warp之间产生同步通信的，因为在计算QK结果乘V的时候，如图所示需要跨warp reduction得到O的结果，而且fwd的目的是沿着行方向计算softmax，行方向信息最后要汇总的，这也需要跨warp不同。V2就不需要了，这样可以减少同步开销。\n0x05 Causal Mask怎么用？ 摘自 [Attention优化][2w字]🔥原理\u0026图解: 从Online-Softmax到FlashAttention V1/V2/V3\n非常简单的Early Exit逻辑：\n情况0: 全Early Exit。全0的mask可以直接返回0，无需$Q\\times K^T$，无需causal mask。\n情况1: 部分Early Exit。全1的mask，只需$\\text{Softmax}(Q\\times K^T)$，无需causal mask。\n情况3: 无法Early Exit。0-1混合的causal mask，需QxK^T，需要causal mask，然后$\\text{Softmax}(\\text{Mask}(Q \\times K^T))$。\nMasked 示意图[Attention优化][2w字]🔥原理\u0026图解: 从Online-Softmax到FlashAttention V1/V2/V3\n0x06 MHA/GQA/MQA 在FlashAttention中，也支持MQA和GQA。对于MQA和GQA的情形，FlashAttention采用Indexing的方式，而不是直接复制多份KV Head的内容到显存然后再进行计算。Indexing，即通过传入KV/KV Head索引到Kernel中，然后计算内存地址，直接从内存中读取KV。\n0x07 IO复杂度分析 因为FA主要是优化IO Acces，所以我们分析下FA的IO复杂度。我们假设Sequence的长度是$N$，每个头的维度是$d$，SRAM的大小是$M,d \\le M \\le Nd$。\n使用原始的Self Attention算法的IO复杂度是$\\Theta(Nd + N^2)$，FA1的IO复杂度是$\\Theta(N^2d^2M^{-1})$，考虑到$d$一般是64-128，而$M$一般是100KB，所以FA1的访存次数小于原始的做法。\nMemory Accesses和d的平方成正比关系，当d越大，FA的Memory Accesses会增长剧烈。比如对于N=2K, M=192KB, 当d=256时，依然满足 FA IO Acesses \u003c Naive Attention，但是当d=512时，这个结论就会反过来，变成是 FA IO Acesses \u003e Naive Attention IO Acesses，并且由于FA本身的FLOPS就是比Naive Attention高的，于是，此时无论是IO还是FLOPS，FA都会比Naive Attention高，无论是访存还是计算量都没有优势，唯一剩下的优势，应该就只剩节省显存了（不需要保存中间的S和P矩阵，O(N^2)的内存复杂度）\n0x08 Triton代码 先再来复习下Block是怎么切块的，这里的图摘自BBuf的 笔记图解大模型计算加速系列：Flash Attention V2，从原理到并行计算。\nBlock切块方向图解大模型计算加速系列：Flash Attention V2，从原理到并行计算\n增加了Seq维度的并行以后：\nSeq维度切块方向图解大模型计算加速系列：Flash Attention V2，从原理到并行计算\n与V1不同的是，我们在Q的seq_len维度上也做了切分，将其分成四份，即num_m_block = 4。所以现在我们共有1_2_4 = 8个block在跑。这些block之间的运算也是独立的， 因为：\nhead的计算是独立的，所以红色block和蓝色block互不干扰 采用Q做外循环，KV做内循环时，行与行之间的block是独立的，因此不同行的block互相不干扰。 每个block从Q上加载对应位置的切块，同时从KV上加载head0的切块，计算出自己所维护的那部分O，然后写入O的对应位置。\n我们使用OpenAI Triton的FA2 Tutorial代码来分析。\n下面的代码是每一个子Block中的最内层的代码，其中q是最外层循环的子块；K_block_ptr、V_block_ptr是$K$、$V$的子块，需要一次for循环完整的遍历。\n@triton.jit def _attn_fwd_inner(acc, l_i, m_i, q, # K_block_ptr, V_block_ptr, # start_m, qk_scale, # BLOCK_M: tl.constexpr, HEAD_DIM: tl.constexpr, BLOCK_N: tl.constexpr, # STAGE: tl.constexpr, offs_m: tl.constexpr, offs_n: tl.constexpr, # N_CTX: tl.constexpr, fp8_v: tl.constexpr): # range of values handled by this stage # 根据STAGE的值，函数定义了处理的键（K）和值（V）的范围。 # 不同的STAGE对应不同的处理范围，支持因果（causal）和非因果（non-causal）的自注意力。 if STAGE == 1: # 使用 Mask lo, hi = 0, start_m * BLOCK_M elif STAGE == 2: # 使用 Mask lo, hi = start_m * BLOCK_M, (start_m + 1) * BLOCK_M lo = tl.multiple_of(lo, BLOCK_M) # causal = False，不使用 Mask else: lo, hi = 0, N_CTX # tl.advance 根据步长调整K_block_ptr的指向 K_block_ptr = tl.advance(K_block_ptr, (0, lo)) V_block_ptr = tl.advance(V_block_ptr, (lo, 0)) # 对K,V Block做完整的遍历 for start_n in range(lo, hi, BLOCK_N): start_n = tl.multiple_of(start_n, BLOCK_N) # -- compute qk ---- # 加载 K Block k = tl.load(K_block_ptr) # 伪代码 line8: q x k qk = tl.dot(q, k) if STAGE == 2: # Mask mask = offs_m[:, None] \u003e= (start_n + offs_n[None, :]) # Mask 区域加上 -INF qk = qk * qk_scale + tl.where(mask, 0, -1.0e6) # 伪代码 line 9: Safe online softmax 的 max m_ij = tl.maximum(m_i, tl.max(qk, 1)) # 伪代码 line 9: s - m qk -= m_ij[:, None] else: # 伪代码 line 9: Safe online softmax 的 max，和伪代码的区别是这里有 qk_scale，稍后解释 m_ij = tl.maximum(m_i, tl.max(qk, 1) * qk_scale) # 伪代码 line 9: s - m. 和伪代码的区别是这里有 qk_scale，稍后解释 qk = qk * qk_scale - m_ij[:, None] # 伪代码 line 9: p = exp(s-m) p = tl.math.exp2(qk) # 伪代码 line 9: rowsum(p) l_ij = tl.sum(p, 1) # -- update m_i and l_i # 伪代码 line 10 alpha = tl.math.exp2(m_i - m_ij) l_i = l_i * alpha + l_ij # -- update output accumulator -- # 伪代码 line 10: 这里的 acc 是伪代码中的 O_i acc = acc * alpha[:, None] # update acc v = tl.load(V_block_ptr) if fp8_v: p = p.to(tl.float8e5) else: p = p.to(tl.float16) # 伪代码 line 10. acc = tl.dot(p, v, acc) # update m_i and l_i m_i = m_ij # 更新下一轮的 K,V Block的指针 V_block_ptr = tl.advance(V_block_ptr, (BLOCK_N, 0)) K_block_ptr = tl.advance(K_block_ptr, (0, BLOCK_N)) return acc, l_i, m_i 下面我们来看一下调用这个子块函数的函数。\n@triton.autotune(list(filter(keep, configs)), key=[\"N_CTX\", \"HEAD_DIM\"]) @triton.jit def _attn_fwd(Q, K, V, sm_scale, M, Out, # stride_qz, stride_qh, stride_qm, stride_qk, # stride_kz, stride_kh, stride_kn, stride_kk, # stride_vz, stride_vh, stride_vk, stride_vn, # stride_oz, stride_oh, stride_om, stride_on, # Z, H, N_CTX, # HEAD_DIM: tl.constexpr, # BLOCK_M: tl.constexpr, # BLOCK_N: tl.constexpr, # STAGE: tl.constexpr # ): tl.static_assert(BLOCK_N \u003c= HEAD_DIM) # 输入参数里的Z和H分别表示batch size和注意力头数 # q.shape is [Batch, Head, Seq, Dim] # 启动的时候 [grid] 是 # grid = lambda args: (triton.cdiv(q.shape[2], args[\"BLOCK_M\"]), q.shape[0] * q.shape[1], 1) # start_m表示当前kernel program 实例对应的seq维度的偏移，而off_hz表示的是batch*heads维度的偏移。 start_m = tl.program_id(0) # seq off_hz = tl.program_id(1) # batch * heads # 这两行计算了两个偏移量off_z和off_h，它们分别代表在batch（或heads）中的位置。 off_z = off_hz // H # 表示在哪个 Batch off_h = off_hz % H # 表示在哪个 Head # 计算用于定位Q、K和V张量中当前处理块的偏移量。这是基于先前计算的偏移量和提供的步长参数。 qvk_offset = off_z.to(tl.int64) * stride_qz + off_h.to(tl.int64) * stride_qh # block pointers # 使用tl.make_block_ptr创建一个指向Q张量当前处理块的指针。这个函数调用指定了基础地址、形状、步长、偏移量和块形状等，以及如何在内存中访问这个数据块。 # N_CTX 是q.shape[2]，表示的是序列长度，BLOCK_DMODEL是Lk，表示的是每个注意力头的隐藏层维度大小 # 下面几个make_block_ptr创建的张量类似，分别是对K，V以及输出O创建指向当前处理块的指针 Q_block_ptr = tl.make_block_ptr( base=Q + qvk_offset, shape=(N_CTX, HEAD_DIM), strides=(stride_qm, stride_qk), offsets=(start_m * BLOCK_M, 0), block_shape=(BLOCK_M, HEAD_DIM), order=(1, 0), ) v_order: tl.constexpr = (0, 1) if V.dtype.element_ty == tl.float8e5 else (1, 0) V_block_ptr = tl.make_block_ptr( base=V + qvk_offset, shape=(N_CTX, HEAD_DIM), strides=(stride_vk, stride_vn), offsets=(0, 0), block_shape=(BLOCK_N, HEAD_DIM), order=v_order, ) K_block_ptr = tl.make_block_ptr( base=K + qvk_offset, shape=(HEAD_DIM, N_CTX), strides=(stride_kk, stride_kn), offsets=(0, 0), block_shape=(HEAD_DIM, BLOCK_N), order=(0, 1), ) O_block_ptr = tl.make_block_ptr( base=Out + qvk_offset, shape=(N_CTX, HEAD_DIM), strides=(stride_om, stride_on), offsets=(start_m * BLOCK_M, 0), block_shape=(BLOCK_M, HEAD_DIM), order=(1, 0), ) # initialize offsets # 计算M维度（seq维度）上每个线程应处理的元素的起始偏移量。 offs_m = start_m * BLOCK_M + tl.arange(0, BLOCK_M) # 计算N维度（batch*heads维度）上每个线程应处理的元素的偏移量。 offs_n = tl.arange(0, BLOCK_N) # initialize pointer to m and l # 初始化m向量，m用于存储每个m维度上的最大logit，初始化为负无穷大。 m_i = tl.zeros([BLOCK_M], dtype=tl.float32) - float(\"inf\") # 初始化l向量，l用于累计softmax的分母，初始化为1。 l_i = tl.zeros([BLOCK_M], dtype=tl.float32) + 1.0 # 初始化累加器，用于累积注意力加权和。注意这里的shape是(BLOCK_M, BLOCK_DMODEL) acc = tl.zeros([BLOCK_M, HEAD_DIM], dtype=tl.float32) # load scales qk_scale = sm_scale qk_scale *= 1.44269504 # 1/log(2) # load q: it will stay in SRAM throughout # 将Q矩阵的当前块加载到SRAM中，此数据在整个计算过程中保持不变。 q = tl.load(Q_block_ptr) # stage 1: off-band # For causal = True, STAGE = 3 and _attn_fwd_inner gets 1 as its STAGE # For causal = False, STAGE = 1, and _attn_fwd_inner gets 3 as its STAGE if STAGE \u0026 1: acc, l_i, m_i = _attn_fwd_inner(acc, l_i, m_i, q, K_block_ptr, V_block_ptr, # start_m, qk_scale, # BLOCK_M, HEAD_DIM, BLOCK_N, # 4 - STAGE, offs_m, offs_n, N_CTX, V.dtype.element_ty == tl.float8e5 # ) # stage 2: on-band if STAGE \u0026 2: # barrier makes it easier for compielr to schedule the # two loops independently acc, l_i, m_i = _attn_fwd_inner(acc, l_i, m_i, q, K_block_ptr, V_block_ptr, # start_m, qk_scale, # BLOCK_M, HEAD_DIM, BLOCK_N, # 2, offs_m, offs_n, N_CTX, V.dtype.element_ty == tl.float8e5 # ) # epilogue m_i += tl.math.log2(l_i) acc = acc / l_i[:, None] m_ptrs = M + off_hz * N_CTX + offs_m tl.store(m_ptrs, m_i) tl.store(O_block_ptr, acc.to(Out.type.element_ty)) 需要特别注意的是这段代码最后的epilogue部分就对应了FlashAttention V2伪代码中的12行以后的内容，根据softmax的分母部分较正输出。此外，Triton的实现里面考虑了一些paper里面没有的东西比如qk_scale，causal mask，对Q*K的结果S应用了减掉m，使得整个实现看起来要复杂不少，但整体的算法逻辑和并行设置和paper还是一致的。\n最后在Attention中使用这个函数\nclass _attention(torch.autograd.Function): @staticmethod def forward(ctx, q, k, v, causal, sm_scale): # shape constraints HEAD_DIM_Q, HEAD_DIM_K = q.shape[-1], k.shape[-1] # when v is in float8_e5m2 it is transposed. HEAD_DIM_V = v.shape[-1] assert HEAD_DIM_Q == HEAD_DIM_K and HEAD_DIM_K == HEAD_DIM_V assert HEAD_DIM_K in {16, 32, 64, 128, 256} o = torch.empty_like(q) stage = 3 if causal else 1 extra_kern_args = {} # Tuning for AMD target if is_hip(): waves_per_eu = 3 if HEAD_DIM_K \u003c= 64 else 2 extra_kern_args = {\"waves_per_eu\": waves_per_eu, \"allow_flush_denorm\": True} # q.shape is [Batch, Head, Seq, Dim] grid = lambda args: (triton.cdiv(q.shape[2], args[\"BLOCK_M\"]), q.shape[0] * q.shape[1], 1) M = torch.empty((q.shape[0], q.shape[1], q.shape[2]), device=q.device, dtype=torch.float32) # Launch Kernel. _attn_fwd[grid]( q, k, v, sm_scale, M, o, # q.stride(0), q.stride(1), q.stride(2), q.stride(3), # k.stride(0), k.stride(1), k.stride(2), k.stride(3), # v.stride(0), v.stride(1), v.stride(2), v.stride(3), # o.stride(0), o.stride(1), o.stride(2), o.stride(3), # q.shape[0], q.shape[1], # N_CTX=q.shape[2], # HEAD_DIM=HEAD_DIM_K, # STAGE=stage, # **extra_kern_args) ctx.save_for_backward(q, k, v, o, M) ctx.grid = grid ctx.sm_scale = sm_scale ctx.HEAD_DIM = HEAD_DIM_K ctx.causal = causal return o 0x09 CUDA代码 0x0A FA 3 0x0B 思考 CPU上使用这个靠谱吗？CPU上并行度较低，用这个没有必要，但是可以考虑分块和Mask混合的MatMul来减少计算量，也就是Early Exit。 ",
+  "wordCount" : "1483",
+  "inLanguage": "en",
+  "datePublished": "2024-08-10T00:00:00Z",
+  "dateModified": "2024-08-10T00:00:00Z",
+  "author":[{
+    "@type": "Person",
+    "name": "chenghua.Wang"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Ubios Home",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/keep-moving-forward/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/keep-moving-forward/" accesskey="h" title="Ubios Home (Alt + H)">Ubios Home</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/about/" title="关于我">
+                    <span>关于我</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/tech_posts/" title="技术相关">
+                    <span>技术相关</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/paper_posts/" title="论文解析">
+                    <span>论文解析</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/news/" title="🎉News🎉">
+                    <span>🎉News🎉</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/thingking/" title="思考">
+                    <span>思考</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/about/hpc_ai/" title="AI&amp;Sys 入门">
+                    <span>AI&amp;Sys 入门</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/keep-moving-forward/series" title="系列文章">
+                    <span>系列文章</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/keep-moving-forward/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/keep-moving-forward/tech/">Technique</a></div>
+    <h1 class="post-title entry-hint-parent">
+      [Fundamental] From Online Softmax to Flash Attention V3
+    </h1>
+    <div class="post-meta"><span title='2024-08-10 00:00:00 +0000 UTC'>August 10, 2024</span>&nbsp;·&nbsp;7 min&nbsp;·&nbsp;chenghua.Wang
+
+</div>
+  </header> <div class="toc">
+    <details  open>
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#0x00-materials" aria-label="0x00 Materials">0x00 Materials</a></li>
+                <li>
+                    <a href="#0x01-%e9%97%ae%e9%a2%98%e5%ae%9a%e4%b9%89" aria-label="0x01 问题定义">0x01 问题定义</a></li>
+                <li>
+                    <a href="#0x02-online-softmax" aria-label="0x02 Online Softmax">0x02 Online Softmax</a></li>
+                <li>
+                    <a href="#0x03-fa1" aria-label="0x03 FA1">0x03 FA1</a></li>
+                <li>
+                    <a href="#0x04-fa2" aria-label="0x04 FA2">0x04 FA2</a><ul>
+                        
+                <li>
+                    <a href="#%e4%bc%98%e5%8c%96%e4%ba%86scale%e7%9a%84%e6%97%b6%e6%9c%ba%e4%bd%bf%e5%be%97%e9%99%a4%e6%b3%95%e7%9a%84%e6%ac%a1%e6%95%b0%e8%a2%ab%e5%a4%a7%e5%a4%a7%e5%87%8f%e5%b0%91" aria-label="优化了Scale的时机，使得除法的次数被大大减少">优化了Scale的时机，使得除法的次数被大大减少</a></li>
+                <li>
+                    <a href="#%e4%bc%98%e5%8c%96%e4%ba%86%e5%be%aa%e7%8e%af%e7%9a%84%e9%a1%ba%e5%ba%8f%e5%a2%9e%e5%8a%a0%e4%ba%86seq%e7%bb%b4%e5%ba%a6%e7%9a%84%e5%b9%b6%e8%a1%8c" aria-label="优化了循环的顺序，增加了Seq维度的并行">优化了循环的顺序，增加了Seq维度的并行</a></li>
+                <li>
+                    <a href="#warp%e7%9a%84%e5%88%86%e9%85%8d%e6%9b%b4%e5%8a%a0%e7%9a%84%e5%90%88%e7%90%86%e9%81%bf%e5%85%8dsplit-k" aria-label="Warp的分配更加的合理，避免Split-K">Warp的分配更加的合理，避免Split-K</a></li></ul>
+                </li>
+                <li>
+                    <a href="#0x05-causal-mask%e6%80%8e%e4%b9%88%e7%94%a8" aria-label="0x05 Causal Mask怎么用？">0x05 Causal Mask怎么用？</a></li>
+                <li>
+                    <a href="#0x06-mhagqamqa" aria-label="0x06 MHA/GQA/MQA">0x06 MHA/GQA/MQA</a></li>
+                <li>
+                    <a href="#0x07-io%e5%a4%8d%e6%9d%82%e5%ba%a6%e5%88%86%e6%9e%90" aria-label="0x07 IO复杂度分析">0x07 IO复杂度分析</a></li>
+                <li>
+                    <a href="#0x08-triton%e4%bb%a3%e7%a0%81" aria-label="0x08 Triton代码">0x08 Triton代码</a></li>
+                <li>
+                    <a href="#0x09-cuda%e4%bb%a3%e7%a0%81" aria-label="0x09 CUDA代码">0x09 CUDA代码</a></li>
+                <li>
+                    <a href="#0x0a-fa-3" aria-label="0x0A FA 3">0x0A FA 3</a></li>
+                <li>
+                    <a href="#0x0b-%e6%80%9d%e8%80%83" aria-label="0x0B 思考">0x0B 思考</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="0x00-materials">0x00 Materials<a hidden class="anchor" aria-hidden="true" href="#0x00-materials">#</a></h1>
+<p>本文是对Flash Attention的学习笔记，其中有不少内容是摘自业内的前辈们的文章，在此一并感谢。所参考的资料、摘录的文章来源在下面列出：</p>
+<ol>
+<li>
+<p><a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a> ,本文的行文逻辑也是按照这篇文章来的。强烈安利CSE599m给入门ML System的新人。</p>
+</li>
+<li>
+<p><a href="https://arxiv.org/pdf/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></p>
+</li>
+<li>
+<p><a href="https://arxiv.org/pdf/2307.08691">FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning</a></p>
+</li>
+<li>
+<p><a href="https://cloud.tencent.com/developer/article/2392140">【BBuf的CUDA笔记】十四，OpenAI Triton入门笔记三 FusedAttention</a></p>
+</li>
+<li>
+<p><a href="https://zhuanlan.zhihu.com/p/668888063">[Attention优化][2w字]🔥原理&amp;图解: 从Online-Softmax到FlashAttention V1/V2/V3</a></p>
+</li>
+</ol>
+<h1 id="0x01-问题定义">0x01 问题定义<a hidden class="anchor" aria-hidden="true" href="#0x01-问题定义">#</a></h1>
+<p>$$
+\text{Attention} = \text{Softmax}(\frac{QK^T}{\sqrt{d_k}})V
+$$</p>
+<p>$$
+Q,K,V \in \mathbb{R}^{N\times D}
+$$</p>
+<p>其中$N$表示Sequence Length,$D$表示Dimension。我们先来考虑最简单的计算方式：</p>
+<p>$$
+S = QK^T
+$$</p>
+<p>$$
+P = \text{Softmax}(S)
+$$</p>
+<p>$$
+O = PV
+$$</p>
+<p>在这个Naive的计算方式中，$P,S \in \mathbb R^{N\times N}$，这意味着为了计算P，我们需要多保存一个$N\times N$的矩阵，这个情况下内存的需求是$O(N^2)$的，很容易爆显存；且为了计算$S和P$势必需要从HBM中进行大量的读写操作，IO的访问次数是$O(N^2 + ND)$复杂度的。随着现在的Context Length需求越来越大，在$N$变大的时候，是很容易爆显存的。总结问题，主要有：</p>
+<ol>
+<li>Sequence Length($N$)越大，传统的Attention计算方法很容易爆显存。</li>
+<li>传统的Attention计算方式对HBM的访问复杂度是平方级别的，越长的$N$，耗时越长。</li>
+</ol>
+<figure>
+    <img loading="lazy" src="hbm-shared-speed.png"
+         alt="From FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness"/> <figcaption>
+            HBM / Shared Mem IO Bandwidth<p>From <a href="https://arxiv.org/pdf/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></p>
+        </figcaption>
+</figure>
+
+<p>考虑到HBM，Shared Memory的速度差异，我们希望能够减少HBM Access而将更多的IO Access操作放在Shared Memory中。</p>
+<h1 id="0x02-online-softmax">0x02 Online Softmax<a hidden class="anchor" aria-hidden="true" href="#0x02-online-softmax">#</a></h1>
+<p>我们再来看下Safe Softmax的逻辑:</p>
+<p>$$
+S_i = \frac{e^{x_i - M}}{\sum_{i=0}^N e^{x_i - M}}, M = \max{X},X \in \mathbb{R}^{N}
+$$
+。我们先用一个非常naive的思路来实现这个Softmax，这里使用From Online Softmax to FlashAttention文章中的伪代码来解释：</p>
+<figure>
+    <img loading="lazy" src="online-softmax.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            Online Softmax 伪代码<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>在这个简单的例子中，我们使用了三个循环来进行计算，这要求我们对$[1; N]$进行三次迭代。而Self-Attention中，因为SRAM放不下那么多的数据，所以我们需要三次访问$Q$和 $K$（并且重新计算），这在$I/O$效率上是不利的。</p>
+<p>那么，有没有一种方法可以合并一些Pass，就像是我们经常在Kernel Fusion中做的那样呢？初看似乎困难，因为公式(8)依赖于公式(7)所得到的计算结果，但是，使用一些变换，可以允许我们以重计算一部分数据为代价来合并公式(7, 8)。</p>
+<p>现在，我们来推导下公式，</p>
+<p>$$
+\begin{aligned}
+d_{i}^{\prime}&amp; =\sum_{j=1}^ie^{x_j-m_i} \\
+&amp;= \left(\sum_{j=1}^{i-1} e^{x_j-m_i}\right)+e^{x_i-m_i} \\
+&amp;= \left(\sum_{j=1}^{i-1} e^{x_j-m_{i-1}}\right)e^{m_{i-1}-m_i}+e^{x_i-m_i} \\
+&amp;= d_{i-1}&rsquo; e^{m_{i-1}-m_i}+e^{x_i-m_i}
+\end{aligned}
+$$</p>
+<p>我们可以得到一个递推的公式，其中$d_N^{\prime}$为最后我们需要的加和，即$\sum_{i=0}^{N}e^{x_i-m_N}$。在这个递推公式中，我们使用新的$m$来修正之前的$d_i^{\prime}$，之前错误的$m$可以通过幂相乘的计算规则消去。总的计算流程被缩减为2个Pass，如下图所示：</p>
+<figure>
+    <img loading="lazy" src="online-softmax-2-pass.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            Online Softmax 2 passes 伪代码<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>但是，这个计算方式还是有两个Pass，我们能不能将所有的计算Fuse到一个Pass中去呢？</p>
+<p>在Online Softmax中很难做到这一点，因为$a_i$所需要的$m_N,d_N^{\prime}$依赖于全局更新。而$a_i$是一个无法全局更新的变量，除非在第一个Pass中再嵌套一个循环，这样违背了我们简化计算的初衷。但是，将问题放在Self-Attention的计算的时候，就变得不一样了。</p>
+<p>我们在这里再理解下，为什么2Pass的Online Safe Softmax是重要的，在Self-Attention的计算中，我们有下面2个主要的问题：</p>
+<blockquote>
+<ol>
+<li>需要提前计算好$QK^T$，保存在全局显存中，需要$O(N^2)$的显存，容易爆显存。</li>
+<li>在算法中Online计算，每次循环中去加载一部分$Q,K$到片上内存，计算得到部分的$QK^T$。</li>
+</ol>
+</blockquote>
+<p>总的来说，Online Softmax解决的是显存不足的问题，但是因为有两个Pass，还是存在HBM R/W次数较多，有Memory Bound，所以我们需要消除这个瓶颈。虽然现在我们需要对每一个$d_i^{\prime}$做Scale，但是考虑到目前显卡并不是Compute Bound，这多余的计算是可以暂时不去考虑的。</p>
+<h1 id="0x03-fa1">0x03 FA1<a hidden class="anchor" aria-hidden="true" href="#0x03-fa1">#</a></h1>
+<p>虽然在Online Softmax中，我们没有办法得到一个1 Pass的算法，但是在Self-Attention中，我们需要的是计算出$O=A\times V$，而不是$A$，这有什么不同呢？我们来推导下公式，不过首先，我们先来看一下原始的Self-Attention是怎么求解的：</p>
+<figure>
+    <img loading="lazy" src="self-atten-raw.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            原始的Self-Attention 伪代码<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>这张未打码流程图仍然是从CSE 599m中借用的。可以看到，在第一个Pass中，就是0x02章节中提及的Online Softmax；在第二个Pass中，$o_i$的计算可能稍有点难以理解，可以画张图。实际上就是遍历$a_i$就是$\text{Attention}$矩阵的一行，拿每一行的每个值$a_i$去乘$V$矩阵的每一行，就是行乘列操作。这个操作可以同时把$O$矩阵的一行给算出来。</p>
+<p>$$o_i^{\prime}:=\left(\sum_{j=1}^i\frac{e^{x_j-m_i}}{d_i^{\prime}}V[j,:]\right)$$</p>
+<p>上面的公式就是把Pass2内部的计算整合在了一起，和0x02章节的推导一样，我们也去尝试做递推：</p>
+<p>
+$$
+\begin{aligned}
+o_i^{\prime}& =\sum_{j=1}^i\frac{e^{x_j-m_i}}{d_i'}V[j,:] \\
+&= \left(\sum_{j=1}^{i-1}\frac{e^{x_j-m_i}}{d_i'}V[j,:] \right)+\frac{e^{x_i-m_i}}{d_i'}V[i,: ] \\
+&= \left(\sum_{j=1}^{i-1}\frac{e^{x_j-m_{i-1}}}{d_{i-1}^{\prime}}\frac{e^{x_j-m_i}}{e^{x_j-m_{i-1}}}\frac{d_{i-1}^{\prime}}{d_i^{\prime}}V[j,.]\right)+\frac{e^{x_i-m_i}}{d_i^{\prime}}V[i,.] \\
+&= \left(\sum_{j=1}^{i-1}\frac{e^{x_j-m_{i-1}}}{d_{i-1}^{\prime}}V[j,:]\right)\frac{d_{i-1}^{\prime}}{d_i^{\prime}}e^{m_{i-1}-m_i}+\frac{e^{x_i-m_i}}{d_i^{\prime}}V[i,:] \\
+&=\begin{array}{c}\boldsymbol{o}_{i-1}^{\prime}\frac{d_{i-1}^{\prime}e^{m_{i-1}-m_i}}{d_i^{\prime}}+\frac{e^{x_i-m_i}}{d_i^{\prime}}V[i,:]\end{array}
+\end{aligned}
+$$
+</p>
+<p>可以推导出和Online Softmax相似的形式，至此，我们推导出了FA算法。</p>
+<figure>
+    <img loading="lazy" src="fa.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            FA1 伪代码<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>可以看出，在FA算法中，$Q,K,V$都可以分块载入，我们可以进一步得到FA的Tiling方法：</p>
+<figure>
+    <img loading="lazy" src="fa-tile.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            FA1 Tiled<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>在这种改进的Tiling技术中，K矩阵被划分为多个较小的区块，同样的方法也适用于Q矩阵。这些较小的区块可以被加载到SRAM中，以便于进行高效的计算。一旦这些区块被加载，就可以在kernel内部完成整个注意力机制的计算过程。从算法的角度来看，现在只需要一次性加载Q、K、V矩阵，就能在内核中完成所有的注意力计算。这种优化方法将原始3-pass Self Attention转变为1-pass FlashAttention，不仅节省了存储中间矩阵所需的显存，还减少了对Q和K矩阵的HBM R/W的次数。</p>
+<p>最终，FA的算法可以被下面的伪代码来表示：</p>
+<figure>
+    <img loading="lazy" src="fa-tile-code.png"/> 
+</figure>
+
+<figure>
+    <img loading="lazy" src="fa-tile-code-2.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            FA1 tiled 伪代码<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>此时，我们再看FA的算法流程图，就不感觉陌生了。和上文中的推导思路一致：</p>
+<figure>
+    <img loading="lazy" src="fa-code.png"
+         alt="From FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness"/> <figcaption>
+            FA1 原文 伪代码<p>From <a href="https://arxiv.org/pdf/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></p>
+        </figcaption>
+</figure>
+
+<p>在第6行，FA载入$K,V$分块，然后在第8行遍历完成所有的$Q$（这里有个显而易见的问题，$Q$的遍历放在最外面会好很多）。我们在这里再探讨下为什么分块$B_c=\lceil \frac{M}{4d} \rceil, B_r=\min (\lceil \frac{M}{4d} \rceil, d)$。</p>
+<p>这样设置的目的是，为了确保SRAM能够放下所有$Q, K, V$的小块，其中$M$就是系统可用的SRAM上限。那么，对于每一个$Q$的分块$Q_i,O_i$以及$K, V$的分块$K_i, V_i$需要的共享内存为：</p>
+<p>$$
+\begin{gathered}
+SRAM(Q_{i})=B_{r}\times d=\min\left(\left\lceil\frac{M}{4d}\right\rceil,d\right)\times d&lt;\lceil\frac{M}{4}\rceil \\
+SRAM(O_i)=B_r\times d=\min\left(\left\lceil\frac{M}{4d}\right\rceil,d\right)\times d&lt;\lceil\frac{M}{4}\rceil \\
+SRAM(K_{j},V_{j})=2\times B_{c}\times d=2\times\left\lceil\frac{M}{4d}\right\rceil\times d&lt;\lceil\frac{M}{2}\rceil
+\end{gathered}
+$$</p>
+<p>在这个情况下，SRAM基本上可以被占满。FA1原始论文中说道，Block Size 越大，HBM Accesses 越低，在256附近基本就是效率最优的转折点。</p>
+<figure>
+    <img loading="lazy" src="fa-block.png"
+         alt="From FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness"/> <figcaption>
+            FA1 Block Size 实验<p>From <a href="https://arxiv.org/pdf/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></p>
+        </figcaption>
+</figure>
+
+<p>文中的实验条件是A100GPU，GPT-2 medium (seq. length 1024, head dim. 64, 16 heads, batch size 64)</p>
+<h1 id="0x04-fa2">0x04 FA2<a hidden class="anchor" aria-hidden="true" href="#0x04-fa2">#</a></h1>
+<p>在0x03章节中我们提到：然后在第8行遍历完成所有的$Q$（这里有个显而易见的问题，$Q$的遍历放在最外面会好很多），这点就是FA2优化的很重要的一点。</p>
+<p>FA2一共做了主要的几种优化：</p>
+<ol>
+<li>
+<p>优化了Scale的时机，使得除法的次数被大大减少</p>
+</li>
+<li>
+<p>Forward优化了循环的顺序，使得HBM Access更加的高效。Backward没有</p>
+</li>
+<li>
+<p>Forward/Backward均增加了Seq维度的并行</p>
+</li>
+<li>
+<p>Warp的分配更加的合理，避免Split-K(不是很理解？)</p>
+</li>
+</ol>
+<h2 id="优化了scale的时机使得除法的次数被大大减少">优化了Scale的时机，使得除法的次数被大大减少<a hidden class="anchor" aria-hidden="true" href="#优化了scale的时机使得除法的次数被大大减少">#</a></h2>
+<p>虽然一般来说，非matmul运算FLOPs要比matmul低，但是非matmul计算使用的是CUDA Cores，而矩阵计算可以利用Tensor Cores加速。基于Tensor Cores的matmul运算吞吐是不使用Tensor Cores的非matmul运算吞吐的16x。</p>
+<p>与FA1相比，FA2的主要不同点是计算每一次的$\boldsymbol{O}^{(n)}$的逻辑，这里以$\boldsymbol{O}^{(1)},\boldsymbol{O}^{(2)}$为例来说明，在FA2中：</p>
+<p>$$
+\begin{gathered}
+\tilde{\mathbf{o}}^{(1)} =e^{s^{(1)}-m^{(1)}}\mathbf{V}^{(1)}\in\mathbb{R}^{B_{r}\times d} \\
+\tilde{\mathrm{o}}^{(2)} =e^{s^{(1)}-m}\mathbf{V}^{(1)}+e^{s^{(2)}-m}\mathbf{V}^{(2)} \\
+\mathrm{o}^{(2)} =\mathrm{diag}\left(\ell^{(2)}\right)^{-1}\tilde{\mathbf{O}}^{(2)}=\mathbf{O}
+\end{gathered}
+$$</p>
+<p>其中，$\tilde{\mathrm{o}}^{(2)} =e^{s^{(1)}-m}\mathbf{V}^{(1)}+e^{s^{(2)}-m}\mathbf{V}^{(2)}$在计算的时候，$e^{s^{(1)}-m}\mathbf{V}^{(1)}$这一项是对$\tilde{\mathbf{o}}^{(1)}$做了缩放，缩放因子是$e^{m^{(1)} - m}$。也就是：</p>
+<p>$$\tilde{\mathrm{o}}^{(2)} = e^{m^{(1)} - m} \tilde{\mathbf{o}}^{(1)} +e^{s^{(2)}-m}\mathbf{V}^{(2)}$$</p>
+<p>相比于原来的FA1，我们首先计算Softmax的分子部分，在最后才算上分母。这样减少了每次迭代而必须的分母缩放。而原本的FA1的计算过程如下式所示：</p>
+<p>
+$$
+\mathbf{O}_{i}\leftarrow\mathrm{diag}\left(\ell_{i}^{\mathrm{new}}\right)^{-1}\left(\mathrm{diag}(\ell_{i})e^{{m_{i}-m_{i}^{\mathrm{new}}}}\mathbf{O}_{i}+e^{{\tilde{m}_{ij}-m_{i}^{\mathrm{new}}}}\mathbf{\tilde{P}}_{ij}\mathbf{V}_{j}\right)
+$$
+</p>
+<p>FA2的计算中，先不在每个block的每次迭代计算中执行全部的rescale操作，而是最后执行一次rescale。每次计算可以减少一次除法运算。</p>
+<figure>
+    <img loading="lazy" src="fa2-code.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            FA2 伪代码<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>可以看到在原文的伪代码中，在$T_c$循环结束后，才去做了分母上的计算。</p>
+<p>第十行的$\text{diag}^{-1}$是错的，把$^{-1}$去掉。</p>
+<h2 id="优化了循环的顺序增加了seq维度的并行">优化了循环的顺序，增加了Seq维度的并行<a hidden class="anchor" aria-hidden="true" href="#优化了循环的顺序增加了seq维度的并行">#</a></h2>
+<p>FA1的两重循环中，是先外层循环load K, V，然后内层循环再load Q。这就会导致内层循环，每次计算的只是Qi的一部分，每次内循环的迭代都需要对Oi进行全局内存的读写。而且，一个显而易见的事实就是，在Attention的计算中，不同query的Attention计算是完全独立的。也就是说，如果外部循环是先load Q，那么就可以把不同的query块的Attention分配不同thread block进行计算，这些thread block之间是不需要通信的。没错，在FA2中，正是这样做的，对于forward pass，算法调换了循环的顺序，先load Q，再load K, V。</p>
+<p>FA2增加seqlen并行，提高了occupancy，并且对于forward pass，Q*K^T在【行】方向的seqlen上天然可以并行，thread block之间不需要额外的通信。</p>
+<h2 id="warp的分配更加的合理避免split-k">Warp的分配更加的合理，避免Split-K<a hidden class="anchor" aria-hidden="true" href="#warp的分配更加的合理避免split-k">#</a></h2>
+<p>摘自 <a href="https://zhuanlan.zhihu.com/p/665170554">FlashAttention核心逻辑以及V1 V2差异总结</a></p>
+<figure>
+    <img loading="lazy" src="split-k.png"
+         alt="From From Online Softmax to FlashAttention(CSE599m, ML for ML System)"/> <figcaption>
+            Warp Split-K<p>From <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention(CSE599m, ML for ML System)</a></p>
+        </figcaption>
+</figure>
+
+<p>首先看fwd，相比V1，V2改进了Warp Partition：4个warp会从smem的K/V tile load同样的数据做mma计算，但是load 不同Q，把V1 sliced-K sliced-V 改成了v2 sliced-Q，V1的做法是需要warp之间产生同步通信的，因为在计算QK结果乘V的时候，如图所示需要跨warp reduction得到O的结果，<strong>而且fwd的目的是沿着行方向计算softmax，行方向信息最后要汇总的，这也需要跨warp不同。V2就不需要了，这样可以减少同步开销。</strong></p>
+<h1 id="0x05-causal-mask怎么用">0x05 Causal Mask怎么用？<a hidden class="anchor" aria-hidden="true" href="#0x05-causal-mask怎么用">#</a></h1>
+<p>摘自 <a href="https://zhuanlan.zhihu.com/p/668888063">[Attention优化][2w字]🔥原理&amp;图解: 从Online-Softmax到FlashAttention V1/V2/V3</a></p>
+<p>非常简单的Early Exit逻辑：</p>
+<p>情况0: 全Early Exit。全0的mask可以直接返回0，无需$Q\times K^T$，无需causal mask。</p>
+<p>情况1: 部分Early Exit。全1的mask，只需$\text{Softmax}(Q\times K^T)$，无需causal mask。</p>
+<p>情况3: 无法Early Exit。0-1混合的causal mask，需QxK^T，需要causal mask，然后$\text{Softmax}(\text{Mask}(Q \times K^T))$。</p>
+<figure>
+    <img loading="lazy" src="mask.png"
+         alt="[Attention优化][2w字]🔥原理&amp;amp;图解: 从Online-Softmax到FlashAttention V1/V2/V3"/> <figcaption>
+            Masked 示意图<p><a href="https://zhuanlan.zhihu.com/p/668888063">[Attention优化][2w字]🔥原理&amp;图解: 从Online-Softmax到FlashAttention V1/V2/V3</a></p>
+        </figcaption>
+</figure>
+
+<h1 id="0x06-mhagqamqa">0x06 MHA/GQA/MQA<a hidden class="anchor" aria-hidden="true" href="#0x06-mhagqamqa">#</a></h1>
+<p>在FlashAttention中，也支持MQA和GQA。对于MQA和GQA的情形，FlashAttention采用Indexing的方式，而不是直接复制多份KV Head的内容到显存然后再进行计算。Indexing，即通过传入KV/KV Head索引到Kernel中，然后计算内存地址，直接从内存中读取KV。</p>
+<h1 id="0x07-io复杂度分析">0x07 IO复杂度分析<a hidden class="anchor" aria-hidden="true" href="#0x07-io复杂度分析">#</a></h1>
+<p>因为FA主要是优化IO Acces，所以我们分析下FA的IO复杂度。我们假设Sequence的长度是$N$，每个头的维度是$d$，SRAM的大小是$M,d \le M \le Nd$。</p>
+<p>使用原始的Self Attention算法的IO复杂度是$\Theta(Nd + N^2)$，FA1的IO复杂度是$\Theta(N^2d^2M^{-1})$，考虑到$d$一般是64-128，而$M$一般是100KB，所以FA1的访存次数小于原始的做法。</p>
+<p>Memory Accesses和d的平方成正比关系，当d越大，FA的Memory Accesses会增长剧烈。比如对于N=2K, M=192KB, 当d=256时，依然满足 FA IO Acesses &lt; Naive Attention，但是<strong>当d=512时，这个结论就会反过来</strong>，变成是 <strong>FA IO Acesses &gt; Naive Attention IO Acesses</strong>，并且由于FA本身的FLOPS就是比Naive Attention高的，于是，此时无论是IO还是FLOPS，FA都会比Naive Attention高，无论是访存还是计算量都没有优势，唯一剩下的优势，应该就只剩节省显存了（不需要保存中间的S和P矩阵，O(N^2)的内存复杂度）</p>
+<h1 id="0x08-triton代码">0x08 Triton代码<a hidden class="anchor" aria-hidden="true" href="#0x08-triton代码">#</a></h1>
+<p>先再来复习下Block是怎么切块的，这里的图摘自BBuf的 笔记<a href="https://mp.weixin.qq.com/s/5K6yNj23NmNLcAQofHcT4Q">图解大模型计算加速系列：Flash Attention V2，从原理到并行计算</a>。</p>
+<figure>
+    <img loading="lazy" src="tile-dir.webp"
+         alt="图解大模型计算加速系列：Flash Attention V2，从原理到并行计算"/> <figcaption>
+            Block切块方向<p><a href="https://mp.weixin.qq.com/s/5K6yNj23NmNLcAQofHcT4Q">图解大模型计算加速系列：Flash Attention V2，从原理到并行计算</a></p>
+        </figcaption>
+</figure>
+
+<p>增加了Seq维度的并行以后：</p>
+<figure>
+    <img loading="lazy" src="tile-dir-1.webp"
+         alt="图解大模型计算加速系列：Flash Attention V2，从原理到并行计算"/> <figcaption>
+            Seq维度切块方向<p><a href="https://mp.weixin.qq.com/s/5K6yNj23NmNLcAQofHcT4Q">图解大模型计算加速系列：Flash Attention V2，从原理到并行计算</a></p>
+        </figcaption>
+</figure>
+
+<p>与V1不同的是，我们在Q的seq_len维度上也做了切分，将其分成四份，即num_m_block = 4。所以现在我们共有1_2_4 = 8个block在跑。<strong>这些block之间的运算也是独立的，</strong> 因为：</p>
+<ul>
+<li><strong>head的计算是独立的，所以红色block和蓝色block互不干扰</strong></li>
+<li><strong>采用Q做外循环，KV做内循环时，行与行之间的block是独立的，因此不同行的block互相不干扰。</strong></li>
+</ul>
+<p>每个block从Q上加载对应位置的切块，同时从KV上加载head0的切块，计算出自己所维护的那部分O，然后写入O的对应位置。</p>
+<p>我们使用<a href="https://triton-lang.org/main/getting-started/tutorials/06-fused-attention.html">OpenAI Triton的FA2 Tutorial代码</a>来分析。</p>
+<p>下面的代码是每一个子Block中的最内层的代码，其中<code>q</code>是最外层循环的子块；<code>K_block_ptr</code>、<code>V_block_ptr</code>是$K$、$V$的子块，需要一次for循环完整的遍历。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nd">@triton.jit</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_attn_fwd_inner</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">K_block_ptr</span><span class="p">,</span> <span class="n">V_block_ptr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">start_m</span><span class="p">,</span> <span class="n">qk_scale</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">BLOCK_M</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">STAGE</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span> <span class="n">offs_m</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span> <span class="n">offs_n</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">N_CTX</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span> <span class="n">fp8_v</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># range of values handled by this stage</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 根据STAGE的值，函数定义了处理的键（K）和值（V）的范围。</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 不同的STAGE对应不同的处理范围，支持因果（causal）和非因果（non-causal）的自注意力。</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">STAGE</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># 使用 Mask</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">start_m</span> <span class="o">*</span> <span class="n">BLOCK_M</span>
+</span></span><span class="line"><span class="cl">    <span class="k">elif</span> <span class="n">STAGE</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> <span class="c1"># 使用 Mask</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">start_m</span> <span class="o">*</span> <span class="n">BLOCK_M</span><span class="p">,</span> <span class="p">(</span><span class="n">start_m</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">BLOCK_M</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lo</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">multiple_of</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">BLOCK_M</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># causal = False，不使用 Mask</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">N_CTX</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">    <span class="c1"># tl.advance 根据步长调整K_block_ptr的指向    </span>
+</span></span><span class="line"><span class="cl">    <span class="n">K_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">K_block_ptr</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">lo</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="n">V_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">V_block_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 对K,V Block做完整的遍历</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">start_n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">start_n</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">multiple_of</span><span class="p">(</span><span class="n">start_n</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># -- compute qk ----</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 加载 K Block</span>
+</span></span><span class="line"><span class="cl">        <span class="n">k</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">K_block_ptr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 伪代码 line8: q x k</span>
+</span></span><span class="line"><span class="cl">        <span class="n">qk</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">STAGE</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># Mask</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mask</span> <span class="o">=</span> <span class="n">offs_m</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">start_n</span> <span class="o">+</span> <span class="n">offs_n</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># Mask 区域加上 -INF</span>
+</span></span><span class="line"><span class="cl">            <span class="n">qk</span> <span class="o">=</span> <span class="n">qk</span> <span class="o">*</span> <span class="n">qk_scale</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0e6</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># 伪代码 line 9: Safe online softmax 的 max</span>
+</span></span><span class="line"><span class="cl">            <span class="n">m_ij</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">m_i</span><span class="p">,</span> <span class="n">tl</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">qk</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># 伪代码 line 9: s - m</span>
+</span></span><span class="line"><span class="cl">            <span class="n">qk</span> <span class="o">-=</span> <span class="n">m_ij</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 伪代码 line 9: Safe online softmax 的 max，和伪代码的区别是这里有 qk_scale，稍后解释</span>
+</span></span><span class="line"><span class="cl">            <span class="n">m_ij</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">m_i</span><span class="p">,</span> <span class="n">tl</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">qk</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">qk_scale</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># 伪代码 line 9: s - m. 和伪代码的区别是这里有 qk_scale，稍后解释</span>
+</span></span><span class="line"><span class="cl">            <span class="n">qk</span> <span class="o">=</span> <span class="n">qk</span> <span class="o">*</span> <span class="n">qk_scale</span> <span class="o">-</span> <span class="n">m_ij</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 伪代码 line 9: p = exp(s-m)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">p</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">exp2</span><span class="p">(</span><span class="n">qk</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 伪代码 line 9: rowsum(p)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">l_ij</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1"># -- update m_i and l_i</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 伪代码 line 10</span>
+</span></span><span class="line"><span class="cl">        <span class="n">alpha</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">exp2</span><span class="p">(</span><span class="n">m_i</span> <span class="o">-</span> <span class="n">m_ij</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">l_i</span> <span class="o">=</span> <span class="n">l_i</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">l_ij</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># -- update output accumulator --</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 伪代码 line 10: 这里的 acc 是伪代码中的 O_i</span>
+</span></span><span class="line"><span class="cl">        <span class="n">acc</span> <span class="o">=</span> <span class="n">acc</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># update acc</span>
+</span></span><span class="line"><span class="cl">        <span class="n">v</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">V_block_ptr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">fp8_v</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tl</span><span class="o">.</span><span class="n">float8e5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tl</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 伪代码 line 10.</span>
+</span></span><span class="line"><span class="cl">        <span class="n">acc</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">acc</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># update m_i and l_i</span>
+</span></span><span class="line"><span class="cl">        <span class="n">m_i</span> <span class="o">=</span> <span class="n">m_ij</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 更新下一轮的 K,V Block的指针</span>
+</span></span><span class="line"><span class="cl">        <span class="n">V_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">V_block_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">BLOCK_N</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="n">K_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">K_block_ptr</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span>
+</span></span></code></pre></div><p>下面我们来看一下调用这个子块函数的函数。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="nd">@triton.autotune</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">configs</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;N_CTX&#34;</span><span class="p">,</span> <span class="s2">&#34;HEAD_DIM&#34;</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@triton.jit</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">_attn_fwd</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">sm_scale</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">Out</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">stride_qz</span><span class="p">,</span> <span class="n">stride_qh</span><span class="p">,</span> <span class="n">stride_qm</span><span class="p">,</span> <span class="n">stride_qk</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">stride_kz</span><span class="p">,</span> <span class="n">stride_kh</span><span class="p">,</span> <span class="n">stride_kn</span><span class="p">,</span> <span class="n">stride_kk</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">stride_vz</span><span class="p">,</span> <span class="n">stride_vh</span><span class="p">,</span> <span class="n">stride_vk</span><span class="p">,</span> <span class="n">stride_vn</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">stride_oz</span><span class="p">,</span> <span class="n">stride_oh</span><span class="p">,</span> <span class="n">stride_om</span><span class="p">,</span> <span class="n">stride_on</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">Z</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">N_CTX</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">HEAD_DIM</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">BLOCK_M</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">BLOCK_N</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="n">STAGE</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">              <span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tl</span><span class="o">.</span><span class="n">static_assert</span><span class="p">(</span><span class="n">BLOCK_N</span> <span class="o">&lt;=</span> <span class="n">HEAD_DIM</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 输入参数里的Z和H分别表示batch size和注意力头数</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># q.shape is [Batch, Head, Seq, Dim]</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 启动的时候 [grid] 是</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># grid = lambda args: (triton.cdiv(q.shape[2], args[&#34;BLOCK_M&#34;]), q.shape[0] * q.shape[1], 1)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># start_m表示当前kernel program 实例对应的seq维度的偏移，而off_hz表示的是batch*heads维度的偏移。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">start_m</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># seq</span>
+</span></span><span class="line"><span class="cl">    <span class="n">off_hz</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># batch * heads</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 这两行计算了两个偏移量off_z和off_h，它们分别代表在batch（或heads）中的位置。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">off_z</span> <span class="o">=</span> <span class="n">off_hz</span> <span class="o">//</span> <span class="n">H</span> <span class="c1"># 表示在哪个 Batch</span>
+</span></span><span class="line"><span class="cl">    <span class="n">off_h</span> <span class="o">=</span> <span class="n">off_hz</span> <span class="o">%</span> <span class="n">H</span> <span class="c1"># 表示在哪个 Head</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 计算用于定位Q、K和V张量中当前处理块的偏移量。这是基于先前计算的偏移量和提供的步长参数。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">qvk_offset</span> <span class="o">=</span> <span class="n">off_z</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tl</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride_qz</span> <span class="o">+</span> <span class="n">off_h</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tl</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride_qh</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># block pointers</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 使用tl.make_block_ptr创建一个指向Q张量当前处理块的指针。这个函数调用指定了基础地址、形状、步长、偏移量和块形状等，以及如何在内存中访问这个数据块。</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># N_CTX 是q.shape[2]，表示的是序列长度，BLOCK_DMODEL是Lk，表示的是每个注意力头的隐藏层维度大小</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 下面几个make_block_ptr创建的张量类似，分别是对K，V以及输出O创建指向当前处理块的指针</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Q_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">make_block_ptr</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">base</span><span class="o">=</span><span class="n">Q</span> <span class="o">+</span> <span class="n">qvk_offset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N_CTX</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="n">stride_qm</span><span class="p">,</span> <span class="n">stride_qk</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">offsets</span><span class="o">=</span><span class="p">(</span><span class="n">start_m</span> <span class="o">*</span> <span class="n">BLOCK_M</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="n">BLOCK_M</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">order</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">v_order</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">V</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">element_ty</span> <span class="o">==</span> <span class="n">tl</span><span class="o">.</span><span class="n">float8e5</span> <span class="k">else</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">V_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">make_block_ptr</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">base</span><span class="o">=</span><span class="n">V</span> <span class="o">+</span> <span class="n">qvk_offset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N_CTX</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="n">stride_vk</span><span class="p">,</span> <span class="n">stride_vn</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">offsets</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="n">BLOCK_N</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">order</span><span class="o">=</span><span class="n">v_order</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">K_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">make_block_ptr</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">base</span><span class="o">=</span><span class="n">K</span> <span class="o">+</span> <span class="n">qvk_offset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">HEAD_DIM</span><span class="p">,</span> <span class="n">N_CTX</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="n">stride_kk</span><span class="p">,</span> <span class="n">stride_kn</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">offsets</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="n">HEAD_DIM</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">order</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">O_block_ptr</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">make_block_ptr</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">base</span><span class="o">=</span><span class="n">Out</span> <span class="o">+</span> <span class="n">qvk_offset</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N_CTX</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="n">stride_om</span><span class="p">,</span> <span class="n">stride_on</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">offsets</span><span class="o">=</span><span class="p">(</span><span class="n">start_m</span> <span class="o">*</span> <span class="n">BLOCK_M</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">block_shape</span><span class="o">=</span><span class="p">(</span><span class="n">BLOCK_M</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">order</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># initialize offsets</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 计算M维度（seq维度）上每个线程应处理的元素的起始偏移量。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">offs_m</span> <span class="o">=</span> <span class="n">start_m</span> <span class="o">*</span> <span class="n">BLOCK_M</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_M</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 计算N维度（batch*heads维度）上每个线程应处理的元素的偏移量。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">offs_n</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># initialize pointer to m and l</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 初始化m向量，m用于存储每个m维度上的最大logit，初始化为负无穷大。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">m_i</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">BLOCK_M</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tl</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&#34;inf&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 初始化l向量，l用于累计softmax的分母，初始化为1。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">l_i</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">BLOCK_M</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tl</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># 初始化累加器，用于累积注意力加权和。注意这里的shape是(BLOCK_M, BLOCK_DMODEL)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">acc</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">BLOCK_M</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tl</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># load scales</span>
+</span></span><span class="line"><span class="cl">    <span class="n">qk_scale</span> <span class="o">=</span> <span class="n">sm_scale</span>
+</span></span><span class="line"><span class="cl">    <span class="n">qk_scale</span> <span class="o">*=</span> <span class="mf">1.44269504</span>  <span class="c1"># 1/log(2)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># load q: it will stay in SRAM throughout</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 将Q矩阵的当前块加载到SRAM中，此数据在整个计算过程中保持不变。</span>
+</span></span><span class="line"><span class="cl">    <span class="n">q</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">Q_block_ptr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1"># stage 1: off-band</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># For causal = True, STAGE = 3 and _attn_fwd_inner gets 1 as its STAGE</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># For causal = False, STAGE = 1, and _attn_fwd_inner gets 3 as its STAGE</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">STAGE</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span> <span class="o">=</span> <span class="n">_attn_fwd_inner</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">K_block_ptr</span><span class="p">,</span> <span class="n">V_block_ptr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="n">start_m</span><span class="p">,</span> <span class="n">qk_scale</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="n">BLOCK_M</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="mi">4</span> <span class="o">-</span> <span class="n">STAGE</span><span class="p">,</span> <span class="n">offs_m</span><span class="p">,</span> <span class="n">offs_n</span><span class="p">,</span> <span class="n">N_CTX</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">element_ty</span> <span class="o">==</span> <span class="n">tl</span><span class="o">.</span><span class="n">float8e5</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># stage 2: on-band</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">STAGE</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># barrier makes it easier for compielr to schedule the</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># two loops independently</span>
+</span></span><span class="line"><span class="cl">        <span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span> <span class="o">=</span> <span class="n">_attn_fwd_inner</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">K_block_ptr</span><span class="p">,</span> <span class="n">V_block_ptr</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="n">start_m</span><span class="p">,</span> <span class="n">qk_scale</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="n">BLOCK_M</span><span class="p">,</span> <span class="n">HEAD_DIM</span><span class="p">,</span> <span class="n">BLOCK_N</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="mi">2</span><span class="p">,</span> <span class="n">offs_m</span><span class="p">,</span> <span class="n">offs_n</span><span class="p">,</span> <span class="n">N_CTX</span><span class="p">,</span> <span class="n">V</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">element_ty</span> <span class="o">==</span> <span class="n">tl</span><span class="o">.</span><span class="n">float8e5</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">                                        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># epilogue</span>
+</span></span><span class="line"><span class="cl">    <span class="n">m_i</span> <span class="o">+=</span> <span class="n">tl</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">l_i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">acc</span> <span class="o">=</span> <span class="n">acc</span> <span class="o">/</span> <span class="n">l_i</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">m_ptrs</span> <span class="o">=</span> <span class="n">M</span> <span class="o">+</span> <span class="n">off_hz</span> <span class="o">*</span> <span class="n">N_CTX</span> <span class="o">+</span> <span class="n">offs_m</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">m_ptrs</span><span class="p">,</span> <span class="n">m_i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">O_block_ptr</span><span class="p">,</span> <span class="n">acc</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">Out</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">element_ty</span><span class="p">))</span>
+</span></span></code></pre></div><p>需要特别注意的是这段代码最后的epilogue部分就对应了FlashAttention V2伪代码中的12行以后的内容，根据softmax的分母部分较正输出。此外，Triton的实现里面考虑了一些paper里面没有的东西比如<code>qk_scale</code>，<code>causal mask</code>，对<code>Q*K</code>的结果<code>S</code>应用了减掉m，使得整个实现看起来要复杂不少，但整体的算法逻辑和并行设置和paper还是一致的。</p>
+<p>最后在Attention中使用这个函数</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">_attention</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@staticmethod</span>
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">causal</span><span class="p">,</span> <span class="n">sm_scale</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># shape constraints</span>
+</span></span><span class="line"><span class="cl">        <span class="n">HEAD_DIM_Q</span><span class="p">,</span> <span class="n">HEAD_DIM_K</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">k</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># when v is in float8_e5m2 it is transposed.</span>
+</span></span><span class="line"><span class="cl">        <span class="n">HEAD_DIM_V</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="k">assert</span> <span class="n">HEAD_DIM_Q</span> <span class="o">==</span> <span class="n">HEAD_DIM_K</span> <span class="ow">and</span> <span class="n">HEAD_DIM_K</span> <span class="o">==</span> <span class="n">HEAD_DIM_V</span>
+</span></span><span class="line"><span class="cl">        <span class="k">assert</span> <span class="n">HEAD_DIM_K</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">o</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">stage</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">causal</span> <span class="k">else</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">        <span class="n">extra_kern_args</span> <span class="o">=</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># Tuning for AMD target</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">is_hip</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">            <span class="n">waves_per_eu</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">HEAD_DIM_K</span> <span class="o">&lt;=</span> <span class="mi">64</span> <span class="k">else</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="cl">            <span class="n">extra_kern_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;waves_per_eu&#34;</span><span class="p">:</span> <span class="n">waves_per_eu</span><span class="p">,</span> <span class="s2">&#34;allow_flush_denorm&#34;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># q.shape is [Batch, Head, Seq, Dim]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">grid</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">args</span><span class="p">:</span> <span class="p">(</span><span class="n">triton</span><span class="o">.</span><span class="n">cdiv</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="s2">&#34;BLOCK_M&#34;</span><span class="p">]),</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">M</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">device</span><span class="o">=</span><span class="n">q</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1"># Launch Kernel.</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_attn_fwd</span><span class="p">[</span><span class="n">grid</span><span class="p">](</span>
+</span></span><span class="line"><span class="cl">            <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">sm_scale</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">q</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">q</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">q</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">q</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">k</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">k</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">k</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">k</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">v</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">v</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">v</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">v</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">o</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">o</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">o</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">o</span><span class="o">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">N_CTX</span><span class="o">=</span><span class="n">q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">HEAD_DIM</span><span class="o">=</span><span class="n">HEAD_DIM_K</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="n">STAGE</span><span class="o">=</span><span class="n">stage</span><span class="p">,</span>  <span class="c1">#</span>
+</span></span><span class="line"><span class="cl">            <span class="o">**</span><span class="n">extra_kern_args</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ctx</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ctx</span><span class="o">.</span><span class="n">sm_scale</span> <span class="o">=</span> <span class="n">sm_scale</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ctx</span><span class="o">.</span><span class="n">HEAD_DIM</span> <span class="o">=</span> <span class="n">HEAD_DIM_K</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ctx</span><span class="o">.</span><span class="n">causal</span> <span class="o">=</span> <span class="n">causal</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">o</span>
+</span></span></code></pre></div><h1 id="0x09-cuda代码">0x09 CUDA代码<a hidden class="anchor" aria-hidden="true" href="#0x09-cuda代码">#</a></h1>
+<h1 id="0x0a-fa-3">0x0A FA 3<a hidden class="anchor" aria-hidden="true" href="#0x0a-fa-3">#</a></h1>
+<h1 id="0x0b-思考">0x0B 思考<a hidden class="anchor" aria-hidden="true" href="#0x0b-思考">#</a></h1>
+<ul>
+<li>CPU上使用这个靠谱吗？CPU上并行度较低，用这个没有必要，但是可以考虑分块和Mask混合的MatMul来减少计算量，也就是Early Exit。</li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/keep-moving-forward/tags/llm-server/">LLM Server</a></li>
+      <li><a href="http://localhost:1313/keep-moving-forward/tags/llm/">LLM</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="http://localhost:1313/keep-moving-forward/tech/fundamental_rope/">
+    <span class="title">« Prev</span>
+    <br>
+    <span>[Fundamental] 旋转位置编码(RoPE)</span>
+  </a>
+  <a class="next" href="http://localhost:1313/keep-moving-forward/tech/mllm-qwen/">
+    <span class="title">Next »</span>
+    <br>
+    <span>mllm框架浅析(一)-以QWen0.5B为例</span>
+  </a>
+</nav>
+
+
+<ul class="share-buttons">
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share [Fundamental] From Online Softmax to Flash Attention V3 on x"
+            href="https://x.com/intent/tweet/?text=%5bFundamental%5d%20From%20Online%20Softmax%20to%20Flash%20Attention%20V3&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f&amp;hashtags=LLMServer%2cLLM">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M512 62.554 L 512 449.446 C 512 483.97 483.97 512 449.446 512 L 62.554 512 C 28.03 512 0 483.97 0 449.446 L 0 62.554 C 0 28.03 28.029 0 62.554 0 L 449.446 0 C 483.971 0 512 28.03 512 62.554 Z M 269.951 190.75 L 182.567 75.216 L 56 75.216 L 207.216 272.95 L 63.9 436.783 L 125.266 436.783 L 235.9 310.383 L 332.567 436.783 L 456 436.783 L 298.367 228.367 L 432.367 75.216 L 371.033 75.216 Z M 127.633 110 L 164.101 110 L 383.481 400.065 L 349.5 400.065 Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share [Fundamental] From Online Softmax to Flash Attention V3 on linkedin"
+            href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f&amp;title=%5bFundamental%5d%20From%20Online%20Softmax%20to%20Flash%20Attention%20V3&amp;summary=%5bFundamental%5d%20From%20Online%20Softmax%20to%20Flash%20Attention%20V3&amp;source=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share [Fundamental] From Online Softmax to Flash Attention V3 on reddit"
+            href="https://reddit.com/submit?url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f&title=%5bFundamental%5d%20From%20Online%20Softmax%20to%20Flash%20Attention%20V3">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share [Fundamental] From Online Softmax to Flash Attention V3 on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share [Fundamental] From Online Softmax to Flash Attention V3 on whatsapp"
+            href="https://api.whatsapp.com/send?text=%5bFundamental%5d%20From%20Online%20Softmax%20to%20Flash%20Attention%20V3%20-%20http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f">
+            <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share [Fundamental] From Online Softmax to Flash Attention V3 on telegram"
+            href="https://telegram.me/share/url?text=%5bFundamental%5d%20From%20Online%20Softmax%20to%20Flash%20Attention%20V3&amp;url=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f">
+            <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28" height="30px" width="30px" fill="currentColor">
+                <path
+                    d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+            </svg>
+        </a>
+    </li>
+    <li>
+        <a target="_blank" rel="noopener noreferrer" aria-label="share [Fundamental] From Online Softmax to Flash Attention V3 on ycombinator"
+            href="https://news.ycombinator.com/submitlink?t=%5bFundamental%5d%20From%20Online%20Softmax%20to%20Flash%20Attention%20V3&u=http%3a%2f%2flocalhost%3a1313%2fkeep-moving-forward%2ftech%2ffundamental_from_online_softmax_to_flash_attentionv3%2f">
+            <svg version="1.1" xml:space="preserve" width="30px" height="30px" viewBox="0 0 512 512" fill="currentColor"
+                xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+                <path
+                    d="M449.446 0C483.971 0 512 28.03 512 62.554L512 449.446C512 483.97 483.97 512 449.446 512L62.554 512C28.03 512 0 483.97 0 449.446L0 62.554C0 28.03 28.029 0 62.554 0L449.446 0ZM183.8767 87.9921H121.8427L230.6673 292.4508V424.0079H281.3328V292.4508L390.1575 87.9921H328.1233L256 238.2489z" />
+            </svg>
+        </a>
+    </li>
+</ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>© <a href="https://github.com/chenghuaWang">chenghua.wang</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a><script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/1.0.6/medium-zoom.min.js" integrity="sha512-N9IJRoc3LaP3NDoiGkcPa4gG94kapGpaA5Zq9/Dr04uf5TbLFU5q0o8AbRhLKUUlp8QFS2u7S+Yti0U7QtuZvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+const images = Array.from(document.querySelectorAll(".post-content img"));
+images.forEach(img => {
+  mediumZoom(img, {
+    margin: 0,  
+    scrollOffset: 40,  
+    container: null,  
+    template: null,  
+    background: 'rgba(0, 0, 0, 0.8)'
+  });
+});
+</script>
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/8.js?i=5j20jf9ml5x&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;f=arial&amp;l=33" async="async"></script>
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

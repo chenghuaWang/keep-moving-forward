@@ -7,20 +7,20 @@
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
-    <lastBuildDate>Sun, 11 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 13 Aug 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://chenghuawang.github.io/keep-moving-forward/series/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Mllm框架浅析</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/</link>
+      <pubDate>Tue, 13 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/</guid>
+      <description></description>
+    </item>
     <item>
       <title>AI&amp;Sys Fundamental</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/series/aisys-fundamental/</link>
       <pubDate>Sun, 11 Aug 2024 00:00:00 +0000</pubDate>
       <guid>https://chenghuawang.github.io/keep-moving-forward/series/aisys-fundamental/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Mllm框架浅析</title>
-      <link>https://chenghuawang.github.io/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/</link>
-      <pubDate>Fri, 28 Jun 2024 00:00:00 +0000</pubDate>
-      <guid>https://chenghuawang.github.io/keep-moving-forward/series/mllm%E6%A1%86%E6%9E%B6%E6%B5%85%E6%9E%90/</guid>
       <description></description>
     </item>
     <item>

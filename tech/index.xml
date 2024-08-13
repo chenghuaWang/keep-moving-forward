@@ -7,8 +7,15 @@
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
-    <lastBuildDate>Sun, 11 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 13 Aug 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://chenghuawang.github.io/keep-moving-forward/tech/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>mllm框架浅析(二)-QNN-Backend</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen-2/</link>
+      <pubDate>Tue, 13 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen-2/</guid>
+      <description>以Qwen0.5B为例解析mllm的基本实现，NPU Backend</description>
+    </item>
     <item>
       <title>[Fundamental] 旋转位置编码(RoPE)</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_rope/</link>

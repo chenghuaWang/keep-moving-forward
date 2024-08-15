@@ -121,5 +121,15 @@ int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &amp;lt; 
 sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
 /** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &amp;#34;kernel/types.h&amp;#34; #include &amp;#34;kernel/stat.h&amp;#34; #include &amp;#34;user/user.h&amp;#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&amp;#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!</description>
     </item>
+    <item>
+      <title></title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_quantization/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_quantization/</guid>
+      <description>0x00 Materials 本文是对LM量化的学习笔记，其中有不少内容是摘自业内的前辈们的文章，在此一并感谢。所参考的资料、摘录的文章来源在下面列出： 经典论文：
+2022-08, FP8 Quantization: The Power of the Exponent，高通 2022-08, LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale 2022-09, FP8 Formats for Deep Learning，Arm &amp;amp; Intel &amp;amp; Nvidia 2022-11, SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models 2023-10, LLM-FP4: 4-Bit Floating-Point Quantized Transformers 解析：
+量化那些事之FP8与LLM-FP4 [Transformer 101系列] LLM模型量化世界观(上) [Transformer 101系列] LLM模型量化世界观(下) 课程：
+TinyML and Efficient Deep Learning Computing from MIT-Han-Lab，看量化和剪枝两章。 0x01 前言 数据类型 FP32，FP16，FP8 and BF16, &amp;hellip; 这里复习下最基础的计算机组成里面的知识。浮点数可以被符号(Sign)、指数（exponent）、尾数（mantissa）三部分来表示。忘记了可以去看IEEE754 wikipedia去复习下计算方法。 这里主要是强调表示方法，比如FP8(E5M2、E4M3)，E表示指数、M表示尾数。我们接下来看一下4bit的精度，因为4bit的精度可以更容易说明subnormal numbers： $f = (-1)^s \times 2^{p-b} \times (1 + \frac{d_1}{2^1} + \frac{d_2}{2^2} + \dots + \frac{d_m}{s^m})$</description>
+    </item>
   </channel>
 </rss>

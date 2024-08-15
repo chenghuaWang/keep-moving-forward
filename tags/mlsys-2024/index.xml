@@ -10,7 +10,7 @@
     <lastBuildDate>Tue, 25 Jun 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://chenghuawang.github.io/keep-moving-forward/tags/mlsys-2024/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</title>
+      <title>✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</link>
       <pubDate>Tue, 25 Jun 2024 00:00:00 +0000</pubDate>
       <guid>https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/</guid>
@@ -47,7 +47,7 @@ Fig 2. 原始LLM/KV Cache/Prompt Cache 我们来对比下普通的自回归LLM�
 本文主要是对首Token输出时间的优化，对于用户来说可以有更好的体验。要是能做个全局的Prompt Cache数据库，应该可以给大规模的LLM Infer系统带来不少的好处。</description>
     </item>
     <item>
-      <title>✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</title>
+      <title>✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</link>
       <pubDate>Sat, 25 May 2024 00:00:00 +0000</pubDate>
       <guid>https://chenghuawang.github.io/keep-moving-forward/papers/awq/</guid>

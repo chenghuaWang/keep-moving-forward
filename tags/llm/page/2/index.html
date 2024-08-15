@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Quantization | Ubios Home</title>
+<title>LLM | Ubios Home</title>
 <meta name="keywords" content="">
 <meta name="description" content="Ubios&#39; Blog. AI &amp; Sys">
 <meta name="author" content="chenghua.wang">
-<link rel="canonical" href="https://chenghuawang.github.io/keep-moving-forward/tags/quantization/">
+<link rel="canonical" href="https://chenghuawang.github.io/keep-moving-forward/tags/llm/">
 <link crossorigin="anonymous" href="/keep-moving-forward/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://chenghuawang.github.io/keep-moving-forward/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://chenghuawang.github.io/keep-moving-forward/favicon-16x16.png">
@@ -18,8 +18,8 @@
 <link rel="mask-icon" href="https://chenghuawang.github.io/keep-moving-forward/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://chenghuawang.github.io/keep-moving-forward/tags/quantization/index.xml">
-<link rel="alternate" hreflang="en" href="https://chenghuawang.github.io/keep-moving-forward/tags/quantization/">
+<link rel="alternate" type="application/rss+xml" href="https://chenghuawang.github.io/keep-moving-forward/tags/llm/index.xml">
+<link rel="alternate" hreflang="en" href="https://chenghuawang.github.io/keep-moving-forward/tags/llm/">
 <noscript>
     <style>
         #theme-toggle,
@@ -60,14 +60,14 @@
 
   
 
-<meta property="og:title" content="Quantization" />
+<meta property="og:title" content="LLM" />
 <meta property="og:description" content="Ubios&#39; Blog. AI &amp; Sys" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tags/quantization/" />
+<meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/tags/llm/" />
 
 
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Quantization"/>
+<meta name="twitter:title" content="LLM"/>
 <meta name="twitter:description" content="Ubios&#39; Blog. AI &amp; Sys"/>
 
 </head>
@@ -158,8 +158,8 @@
 <main class="main"> 
 <header class="page-header"><div class="breadcrumbs"><a href="https://chenghuawang.github.io/keep-moving-forward/">Home</a>&nbsp;»&nbsp;<a href="https://chenghuawang.github.io/keep-moving-forward/tags/">Tags</a></div>
   <h1>
-    Quantization
-    <a href="/keep-moving-forward/tags/quantization/index.xml" title="RSS" aria-label="RSS">
+    LLM
+    <a href="/keep-moving-forward/tags/llm/index.xml" title="RSS" aria-label="RSS">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round" height="23">
         <path d="M4 11a9 9 0 0 1 9 9" />
@@ -169,56 +169,6 @@
     </a>
   </h1>
 </header>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">✅[April-May 2024] 模型量化之 🥕Quarot &amp; SpinQuant
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>0. 前言 本问分析的两篇文章是：
-2024-05, SpinQuant: LLM quantization with learned rotations from meta，一作是 Zechun Liu
-2024-04, QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs from ETH Zurich、EPFL、Microsoft Research、IST Austria &amp; NeuralMagic
-这两篇文章以相同的视角去解决问题，并且量化后的模型保持了相当好的性能，应该就是未来模型量化的一个主要的跟进方向。QuaRot和SpinQuant可以算作是同一系列的工作，SpinQuant在QuaRot的基础上做了可学习旋转矩阵的改进。
-1. Computational Invariance Computational Invariance是Quarot和SpinQuant的基础。
-Computational Invariance定理[1]指出，可以使用正交矩阵对Transformer 中的权重和块间激活进行变换，而模型输出不变。这个定理是说，如果$W_{in}$是一个在transformer block(i.e. $W_k,W_q,W_v$等)左边的权重，我们可以左乘上一个正交的矩阵$Q$，为了在最后的结果里消除这个影响，我们可以在输出矩阵(i.e. $W_{out}, W_{down}$)右边乘上$Q_T$。
-尽管 RMSNorm 被应用于两个数据块之间，但只要 RMSNorm 数据块中没有重新缩放（在实际操作中，我们会先将任何重新缩放吸收到相邻的权重矩阵中），这一点还是适用的。从概念上讲，这是因为 RMSNorm 将激活值除以它们的模长，而对激活值应用旋转矩阵$Q$不会影响模长（因为正交矩阵的特性）：
-$$\text{RMSNorm}(\boldsymbol{X}) = \text{RMSNorm}(\boldsymbol{X\boldsymbol{Q}^T})\boldsymbol{Q}$$
-我们这里假设RMSNorm对激活值$\boldsymbol{X}$的每一行做的操作都是$x_{i} \larr x_i/ \Vert x_I \Vert$。这意味着，将输出矩阵乘以 $Q^T$ 会使线性层输出$XQ^T$，$XQ^T$被归一化，然后传入下一个区块，其输入权重矩阵现在是$QW$，因此该线性层不做任何修改就会输出原始激活。
-2. 🥕Quarot Quarot有两个阶段，一个阶段是在全精度下操作模型权重，并在模型的前向传递中插入两个额外的乘Hadamard矩阵操作；在第二个阶段使用现在的量化方法来量化夹在Hadamard矩阵中的模型权重，因为这些权重被削减了峰度，outliers减少，可以使量化的压力小很多。
-Fig 1. QuaRot workflow 1 Fig 2. QuaRot workflow 2 Quarot文中的图片已经非常清晰的描绘了什么时候做旋转以及何时做量化和量化的数据流。SpinQuant和Quarot比较了实验结果，Quarot的实验结果请看第三章节的SpinQuant的表格。...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-08-15 00:00:00 +0000 UTC'>August 15, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to ✅[April-May 2024] 模型量化之 🥕Quarot &amp; SpinQuant" href="https://chenghuawang.github.io/keep-moving-forward/papers/quant_quarot_spinquant/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>http://arxiv.org/abs/2310.16795
-MLSys 2024
-1.背景和动机 为了解决大型模型的高推理成本问题，MoE架构被提出。MoE通过稀疏路由的方式，将输入分配给多个专家（experts）中的一小部分，以实现更快的推理速度和更高的模型质量。但这种架构也带来了巨大的参数量，例如SwitchTransformer-c2048模型就有1.6万亿参数。MoE模型的参数量巨大，需要数TB级的存储空间，这使得它们在实际部署时面临内存和成本的挑战，尤其是在需要大规模并行计算的场合。
-为了降低MoE模型的内存和存储需求，同时保持模型性能，模型压缩成为了一个重要的研究方向。传统的压缩技术，如量化和稀疏性，虽然在一定程度上有效，但对于参数量达到万亿级别的模型来说，仍然不足以实现高效的压缩。
-本文提出了QMoE，一种新的压缩和执行框架，旨在实现对万亿参数MoE模型的高效压缩和推理。QMoE通过设计一种可扩展的算法，将模型压缩到每个参数不到1比特的大小，并与定制的GPU解码内核协同设计，以实现端到端的高效压缩推理，且运行时开销相对较小。
-Fig 1. 量化结果http://arxiv.org/abs/2310.16795
-作者首先考虑了Huffman和LZW两种常用于文件压缩的方法。但是Huffman方法的解码依赖于上文已经被解析的参数，并行性低；且变长的编码方式在实现上和存储的时候也是较为困难的。作者总结出了MoE量化的4个难点：
-现有的压缩方法，如量化和稀疏性，通常只能在不显著损失精度的情况下将模型的精度降低到每个参数3或4比特，或者达到大约50%的稀疏度。然而，要使万亿参数的MoE模型实用化，需要比16位精度高出10到20倍的压缩率，即平均每个参数少于1比特。 将现有的压缩方法应用于比大型dense模型大一个数量级的MoE模型时，会遇到内存、性能和可靠性方面的障碍。MoE模型由于其稀疏性，需要处理的内存和数据量巨大。即量化过程需要的内存太大，且可能会出现因为corner case导致量化失败的问题。 实现每个参数少于1比特的压缩率需要一个非平凡的自定义压缩格式，并且这种格式需要配备在GPU等加速器上高效的解码算法，以避免在压缩模型上进行推理时出现重大的处理延迟（比如要避免Huffman方法的同步）。 为了应对上述挑战，需要在系统级别进行设计和优化，包括优化激活卸载、使用列表缓冲区来支持样本访问、延迟权重获取以减少内存占用、专家分组以提高GPU利用率，以及进行鲁棒性修改以处理在压缩具有数万个层的模型时可能遇到的罕见corner case。 2. 算法 2.1 使用GPTQ量化 Fig 2. 使用GPTQ量化流程http://arxiv.org/abs/2310.16795
-具体来说，我们维护一个大型缓冲区$B$，并按以下方式更新 Transformer 块的Dense部分：
-从CPU到GPU抓取一个 “样本” $X$，其中包含数百个Token 通过相应的Dense Layer，得到结果$Y$ 计算并存储$Y$中标记的专家分配 将$Y$送回CPU并覆盖$B$中的$X$ 并且对于稀疏部分，分别对专家进行循环：
-从CPU到GPU获取$B$中所有被分配给专家$E$的单独Token，记作$X_{E}$ 使用它们来生成压缩后的专家$E^{’}$（例如，使用GPTQ算法） 通过$E^{’}$模块以获得$Y_{E^{’}}$ 将$Y_{E^{’}}$发送回CPU，并在B中覆盖$X_{E}$ 作者在这里还引入了List Buffering、Lazy Weight Fetching和Expert Grouping技巧
-2.1.1 List Buffering 为了有效地支持对Dense模型的访问，以及对专家tokens的完全向量化查询，我们将$B$存储为列表缓冲数据结构。这可以被看作是一个包含所有tokens隐藏状态的巨大连续缓冲区，以及分隔符索引，这些索引标志着各个样本之间的边界。下图展示了这种存储格式。这种数据结构对效率至关重要；对于大量样本计数，通过掩码迭代样本并获取相关tokens的方法是很慢的，而作者提出的方法则有大幅度改进。
-Fig 3. list bufferinghttp://arxiv.org/abs/2310.16795
-2.1.2 Lazy Weight Fetching 由于1.6万亿参数模型的权重占用了超过3TB的存储空间，它们甚至无法存储在CPU的RAM中。因此，我们按需直接从磁盘存储中懒加载它们。按照推理的流程，我们需要将所有的参数从磁盘搬移到内存中完整的一整次。
-2.1.3 Experts Grouping 此外，为了避免GPU的利用率不足，作者将多个专家组合在一起，并应用GPTQ算法的联合批处理变体。
-2.2 字典生成 对于量化后得到的Ternary Pair ${w_{min}, 0, w_{max}}$，在很多的情况下，是0居多的，也就是说是稀疏的，那么对于稀疏矩阵可以用CSR等方法来存储。但是使用传统的稀疏矩阵存储方法压缩比还是不够，作者团队使用了一种更加偏向于文件压缩的思路来进行量化后的参数压缩，这个方法就使用到了字典查找的方法。字典查找的方法还是比较通俗易懂的，以下面的例子来举例：
-对于“001002003…”我们可以统计该串里面的子串的出现频率，比如001，002，003出现的频率高，那么我们可以将他们编码成 A,B,C然后仅需要三个char的空间“ABC”就可以表示一个压缩后的文件。...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-06-25 00:00:00 +0000 UTC'>June 25, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to ✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models" href="https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/"></a>
-</article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
@@ -241,6 +191,13 @@ $$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundE
   <footer class="entry-footer"><span title='2024-05-25 00:00:00 +0000 UTC'>May 25, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to ✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration" href="https://chenghuawang.github.io/keep-moving-forward/papers/awq/"></a>
 </article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="prev" href="https://chenghuawang.github.io/keep-moving-forward/tags/llm/">
+      «&nbsp;Prev&nbsp;1/2
+    </a>
+  </nav>
+</footer>
     </main>
     
 <footer class="footer">

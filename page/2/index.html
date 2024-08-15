@@ -174,6 +174,28 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
+1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ 原有的Round方法(图a)：
+$$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$
+其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。
+改进后的量化方法(图c)：
+$$ Q(w\cdot s)\cdot\frac xs=\Delta^{’}\cdot\mathrm{Round}(\frac{ws}{\Delta^{’}})\cdot x\cdot\frac1s $$
+其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
+$$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{’}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{’}})\cdot x\cdot\frac1s\end{aligned} $$
+其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
+由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{’} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{’}}{\Delta} \times \frac{1}{s}$。
+2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-05-25 00:00:00 +0000 UTC'>May 25, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to ✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration" href="https://chenghuawang.github.io/keep-moving-forward/papers/awq/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">【施工中】6xKx16 SGEMM Kernel on X86-AVX
     </h2>
   </header>
@@ -278,22 +300,6 @@ int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &lt; 3 ||
   </div>
   <footer class="entry-footer"><span title='2023-02-25 00:00:00 +0000 UTC'>February 25, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to XV6 Lab 2: syscall" href="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">XV6 Lab 1: Xv6 and Unix utilities
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>MIT 6.S081 Lab1 website
-本章节的实验是为了熟悉 XV6 环境和 interface 而准备的。包含了 interface 调用、多进程编程、Pipeline。
-阅读 book-riscv-ref3 熟悉 XV6 的系统组织形式
-sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主要是为了介绍 系统调用 的工作方式。
-/** * @author chenghua.wang * @brief Lab1-utilities. sleep prog using syscall. * @time Feb 23, 2023 * */ #include &#34;kernel/types.h&#34; #include &#34;kernel/stat.h&#34; #include &#34;user/user.h&#34; int main(int argc, char *argv[]){ if (argc != 2){ printf(&#34;[ error ] you should follow anw integer with sleep prog to indicate ticks times!...</p>
-  </div>
-  <footer class="entry-footer"><span title='2023-02-23 00:00:00 +0000 UTC'>February 23, 2023</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to XV6 Lab 1: Xv6 and Unix utilities" href="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab1_utility/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

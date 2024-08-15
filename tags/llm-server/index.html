@@ -172,6 +172,28 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">✅[April-May 2024] 模型量化之 🥕Quarot &amp; SpinQuant
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>0. 前言 本问分析的两篇文章是：
+2024-05, SpinQuant: LLM quantization with learned rotations from meta，一作是 Zechun Liu
+2024-04, QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs from ETH Zurich、EPFL、Microsoft Research、IST Austria &amp; NeuralMagic
+这两篇文章以相同的视角去解决问题，并且量化后的模型保持了相当好的性能，应该就是未来模型量化的一个主要的跟进方向。QuaRot和SpinQuant可以算作是同一系列的工作，SpinQuant在QuaRot的基础上做了可学习旋转矩阵的改进。
+1. Computational Invariance Computational Invariance是Quarot和SpinQuant的基础。
+Computational Invariance定理[1]指出，可以使用正交矩阵对Transformer 中的权重和块间激活进行变换，而模型输出不变。这个定理是说，如果$W_{in}$是一个在transformer block(i.e. $W_k,W_q,W_v$等)左边的权重，我们可以左乘上一个正交的矩阵$Q$，为了在最后的结果里消除这个影响，我们可以在输出矩阵(i.e. $W_{out}, W_{down}$)右边乘上$Q_T$。
+尽管 RMSNorm 被应用于两个数据块之间，但只要 RMSNorm 数据块中没有重新缩放（在实际操作中，我们会先将任何重新缩放吸收到相邻的权重矩阵中），这一点还是适用的。从概念上讲，这是因为 RMSNorm 将激活值除以它们的模长，而对激活值应用旋转矩阵$Q$不会影响模长（因为正交矩阵的特性）：
+$$\text{RMSNorm}(\boldsymbol{X}) = \text{RMSNorm}(\boldsymbol{X\boldsymbol{Q}^T})\boldsymbol{Q}$$
+我们这里假设RMSNorm对激活值$\boldsymbol{X}$的每一行做的操作都是$x_{i} \larr x_i/ \Vert x_I \Vert$。这意味着，将输出矩阵乘以 $Q^T$ 会使线性层输出$XQ^T$，$XQ^T$被归一化，然后传入下一个区块，其输入权重矩阵现在是$QW$，因此该线性层不做任何修改就会输出原始激活。
+2. 🥕Quarot Quarot有两个阶段，一个阶段是在全精度下操作模型权重，并在模型的前向传递中插入两个额外的乘Hadamard矩阵操作；在第二个阶段使用现在的量化方法来量化夹在Hadamard矩阵中的模型权重，因为这些权重被削减了峰度，outliers减少，可以使量化的压力小很多。
+Fig 1. QuaRot workflow 1 Fig 2. QuaRot workflow 2 Quarot文中的图片已经非常清晰的描绘了什么时候做旋转以及何时做量化和量化的数据流。SpinQuant和Quarot比较了实验结果，Quarot的实验结果请看第三章节的SpinQuant的表格。...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-08-15 00:00:00 +0000 UTC'>August 15, 2024</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to ✅[April-May 2024] 模型量化之 🥕Quarot &amp; SpinQuant" href="https://chenghuawang.github.io/keep-moving-forward/papers/quant_quarot_spinquant/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">mllm框架浅析(二)-QNN-Backend
     </h2>
   </header>
@@ -220,7 +242,7 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models
+    <h2 class="entry-hint-parent">✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models
     </h2>
   </header>
   <div class="entry-content">
@@ -243,7 +265,7 @@ Fig 3. list bufferinghttp://arxiv.org/abs/2310.16795
 对于“001002003…”我们可以统计该串里面的子串的出现频率，比如001，002，003出现的频率高，那么我们可以将他们编码成 A,B,C然后仅需要三个char的空间“ABC”就可以表示一个压缩后的文件。...</p>
   </div>
   <footer class="entry-footer"><span title='2024-06-25 00:00:00 +0000 UTC'>June 25, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to ✅[Oct 2023] QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models" href="https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/"></a>
+  <a class="entry-link" aria-label="post link to ✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models" href="https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
@@ -276,28 +298,12 @@ Fig 2. 原始LLM/KV Cache/Prompt Cache 我们来对比下普通的自回归LLM�
   <footer class="entry-footer"><span title='2024-06-17 00:00:00 +0000 UTC'>June 17, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to ✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs" href="https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/"></a>
 </article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Lin J, Tang J, Tang H, et al. Awq: Activation-aware weight quantization for llm compression and acceleration[j]. Machine Learning System. Best Paper. https://arxiv.org/abs/2306.00978
-1. 背景和动机 直接在FP16精度上Round成INT3/INT4会造成极大的性能损失 基于activation distribution对重要的weight做精度保留则可以很大程度上提高模型性能。 但是混合存储FP16和INT3/4，在推理系统实现的时候过于复杂且对于硬件非常的不友好。 2. 算法 2.1 原理和假设 Fig 1. AWQ 原有的Round方法(图a)：
-$$ Q(\mathbf{w})=\Delta\cdot\mathrm{Round}(\frac{\mathbf{w}}\Delta),\quad\Delta=\frac{\max(|\mathbf{w}|)}{2^{N-1}} $$
-其中$\mathbf{w}$表示一组参数，$Q(\mathbf{w})$表示量化函数，$N$表示量化位数。
-改进后的量化方法(图c)：
-$$ Q(w\cdot s)\cdot\frac xs=\Delta^{’}\cdot\mathrm{Round}(\frac{ws}{\Delta^{’}})\cdot x\cdot\frac1s $$
-其中$w \in \mathbf{W}$。即先对特定的$w$做Scaling然后再Scaling回去。这样做的理由是，误差可以成倍的减小，如下面的公式和观察出来的现象：
-$$ \begin{aligned}\operatorname{Err}(Q(w)x)&amp;=\Delta\cdot\operatorname{RoundErr}(\frac w\Delta)\cdot x \newline \operatorname{Err}(Q(w\cdot s)(\frac xs))&amp;=\Delta^{’}\cdot\operatorname{RoundErr}(\frac{ws}{\Delta^{’}})\cdot x\cdot\frac1s\end{aligned} $$
-其中由于$\operatorname{Round}$函数是四舍五入，所以误差$\operatorname{RoundErr}\in [0,0.5]$且是一个均匀分布。平均在0.25。不管是否被缩放了，这个分布是不变的。
-由于一组权重$\mathbf{w}$的最大值在缩放一个$w$后是基本不变的，所以我们可以认为$\Delta^{’} \approx \Delta$。 在此基础上，我们可以看出使用了Scaling以后得误差变小了，将上述提到的误差做个比值可以看出，$k=\frac{\Delta^{’}}{\Delta} \times \frac{1}{s}$。
-2.2 优化：如何找到最优的Scaling值呢？ $$ \mathbf{s}^{*} = \arg \mathop{\min}_{s}\mathcal{L}(\mathbf{s}) $$...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-05-25 00:00:00 +0000 UTC'>May 25, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to ✅[April 2024] AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration" href="https://chenghuawang.github.io/keep-moving-forward/papers/awq/"></a>
-</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="https://chenghuawang.github.io/keep-moving-forward/tags/llm-server/page/2/">Next&nbsp;2/2&nbsp;»
+    </a>
+  </nav>
+</footer>
     </main>
     
 <footer class="footer">

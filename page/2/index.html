@@ -174,6 +174,18 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Transformer-Lite from OPPO</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-06-17 00:00:00 +0000 UTC'>June 17, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to ✅[Mar 2024] Transformer-Lite: High-efficiency Deployment of Large Language Models on Mobile Phone GPUs" href="https://chenghuawang.github.io/keep-moving-forward/papers/transformer-lite/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
     </h2>
   </header>
@@ -282,24 +294,6 @@ struct proc { ... struct usyscall *usyscall; // using read only shared data to a
   </div>
   <footer class="entry-footer"><span title='2023-03-02 00:00:00 +0000 UTC'>March 2, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to XV6 Lab 3: Page Table" href="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab3_pagetable/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">XV6 Lab 2: syscall
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>MIT 6.S081 Lab2 website
-为了完成 Syscall 作业，需要阅读:
-XV6-book, Chapter 2, Sections 4.3 and 4.4
-files: user/user.h, kernel/proc.c kernel/proc.h, kernel/syscall.c kernel/syscall.h
-system call tracing system call tracing 需要我们补充 kernel 中的一些程序，将某程序中指定的 system call 打印出来。当然，这需要我们新增一个 system_trace 系统调用函数。题中，给定的 tracing 程序以 trace [system-call-number] [cmd] 的方式运行。我们首先去看 user/trace.c 中的内容，看看 system call number 是怎么传入系统调用的。
-user/trace.c 的程序如下所示:
-int main(int argc, char *argv[]) { int i; char *nargv[MAXARG]; if(argc &lt; 3 || (argv[1][0] &lt; &#39;0&#39; || argv[1][0] &gt; &#39;9&#39;)){ fprintf(2, &#34;Usage: %s mask command\n&#34;, argv[0]); exit(1); } if (trace(atoi(argv[1])) &lt; 0) { fprintf(2, &#34;%s: trace failed\n&#34;, argv[0]); exit(1); } for(i = 2; i &lt; argc &amp;&amp; i &lt; MAXARG; i&#43;&#43;){ nargv[i-2] = argv[i]; } exec(nargv[0], nargv); exit(0); } 我们发现这个程序直接使用了 trace 系统调用来实现。所以接下来的任务是进行 trace 系统调用的实现。再次回顾 Lab 1 中的内容，在 Lab 1 中我们分析系统调用是通过在 usys....</p>
-  </div>
-  <footer class="entry-footer"><span title='2023-02-25 00:00:00 +0000 UTC'>February 25, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to XV6 Lab 2: syscall" href="https://chenghuawang.github.io/keep-moving-forward/tech/xv6_lab2_syscall/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

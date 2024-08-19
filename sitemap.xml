@@ -2,34 +2,43 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/quant_quarot_spinquant/</loc>
-    <lastmod>2024-08-15T00:00:00+00:00</lastmod>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_quantization/</loc>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/aisys/</loc>
-    <lastmod>2024-08-15T00:00:00+00:00</lastmod>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/aisys-fundamental/</loc>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/categories/</loc>
-    <lastmod>2024-08-15T00:00:00+00:00</lastmod>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm/</loc>
-    <lastmod>2024-08-15T00:00:00+00:00</lastmod>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/llm-server/</loc>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/series/</loc>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
+    <lastmod>2024-08-19T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://chenghuawang.github.io/keep-moving-forward/papers/quant_quarot_spinquant/</loc>
     <lastmod>2024-08-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/papers/</loc>
     <lastmod>2024-08-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tags/quantization/</loc>
-    <lastmod>2024-08-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/series/</loc>
-    <lastmod>2024-08-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tags/</loc>
-    <lastmod>2024-08-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/</loc>
     <lastmod>2024-08-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/series/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/</loc>
@@ -41,13 +50,7 @@
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen-2/</loc>
     <lastmod>2024-08-13T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/</loc>
-    <lastmod>2024-08-13T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_rope/</loc>
-    <lastmod>2024-08-11T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/series/aisys-fundamental/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/</loc>
@@ -163,8 +166,6 @@
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</loc>
     <lastmod>2023-01-01T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_quantization/</loc>
   </url><url>
     <loc>https://chenghuawang.github.io/keep-moving-forward/search/</loc>
   </url>

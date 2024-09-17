@@ -172,6 +172,51 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Q8_0 @ Q4_0_4 GEMM/GEMV in llama.cpp
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>GEMM/GEMV in MLLM Slides
+在本文中我以mllm的实现为例。mllm中的大部分混合精度的矩阵乘法是从llama.cpp中更改过来的。我们先来看下Q8_0和Q4_0代表什么。Huggingface的Doc中给出了一张表，大家可以去看一下：GGUF Quantization Type，我在这里也截图给出来
+Fig 1. Q8_0和Q4_0含义GGUF Quantization Type FROM Huggingface
+对于量化操作不是很熟悉的读者可以看下我之前的blog: [Fundamental] 模型量化
+在mllm中，Q8_0和Q4_0的实现是这样的：
+typedef struct { mllm_fp16_t d; // delta int8_t qs[QK8_0]; // quants QK8_0 = 32 } block_q8_0; // QK4_0 = 32 typedef struct { mllm_fp16_t d; // delta uint8_t qs[QK4_0 / 2]; // nibbles / quants } block_q4_0; 而Q4_0x4实际上就是将4个Q4_0打包成一组，这样在GEMM的时候可以利用起指令并行性。
+我们首先来看下GEMV问题定义，然后再推广到GEMM上。我们有两个矩阵，分别是A($1 \times nr$), B($nc \times nr$)，矩阵乘法后的结果是C$1 \times nc$。一个不是非常恰当的图例如下图所示：
+Fig 2. Q8_0和Q4_0x4的GEMV 为了更好的理解怎么分块，我们先来看下Q4_0x4的数据排布是怎么样的：Q4_0x4实际上是在$nc$的方向上以4分块，在$nr$的方向上以32分块，最终得到的block形状如下图所示：
+Fig 3. Q8_0和Q4_0x4的GEMV Tiled 我们在$nc$的方向上以4分块，在$nr$的方向上以32分块，将gemv拆解成一个更小的子问题。...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-09-17 00:00:00 +0000 UTC'>September 17, 2024</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to Q8_0 @ Q4_0_4 GEMM/GEMV in llama.cpp" href="https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">[Fundamental] FlashDecoding Series
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>0x00 前沿和阅读材料 FlashDecoding系列的文章是对FA在推理场景下的改进，目前包含两篇文章：
+Flash-Decoding for long-context inference, Torch团队的Blog FlashDecoding&#43;&#43;: Faster Large Language Model Inference on GPUs 我们知道，在FA2中特别对Seq方向做了并行化，但是在推理的时候Seq=1。此时，并不能占用满GPU的全部的SM，导致性能损失，FlashDecoding就是对此的优化。
+0x01 FlashDecoding 在解码过程中，生成的每个新Token都需要考虑之前的所有Token，以便进行注意力计算。
+在训练的时候，Attention这一算子已使用FlashAttentionV2算法进行了优化，其瓶颈在于读写中间结果（例如 Q @ K^T）的内存带宽不足。但是，这些优化并不能直接应用于推理，因为推理的时候不在是内存带宽的瓶颈。在训练过程中，FlashAttention 会在Batch和Seq两个维度上进行并行处理。在推理过程中，Seq=1，这意味着，如果Batch大小小于 GPU 上的SM数量（A100 为 108），则这个Attention操作只会使用 GPU 的一小部分！在使用长上下文时尤其如此。当Batch大小为 1 时，FlashAttention 将使用不到 1%的 GPU！
+Fig 1. Regular AttentionFlash-Decoding for long-context inference
+为此我们不难想到可以实用Split-K的方法来使得Attention在推理的时候也有很好的并行性。如下图所示：
+Fig 1. Split-K AttentionFlash-Decoding for long-context inference
+非常的好理解，但是这里需要注意的是，在最后的Reduce Op这里还是要做Online Softmax的，所以在SRAM里面保存的东西是比原来多的，除了Output，还有exp Sum和Max。
+0x02 FlashDecoding&#43;&#43; flashdecoding&#43;&#43;不是meta官方出品的。
+FA中，求解Max需要遍历迭代，之后的子块依赖于之前的子块。Safe-softmax的计算公式中，需要先求每行x的最大值，然后减去这个max(x)之后，再做softmax以防止数值溢出。FlashDecoding&#43;&#43;提出的创新点就是，我们可以实用一个先验的$\phi$来作为max值，只要它能让数值稳定就可以了。从Safe Softmax的公式上来看，无论是$\phi$还是max(x)，他们的结果是一致的，我们需要追求的是数值上的稳定与否。
+FlashDecoding&#43;&#43;认为一个合理的先验值 $\phi$，可以直接从数据集中进行统计获得。对于不同的模型，这个先验值也是不一样的。在实现的时候，FlashDecoding&#43;&#43;还使用了Fallback的思路，当出现数值溢出的时候，使用传统的FlashDecoding。
+那为什么FalshDecoding&#43;&#43;能异步，而FlashDecoding不行呢？
+在FalshDecoding Split-K分成的几个区间内，还是使用的FA2的方法来计算，但是FA2的一次迭代是依赖于上一次迭代的结果的，也就是需要rescale。但是FlashDecoding&#43;&#43;不需要，它大致上是这样的：
+$$\begin{aligned} &amp;\ell^{(1)}=\mathrm{rowsum}\Big(e^{\mathbf{S}^{(1)}-\phi}\Big)\in\mathbb{R}^{B_{r}} \\ &amp;\tilde{\mathbf{O}}^{(1)}=e^{\mathbf{S}^{(1)}-\phi}\mathbf{V}^{(1)}\in\mathbb{R}^{B_{r}\times d} \\ &amp;\ell^{(2)}=\mathrm{rowsum}\left(e^{\mathbf{S}^{(2)}-\phi}\right) \\ &amp;\tilde{\mathbf{O}}^{(2)}=e^{s^{(2)}-\phi}\mathbf{V}^{(2)} \\ &amp;\mathbf{O}^{(2)}=\mathrm{diag}\left(\ell^{(1)}&#43;\ell^{(2)}\right)^{-1}(\tilde{\mathbf{O}}^{(1)}&#43;\tilde{\mathbf{O}}^{(2)})=\mathbf{O} \end{aligned}$$ </p>
+  </div>
+  <footer class="entry-footer"><span title='2024-08-21 00:00:00 +0000 UTC'>August 21, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to [Fundamental] FlashDecoding Series" href="https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_flashdecoding_series/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">[Fundamental] 模型量化
     </h2>
   </header>
@@ -250,53 +295,6 @@ Fig 1. QuaRot workflow 1 Fig 2. QuaRot workflow 2 Quarot文中的图片已经非
   </div>
   <footer class="entry-footer"><span title='2024-06-28 00:00:00 +0000 UTC'>June 28, 2024</span>&nbsp;·&nbsp;8 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to mllm框架浅析(一)-以QWen0.5B为例" href="https://chenghuawang.github.io/keep-moving-forward/tech/mllm-qwen/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>http://arxiv.org/abs/2310.16795
-MLSys 2024
-1.背景和动机 为了解决大型模型的高推理成本问题，MoE架构被提出。MoE通过稀疏路由的方式，将输入分配给多个专家（experts）中的一小部分，以实现更快的推理速度和更高的模型质量。但这种架构也带来了巨大的参数量，例如SwitchTransformer-c2048模型就有1.6万亿参数。MoE模型的参数量巨大，需要数TB级的存储空间，这使得它们在实际部署时面临内存和成本的挑战，尤其是在需要大规模并行计算的场合。
-为了降低MoE模型的内存和存储需求，同时保持模型性能，模型压缩成为了一个重要的研究方向。传统的压缩技术，如量化和稀疏性，虽然在一定程度上有效，但对于参数量达到万亿级别的模型来说，仍然不足以实现高效的压缩。
-本文提出了QMoE，一种新的压缩和执行框架，旨在实现对万亿参数MoE模型的高效压缩和推理。QMoE通过设计一种可扩展的算法，将模型压缩到每个参数不到1比特的大小，并与定制的GPU解码内核协同设计，以实现端到端的高效压缩推理，且运行时开销相对较小。
-Fig 1. 量化结果http://arxiv.org/abs/2310.16795
-作者首先考虑了Huffman和LZW两种常用于文件压缩的方法。但是Huffman方法的解码依赖于上文已经被解析的参数，并行性低；且变长的编码方式在实现上和存储的时候也是较为困难的。作者总结出了MoE量化的4个难点：
-现有的压缩方法，如量化和稀疏性，通常只能在不显著损失精度的情况下将模型的精度降低到每个参数3或4比特，或者达到大约50%的稀疏度。然而，要使万亿参数的MoE模型实用化，需要比16位精度高出10到20倍的压缩率，即平均每个参数少于1比特。 将现有的压缩方法应用于比大型dense模型大一个数量级的MoE模型时，会遇到内存、性能和可靠性方面的障碍。MoE模型由于其稀疏性，需要处理的内存和数据量巨大。即量化过程需要的内存太大，且可能会出现因为corner case导致量化失败的问题。 实现每个参数少于1比特的压缩率需要一个非平凡的自定义压缩格式，并且这种格式需要配备在GPU等加速器上高效的解码算法，以避免在压缩模型上进行推理时出现重大的处理延迟（比如要避免Huffman方法的同步）。 为了应对上述挑战，需要在系统级别进行设计和优化，包括优化激活卸载、使用列表缓冲区来支持样本访问、延迟权重获取以减少内存占用、专家分组以提高GPU利用率，以及进行鲁棒性修改以处理在压缩具有数万个层的模型时可能遇到的罕见corner case。 2. 算法 2.1 使用GPTQ量化 Fig 2. 使用GPTQ量化流程http://arxiv.org/abs/2310.16795
-具体来说，我们维护一个大型缓冲区$B$，并按以下方式更新 Transformer 块的Dense部分：
-从CPU到GPU抓取一个 “样本” $X$，其中包含数百个Token 通过相应的Dense Layer，得到结果$Y$ 计算并存储$Y$中标记的专家分配 将$Y$送回CPU并覆盖$B$中的$X$ 并且对于稀疏部分，分别对专家进行循环：
-从CPU到GPU获取$B$中所有被分配给专家$E$的单独Token，记作$X_{E}$ 使用它们来生成压缩后的专家$E^{’}$（例如，使用GPTQ算法） 通过$E^{’}$模块以获得$Y_{E^{’}}$ 将$Y_{E^{’}}$发送回CPU，并在B中覆盖$X_{E}$ 作者在这里还引入了List Buffering、Lazy Weight Fetching和Expert Grouping技巧
-2.1.1 List Buffering 为了有效地支持对Dense模型的访问，以及对专家tokens的完全向量化查询，我们将$B$存储为列表缓冲数据结构。这可以被看作是一个包含所有tokens隐藏状态的巨大连续缓冲区，以及分隔符索引，这些索引标志着各个样本之间的边界。下图展示了这种存储格式。这种数据结构对效率至关重要；对于大量样本计数，通过掩码迭代样本并获取相关tokens的方法是很慢的，而作者提出的方法则有大幅度改进。
-Fig 3. list bufferinghttp://arxiv.org/abs/2310.16795
-2.1.2 Lazy Weight Fetching 由于1.6万亿参数模型的权重占用了超过3TB的存储空间，它们甚至无法存储在CPU的RAM中。因此，我们按需直接从磁盘存储中懒加载它们。按照推理的流程，我们需要将所有的参数从磁盘搬移到内存中完整的一整次。
-2.1.3 Experts Grouping 此外，为了避免GPU的利用率不足，作者将多个专家组合在一起，并应用GPTQ算法的联合批处理变体。
-2.2 字典生成 对于量化后得到的Ternary Pair ${w_{min}, 0, w_{max}}$，在很多的情况下，是0居多的，也就是说是稀疏的，那么对于稀疏矩阵可以用CSR等方法来存储。但是使用传统的稀疏矩阵存储方法压缩比还是不够，作者团队使用了一种更加偏向于文件压缩的思路来进行量化后的参数压缩，这个方法就使用到了字典查找的方法。字典查找的方法还是比较通俗易懂的，以下面的例子来举例：
-对于“001002003…”我们可以统计该串里面的子串的出现频率，比如001，002，003出现的频率高，那么我们可以将他们编码成 A,B,C然后仅需要三个char的空间“ABC”就可以表示一个压缩后的文件。...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-06-25 00:00:00 +0000 UTC'>June 25, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to ✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models" href="https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>背景和动机 以KV Cache为启发，探索了对time-to-first-token (TTFT) Latency的优化。类似于KV Cache，Prompt Cache(PC)推理加速的核心思想是复用注意力的中间状态(Attention States)。然而与KV Cache不同的是，PC是在不同的prompt之间进行复用。
-在大部分的LLM任务中，prompt有重叠(overlapping)的现象，这些重叠的prompt可以被存储起来，进而在接下来的LLM处理阶段可以像KV Cache一样，提取出来直接使用。在TTFT的推理过程中，免去计算不同prompt中重叠部分的注意力状态，从而缩短TTFT的生成时间。
-与KV Cache不同的点是：
-相同的文本段可能出现在不同prompt的不同位置，如何对它们的Attention States进行复用。因为不同位置的文本段的Position Encoding进去的值是不一样的。在KV Cache中不需要考虑这一点，因为cache是从前往后线性增长的，但Prompt所在的位置是不确定的。 如何从不同的prompt中识别出已经缓存过的文本。 算法 实验经验 一段prompt的Position值不连续没有关系。只要这一段prompt本身的Position值是连续的就行。意思是部分连续对于LLM就够了，不一定要完全连续。请注意：这是一个实验性验证的结论。
-Prompt Schema Fig 1. Prompt Schema 作者团队定义了一个Prompt Markup Language(PML)。上图中的例子有：可以复用的module和不能复用的填充部分，填充部分需要用Param指出，并给出长度。Prompt Attention States中的红色部分是可以被复用的区域。
-Fig 2. 原始LLM/KV Cache/Prompt Cache 我们来对比下普通的自回归LLM、使用了KV Cache的LLM和使用了Prompt Cache的LLM。普通的LLM每次都要通过输入的Prompt来预测出下一个Token，Prompt是全量的计算。使用了KV Cache的LLM，每次Token预测不用全量计算了，可以使用上次Attention的中间结果。而使用了Prompt Cache的LLM，在后期预测Token的过程和原来的KV Cache没有什么区别。主要区别是在一开始的Prompt输入的阶段，Prompt Cache中常用的Prompt Attention States可以被利用起来，这会极大的缩减第一个Token输出的时间。 Prompt Schema有很多的细节，这里只讲大致的思路，具体的请看文章和代码仓库。
-我对module怎么复用不是很理解，应该是通过将文本内容进行sha256编码来对其进行识别。
-本文主要是对首Token输出时间的优化，对于用户来说可以有更好的体验。要是能做个全局的Prompt Cache数据库，应该可以给大规模的LLM Infer系统带来不少的好处。</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-06-21 00:00:00 +0000 UTC'>June 21, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference" href="https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

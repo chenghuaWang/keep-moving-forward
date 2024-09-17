@@ -218,17 +218,24 @@ ML Compiler NNCV(ZJGSU, BS dissertation), it contains an Aten-lang auto-parallel
     </h2>
   </header>
   <div class="entry-content">
-    <p>本文还没完成修改。
-1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C&#43;&#43; 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
-1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
-Spring 2023 Homepage
-并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
-1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.1.3 Stanford 143: Compilers Homepage
-现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2....</p>
+    <p>日期 更新内容 2024-01-01 文章创建 2024-08-20 1. 根据最近的AI&amp;Sys发展情况做了跟进 2. 对几个AI&amp;Sys分支给出了学习路径和必读的文献 本文是笔者在学习AI&amp;Sys的过程中梳理出来的。本文默认读者掌握了：
+基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。 能熟练使用Python、C&#43;&#43;完成中型的项目。 对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。 对 CUDA 编程模型有了解，不要求使用。 本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。
+1. AI&amp;Sys / MLSys / LLMSys的基础内容 1.1 课程 TinyML and Efficient Deep Learning Computing, MIT han lab
+MIT 6.5940
+韩松老师主讲的课程
+课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。
+CS559E, cs.washington：
+cs.washington CSE559M
+完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。
+缺点是没有视屏，只有一些资料。
+Large Language Model Systems, CMU
+CMU 11868
+与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。
+推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。
+1.2 阅读材料 笔者总结了一些常识性的阅读材料，仅供入门阅读，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。
+LLM Basics...</p>
   </div>
-  <footer class="entry-footer"><span title='2023-01-01 00:00:00 +0000 UTC'>January 1, 2023</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <footer class="entry-footer"><span title='2023-01-01 00:00:00 +0000 UTC'>January 1, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to AI &amp; Sys 入门" href="https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/"></a>
 </article>
 
@@ -250,7 +257,7 @@ Spring 2023 Homepage
     </h2>
   </header>
   <div class="entry-content">
-    <p>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) 2024-08-19, [Fundamental] 模型量化 MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities 2023-02-25, XV6 lab 2 syscall 2023-03-02, XV6 lab 3 page table 2023-03-12, XV6 lab 4 traps 2023-03-17, XV6 lab 5 copy on write Tools 2023-04-18, CUDA: NSight System Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法 Framework 2024-06-28, mllm框架浅析(一)-以QWen0.5B为例 2024-08-13, mllm框架浅析(二)-QNN-Backend </p>
+    <p>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) 2024-08-19, [Fundamental] 模型量化 2024-08-21, [Fundamental] FlashDecoding Series MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities 2023-02-25, XV6 lab 2 syscall 2023-03-02, XV6 lab 3 page table 2023-03-12, XV6 lab 4 traps 2023-03-17, XV6 lab 5 copy on write Tools 2023-04-18, CUDA: NSight System Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法 Framework 2024-06-28, mllm框架浅析(一)-以QWen0.5B为例 2024-08-13, mllm框架浅析(二)-QNN-Backend Kernel Impls 2024-09-17, Q8_0 @ Q4_0_4 GEMM/GEMV in llama....</p>
   </div>
   <footer class="entry-footer"><span title='2023-01-01 00:00:00 +0000 UTC'>January 1, 2023</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to 技术相关" href="https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/"></a>
@@ -262,7 +269,8 @@ Spring 2023 Homepage
     </h2>
   </header>
   <div class="entry-content">
-    <p>Fundamental 2024-08-19, [Fundamental] 模型量化
+    <p>Fundamental 2024-08-21, [Fundamental] FlashDecoding Series
+2024-08-19, [Fundamental] 模型量化
 2024-08-11, [Fundamental] 旋转位置编码(RoPE)
 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3
 Distributed System 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines
@@ -272,8 +280,7 @@ Distributed System 2023-01-19, The Design of a Practical System for Fault-Tolera
 里程碑，旋转矩阵缓解Outliers
 2024-06-25, ✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models
 MLSys2024， MoE量化
-2024-05-25, ✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
-MLSys 2024 Best Paper...</p>
+2024-05-25, ✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration...</p>
   </div>
   <footer class="entry-footer"><span title='2023-01-01 00:00:00 +0000 UTC'>January 1, 2023</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to 论文解析" href="https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/"></a>

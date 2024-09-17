@@ -172,6 +172,31 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">[Fundamental] FlashDecoding Series
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>0x00 前沿和阅读材料 FlashDecoding系列的文章是对FA在推理场景下的改进，目前包含两篇文章：
+Flash-Decoding for long-context inference, Torch团队的Blog FlashDecoding&#43;&#43;: Faster Large Language Model Inference on GPUs 我们知道，在FA2中特别对Seq方向做了并行化，但是在推理的时候Seq=1。此时，并不能占用满GPU的全部的SM，导致性能损失，FlashDecoding就是对此的优化。
+0x01 FlashDecoding 在解码过程中，生成的每个新Token都需要考虑之前的所有Token，以便进行注意力计算。
+在训练的时候，Attention这一算子已使用FlashAttentionV2算法进行了优化，其瓶颈在于读写中间结果（例如 Q @ K^T）的内存带宽不足。但是，这些优化并不能直接应用于推理，因为推理的时候不在是内存带宽的瓶颈。在训练过程中，FlashAttention 会在Batch和Seq两个维度上进行并行处理。在推理过程中，Seq=1，这意味着，如果Batch大小小于 GPU 上的SM数量（A100 为 108），则这个Attention操作只会使用 GPU 的一小部分！在使用长上下文时尤其如此。当Batch大小为 1 时，FlashAttention 将使用不到 1%的 GPU！
+Fig 1. Regular AttentionFlash-Decoding for long-context inference
+为此我们不难想到可以实用Split-K的方法来使得Attention在推理的时候也有很好的并行性。如下图所示：
+Fig 1. Split-K AttentionFlash-Decoding for long-context inference
+非常的好理解，但是这里需要注意的是，在最后的Reduce Op这里还是要做Online Softmax的，所以在SRAM里面保存的东西是比原来多的，除了Output，还有exp Sum和Max。
+0x02 FlashDecoding&#43;&#43; flashdecoding&#43;&#43;不是meta官方出品的。
+FA中，求解Max需要遍历迭代，之后的子块依赖于之前的子块。Safe-softmax的计算公式中，需要先求每行x的最大值，然后减去这个max(x)之后，再做softmax以防止数值溢出。FlashDecoding&#43;&#43;提出的创新点就是，我们可以实用一个先验的$\phi$来作为max值，只要它能让数值稳定就可以了。从Safe Softmax的公式上来看，无论是$\phi$还是max(x)，他们的结果是一致的，我们需要追求的是数值上的稳定与否。
+FlashDecoding&#43;&#43;认为一个合理的先验值 $\phi$，可以直接从数据集中进行统计获得。对于不同的模型，这个先验值也是不一样的。在实现的时候，FlashDecoding&#43;&#43;还使用了Fallback的思路，当出现数值溢出的时候，使用传统的FlashDecoding。
+那为什么FalshDecoding&#43;&#43;能异步，而FlashDecoding不行呢？
+在FalshDecoding Split-K分成的几个区间内，还是使用的FA2的方法来计算，但是FA2的一次迭代是依赖于上一次迭代的结果的，也就是需要rescale。但是FlashDecoding&#43;&#43;不需要，它大致上是这样的：
+$$\begin{aligned} &amp;\ell^{(1)}=\mathrm{rowsum}\Big(e^{\mathbf{S}^{(1)}-\phi}\Big)\in\mathbb{R}^{B_{r}} \\ &amp;\tilde{\mathbf{O}}^{(1)}=e^{\mathbf{S}^{(1)}-\phi}\mathbf{V}^{(1)}\in\mathbb{R}^{B_{r}\times d} \\ &amp;\ell^{(2)}=\mathrm{rowsum}\left(e^{\mathbf{S}^{(2)}-\phi}\right) \\ &amp;\tilde{\mathbf{O}}^{(2)}=e^{s^{(2)}-\phi}\mathbf{V}^{(2)} \\ &amp;\mathbf{O}^{(2)}=\mathrm{diag}\left(\ell^{(1)}&#43;\ell^{(2)}\right)^{-1}(\tilde{\mathbf{O}}^{(1)}&#43;\tilde{\mathbf{O}}^{(2)})=\mathbf{O} \end{aligned}$$ </p>
+  </div>
+  <footer class="entry-footer"><span title='2024-08-21 00:00:00 +0000 UTC'>August 21, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to [Fundamental] FlashDecoding Series" href="https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_flashdecoding_series/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">[Fundamental] 模型量化
     </h2>
   </header>
@@ -278,25 +303,6 @@ Fig 3. list bufferinghttp://arxiv.org/abs/2310.16795
   </div>
   <footer class="entry-footer"><span title='2024-06-25 00:00:00 +0000 UTC'>June 25, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to ✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models" href="https://chenghuawang.github.io/keep-moving-forward/papers/mlsys2024-qmoe/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>背景和动机 以KV Cache为启发，探索了对time-to-first-token (TTFT) Latency的优化。类似于KV Cache，Prompt Cache(PC)推理加速的核心思想是复用注意力的中间状态(Attention States)。然而与KV Cache不同的是，PC是在不同的prompt之间进行复用。
-在大部分的LLM任务中，prompt有重叠(overlapping)的现象，这些重叠的prompt可以被存储起来，进而在接下来的LLM处理阶段可以像KV Cache一样，提取出来直接使用。在TTFT的推理过程中，免去计算不同prompt中重叠部分的注意力状态，从而缩短TTFT的生成时间。
-与KV Cache不同的点是：
-相同的文本段可能出现在不同prompt的不同位置，如何对它们的Attention States进行复用。因为不同位置的文本段的Position Encoding进去的值是不一样的。在KV Cache中不需要考虑这一点，因为cache是从前往后线性增长的，但Prompt所在的位置是不确定的。 如何从不同的prompt中识别出已经缓存过的文本。 算法 实验经验 一段prompt的Position值不连续没有关系。只要这一段prompt本身的Position值是连续的就行。意思是部分连续对于LLM就够了，不一定要完全连续。请注意：这是一个实验性验证的结论。
-Prompt Schema Fig 1. Prompt Schema 作者团队定义了一个Prompt Markup Language(PML)。上图中的例子有：可以复用的module和不能复用的填充部分，填充部分需要用Param指出，并给出长度。Prompt Attention States中的红色部分是可以被复用的区域。
-Fig 2. 原始LLM/KV Cache/Prompt Cache 我们来对比下普通的自回归LLM、使用了KV Cache的LLM和使用了Prompt Cache的LLM。普通的LLM每次都要通过输入的Prompt来预测出下一个Token，Prompt是全量的计算。使用了KV Cache的LLM，每次Token预测不用全量计算了，可以使用上次Attention的中间结果。而使用了Prompt Cache的LLM，在后期预测Token的过程和原来的KV Cache没有什么区别。主要区别是在一开始的Prompt输入的阶段，Prompt Cache中常用的Prompt Attention States可以被利用起来，这会极大的缩减第一个Token输出的时间。 Prompt Schema有很多的细节，这里只讲大致的思路，具体的请看文章和代码仓库。
-我对module怎么复用不是很理解，应该是通过将文本内容进行sha256编码来对其进行识别。
-本文主要是对首Token输出时间的优化，对于用户来说可以有更好的体验。要是能做个全局的Prompt Cache数据库，应该可以给大规模的LLM Infer系统带来不少的好处。</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-06-21 00:00:00 +0000 UTC'>June 21, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to ✅[April 2024] Prompt Cache: Modular Attention Reuse for Low-Latency Inference" href="https://chenghuawang.github.io/keep-moving-forward/papers/prompt_cache/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

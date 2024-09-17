@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Llama.cpp on Ubios Home</title>
+    <link>https://chenghuawang.github.io/keep-moving-forward/series/llama.cpp/</link>
+    <description>Recent content in Llama.cpp on Ubios Home</description>
+    <generator>Hugo -- 0.131.0</generator>
+    <language>en</language>
+    <copyright>chenghua.wang</copyright>
+    <lastBuildDate>Tue, 17 Sep 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://chenghuawang.github.io/keep-moving-forward/series/llama.cpp/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Q8_0 @ Q4_0_4 GEMM/GEMV in llama.cpp</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/</link>
+      <pubDate>Tue, 17 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/</guid>
+      <description>GEMM/GEMV in MLLM Slides
+在本文中我以mllm的实现为例。mllm中的大部分混合精度的矩阵乘法是从llama.cpp中更改过来的。我们先来看下Q8_0和Q4_0代表什么。Huggingface的Doc中给出了一张表，大家可以去看一下：GGUF Quantization Type，我在这里也截图给出来
+Fig 1. Q8_0和Q4_0含义GGUF Quantization Type FROM Huggingface
+对于量化操作不是很熟悉的读者可以看下我之前的blog: [Fundamental] 模型量化
+在mllm中，Q8_0和Q4_0的实现是这样的：
+typedef struct { mllm_fp16_t d; // delta int8_t qs[QK8_0]; // quants QK8_0 = 32 } block_q8_0; // QK4_0 = 32 typedef struct { mllm_fp16_t d; // delta uint8_t qs[QK4_0 / 2]; // nibbles / quants } block_q4_0; 而Q4_0x4实际上就是将4个Q4_0打包成一组，这样在GEMM的时候可以利用起指令并行性。
+我们首先来看下GEMV问题定义，然后再推广到GEMM上。我们有两个矩阵，分别是A($1 \times nr$), B($nc \times nr$)，矩阵乘法后的结果是C$1 \times nc$。一个不是非常恰当的图例如下图所示：
+Fig 2. Q8_0和Q4_0x4的GEMV 为了更好的理解怎么分块，我们先来看下Q4_0x4的数据排布是怎么样的：Q4_0x4实际上是在$nc$的方向上以4分块，在$nr$的方向上以32分块，最终得到的block形状如下图所示：
+Fig 3. Q8_0和Q4_0x4的GEMV Tiled 我们在$nc$的方向上以4分块，在$nr$的方向上以32分块，将gemv拆解成一个更小的子问题。</description>
+    </item>
+  </channel>
+</rss>

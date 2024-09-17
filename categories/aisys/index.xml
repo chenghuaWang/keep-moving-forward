@@ -7,8 +7,43 @@
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
-    <lastBuildDate>Mon, 19 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 17 Sep 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://chenghuawang.github.io/keep-moving-forward/categories/aisys/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Q8_0 @ Q4_0_4 GEMM/GEMV in llama.cpp</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/</link>
+      <pubDate>Tue, 17 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/</guid>
+      <description>GEMM/GEMV in MLLM Slides
+在本文中我以mllm的实现为例。mllm中的大部分混合精度的矩阵乘法是从llama.cpp中更改过来的。我们先来看下Q8_0和Q4_0代表什么。Huggingface的Doc中给出了一张表，大家可以去看一下：GGUF Quantization Type，我在这里也截图给出来
+Fig 1. Q8_0和Q4_0含义GGUF Quantization Type FROM Huggingface
+对于量化操作不是很熟悉的读者可以看下我之前的blog: [Fundamental] 模型量化
+在mllm中，Q8_0和Q4_0的实现是这样的：
+typedef struct { mllm_fp16_t d; // delta int8_t qs[QK8_0]; // quants QK8_0 = 32 } block_q8_0; // QK4_0 = 32 typedef struct { mllm_fp16_t d; // delta uint8_t qs[QK4_0 / 2]; // nibbles / quants } block_q4_0; 而Q4_0x4实际上就是将4个Q4_0打包成一组，这样在GEMM的时候可以利用起指令并行性。
+我们首先来看下GEMV问题定义，然后再推广到GEMM上。我们有两个矩阵，分别是A($1 \times nr$), B($nc \times nr$)，矩阵乘法后的结果是C$1 \times nc$。一个不是非常恰当的图例如下图所示：
+Fig 2. Q8_0和Q4_0x4的GEMV 为了更好的理解怎么分块，我们先来看下Q4_0x4的数据排布是怎么样的：Q4_0x4实际上是在$nc$的方向上以4分块，在$nr$的方向上以32分块，最终得到的block形状如下图所示：
+Fig 3. Q8_0和Q4_0x4的GEMV Tiled 我们在$nc$的方向上以4分块，在$nr$的方向上以32分块，将gemv拆解成一个更小的子问题。</description>
+    </item>
+    <item>
+      <title>[Fundamental] FlashDecoding Series</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_flashdecoding_series/</link>
+      <pubDate>Wed, 21 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_flashdecoding_series/</guid>
+      <description>0x00 前沿和阅读材料 FlashDecoding系列的文章是对FA在推理场景下的改进，目前包含两篇文章：
+Flash-Decoding for long-context inference, Torch团队的Blog FlashDecoding++: Faster Large Language Model Inference on GPUs 我们知道，在FA2中特别对Seq方向做了并行化，但是在推理的时候Seq=1。此时，并不能占用满GPU的全部的SM，导致性能损失，FlashDecoding就是对此的优化。
+0x01 FlashDecoding 在解码过程中，生成的每个新Token都需要考虑之前的所有Token，以便进行注意力计算。
+在训练的时候，Attention这一算子已使用FlashAttentionV2算法进行了优化，其瓶颈在于读写中间结果（例如 Q @ K^T）的内存带宽不足。但是，这些优化并不能直接应用于推理，因为推理的时候不在是内存带宽的瓶颈。在训练过程中，FlashAttention 会在Batch和Seq两个维度上进行并行处理。在推理过程中，Seq=1，这意味着，如果Batch大小小于 GPU 上的SM数量（A100 为 108），则这个Attention操作只会使用 GPU 的一小部分！在使用长上下文时尤其如此。当Batch大小为 1 时，FlashAttention 将使用不到 1%的 GPU！
+Fig 1. Regular AttentionFlash-Decoding for long-context inference
+为此我们不难想到可以实用Split-K的方法来使得Attention在推理的时候也有很好的并行性。如下图所示：
+Fig 1. Split-K AttentionFlash-Decoding for long-context inference
+非常的好理解，但是这里需要注意的是，在最后的Reduce Op这里还是要做Online Softmax的，所以在SRAM里面保存的东西是比原来多的，除了Output，还有exp Sum和Max。
+0x02 FlashDecoding++ flashdecoding++不是meta官方出品的。
+FA中，求解Max需要遍历迭代，之后的子块依赖于之前的子块。Safe-softmax的计算公式中，需要先求每行x的最大值，然后减去这个max(x)之后，再做softmax以防止数值溢出。FlashDecoding++提出的创新点就是，我们可以实用一个先验的$\phi$来作为max值，只要它能让数值稳定就可以了。从Safe Softmax的公式上来看，无论是$\phi$还是max(x)，他们的结果是一致的，我们需要追求的是数值上的稳定与否。
+FlashDecoding++认为一个合理的先验值 $\phi$，可以直接从数据集中进行统计获得。对于不同的模型，这个先验值也是不一样的。在实现的时候，FlashDecoding++还使用了Fallback的思路，当出现数值溢出的时候，使用传统的FlashDecoding。
+那为什么FalshDecoding++能异步，而FlashDecoding不行呢？
+在FalshDecoding Split-K分成的几个区间内，还是使用的FA2的方法来计算，但是FA2的一次迭代是依赖于上一次迭代的结果的，也就是需要rescale。但是FlashDecoding++不需要，它大致上是这样的：
+$$\begin{aligned} &amp;\ell^{(1)}=\mathrm{rowsum}\Big(e^{\mathbf{S}^{(1)}-\phi}\Big)\in\mathbb{R}^{B_{r}} \\ &amp;\tilde{\mathbf{O}}^{(1)}=e^{\mathbf{S}^{(1)}-\phi}\mathbf{V}^{(1)}\in\mathbb{R}^{B_{r}\times d} \\ &amp;\ell^{(2)}=\mathrm{rowsum}\left(e^{\mathbf{S}^{(2)}-\phi}\right) \\ &amp;\tilde{\mathbf{O}}^{(2)}=e^{s^{(2)}-\phi}\mathbf{V}^{(2)} \\ &amp;\mathbf{O}^{(2)}=\mathrm{diag}\left(\ell^{(1)}+\ell^{(2)}\right)^{-1}(\tilde{\mathbf{O}}^{(1)}+\tilde{\mathbf{O}}^{(2)})=\mathbf{O} \end{aligned}$$ </description>
+    </item>
     <item>
       <title>[Fundamental] 模型量化</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_quantization/</link>

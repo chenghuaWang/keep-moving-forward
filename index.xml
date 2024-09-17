@@ -7,8 +7,43 @@
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
-    <lastBuildDate>Mon, 19 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 17 Sep 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Q8_0 @ Q4_0_4 GEMM/GEMV in llama.cpp</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/</link>
+      <pubDate>Tue, 17 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/</guid>
+      <description>GEMM/GEMV in MLLM Slides
+在本文中我以mllm的实现为例。mllm中的大部分混合精度的矩阵乘法是从llama.cpp中更改过来的。我们先来看下Q8_0和Q4_0代表什么。Huggingface的Doc中给出了一张表，大家可以去看一下：GGUF Quantization Type，我在这里也截图给出来
+Fig 1. Q8_0和Q4_0含义GGUF Quantization Type FROM Huggingface
+对于量化操作不是很熟悉的读者可以看下我之前的blog: [Fundamental] 模型量化
+在mllm中，Q8_0和Q4_0的实现是这样的：
+typedef struct { mllm_fp16_t d; // delta int8_t qs[QK8_0]; // quants QK8_0 = 32 } block_q8_0; // QK4_0 = 32 typedef struct { mllm_fp16_t d; // delta uint8_t qs[QK4_0 / 2]; // nibbles / quants } block_q4_0; 而Q4_0x4实际上就是将4个Q4_0打包成一组，这样在GEMM的时候可以利用起指令并行性。
+我们首先来看下GEMV问题定义，然后再推广到GEMM上。我们有两个矩阵，分别是A($1 \times nr$), B($nc \times nr$)，矩阵乘法后的结果是C$1 \times nc$。一个不是非常恰当的图例如下图所示：
+Fig 2. Q8_0和Q4_0x4的GEMV 为了更好的理解怎么分块，我们先来看下Q4_0x4的数据排布是怎么样的：Q4_0x4实际上是在$nc$的方向上以4分块，在$nr$的方向上以32分块，最终得到的block形状如下图所示：
+Fig 3. Q8_0和Q4_0x4的GEMV Tiled 我们在$nc$的方向上以4分块，在$nr$的方向上以32分块，将gemv拆解成一个更小的子问题。</description>
+    </item>
+    <item>
+      <title>[Fundamental] FlashDecoding Series</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_flashdecoding_series/</link>
+      <pubDate>Wed, 21 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_flashdecoding_series/</guid>
+      <description>0x00 前沿和阅读材料 FlashDecoding系列的文章是对FA在推理场景下的改进，目前包含两篇文章：
+Flash-Decoding for long-context inference, Torch团队的Blog FlashDecoding++: Faster Large Language Model Inference on GPUs 我们知道，在FA2中特别对Seq方向做了并行化，但是在推理的时候Seq=1。此时，并不能占用满GPU的全部的SM，导致性能损失，FlashDecoding就是对此的优化。
+0x01 FlashDecoding 在解码过程中，生成的每个新Token都需要考虑之前的所有Token，以便进行注意力计算。
+在训练的时候，Attention这一算子已使用FlashAttentionV2算法进行了优化，其瓶颈在于读写中间结果（例如 Q @ K^T）的内存带宽不足。但是，这些优化并不能直接应用于推理，因为推理的时候不在是内存带宽的瓶颈。在训练过程中，FlashAttention 会在Batch和Seq两个维度上进行并行处理。在推理过程中，Seq=1，这意味着，如果Batch大小小于 GPU 上的SM数量（A100 为 108），则这个Attention操作只会使用 GPU 的一小部分！在使用长上下文时尤其如此。当Batch大小为 1 时，FlashAttention 将使用不到 1%的 GPU！
+Fig 1. Regular AttentionFlash-Decoding for long-context inference
+为此我们不难想到可以实用Split-K的方法来使得Attention在推理的时候也有很好的并行性。如下图所示：
+Fig 1. Split-K AttentionFlash-Decoding for long-context inference
+非常的好理解，但是这里需要注意的是，在最后的Reduce Op这里还是要做Online Softmax的，所以在SRAM里面保存的东西是比原来多的，除了Output，还有exp Sum和Max。
+0x02 FlashDecoding++ flashdecoding++不是meta官方出品的。
+FA中，求解Max需要遍历迭代，之后的子块依赖于之前的子块。Safe-softmax的计算公式中，需要先求每行x的最大值，然后减去这个max(x)之后，再做softmax以防止数值溢出。FlashDecoding++提出的创新点就是，我们可以实用一个先验的$\phi$来作为max值，只要它能让数值稳定就可以了。从Safe Softmax的公式上来看，无论是$\phi$还是max(x)，他们的结果是一致的，我们需要追求的是数值上的稳定与否。
+FlashDecoding++认为一个合理的先验值 $\phi$，可以直接从数据集中进行统计获得。对于不同的模型，这个先验值也是不一样的。在实现的时候，FlashDecoding++还使用了Fallback的思路，当出现数值溢出的时候，使用传统的FlashDecoding。
+那为什么FalshDecoding++能异步，而FlashDecoding不行呢？
+在FalshDecoding Split-K分成的几个区间内，还是使用的FA2的方法来计算，但是FA2的一次迭代是依赖于上一次迭代的结果的，也就是需要rescale。但是FlashDecoding++不需要，它大致上是这样的：
+$$\begin{aligned} &amp;\ell^{(1)}=\mathrm{rowsum}\Big(e^{\mathbf{S}^{(1)}-\phi}\Big)\in\mathbb{R}^{B_{r}} \\ &amp;\tilde{\mathbf{O}}^{(1)}=e^{\mathbf{S}^{(1)}-\phi}\mathbf{V}^{(1)}\in\mathbb{R}^{B_{r}\times d} \\ &amp;\ell^{(2)}=\mathrm{rowsum}\left(e^{\mathbf{S}^{(2)}-\phi}\right) \\ &amp;\tilde{\mathbf{O}}^{(2)}=e^{s^{(2)}-\phi}\mathbf{V}^{(2)} \\ &amp;\mathbf{O}^{(2)}=\mathrm{diag}\left(\ell^{(1)}+\ell^{(2)}\right)^{-1}(\tilde{\mathbf{O}}^{(1)}+\tilde{\mathbf{O}}^{(2)})=\mathbf{O} \end{aligned}$$ </description>
+    </item>
     <item>
       <title>[Fundamental] 模型量化</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_quantization/</link>
@@ -266,15 +301,22 @@ ML Compiler NNCV(ZJGSU, BS dissertation), it contains an Aten-lang auto-parallel
       <link>https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/</guid>
-      <description>本文还没完成修改。
-1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
-1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
-Spring 2023 Homepage
-并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
-1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.1.3 Stanford 143: Compilers Homepage
-现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2.</description>
+      <description>日期 更新内容 2024-01-01 文章创建 2024-08-20 1. 根据最近的AI&amp;amp;Sys发展情况做了跟进 2. 对几个AI&amp;amp;Sys分支给出了学习路径和必读的文献 本文是笔者在学习AI&amp;amp;Sys的过程中梳理出来的。本文默认读者掌握了：
+基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。 能熟练使用Python、C++完成中型的项目。 对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。 对 CUDA 编程模型有了解，不要求使用。 本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。
+1. AI&amp;amp;Sys / MLSys / LLMSys的基础内容 1.1 课程 TinyML and Efficient Deep Learning Computing, MIT han lab
+MIT 6.5940
+韩松老师主讲的课程
+课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。
+CS559E, cs.washington：
+cs.washington CSE559M
+完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。
+缺点是没有视屏，只有一些资料。
+Large Language Model Systems, CMU
+CMU 11868
+与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。
+推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。
+1.2 阅读材料 笔者总结了一些常识性的阅读材料，仅供入门阅读，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。
+LLM Basics</description>
     </item>
     <item>
       <title>思考</title>
@@ -288,14 +330,15 @@ Spring 2023 Homepage
       <link>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</guid>
-      <description>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) 2024-08-19, [Fundamental] 模型量化 MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities 2023-02-25, XV6 lab 2 syscall 2023-03-02, XV6 lab 3 page table 2023-03-12, XV6 lab 4 traps 2023-03-17, XV6 lab 5 copy on write Tools 2023-04-18, CUDA: NSight System Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法 Framework 2024-06-28, mllm框架浅析(一)-以QWen0.5B为例 2024-08-13, mllm框架浅析(二)-QNN-Backend </description>
+      <description>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) 2024-08-19, [Fundamental] 模型量化 2024-08-21, [Fundamental] FlashDecoding Series MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities 2023-02-25, XV6 lab 2 syscall 2023-03-02, XV6 lab 3 page table 2023-03-12, XV6 lab 4 traps 2023-03-17, XV6 lab 5 copy on write Tools 2023-04-18, CUDA: NSight System Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法 Framework 2024-06-28, mllm框架浅析(一)-以QWen0.5B为例 2024-08-13, mllm框架浅析(二)-QNN-Backend Kernel Impls 2024-09-17, Q8_0 @ Q4_0_4 GEMM/GEMV in llama.</description>
     </item>
     <item>
       <title>论文解析</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/paper_posts/</guid>
-      <description>Fundamental 2024-08-19, [Fundamental] 模型量化
+      <description>Fundamental 2024-08-21, [Fundamental] FlashDecoding Series
+2024-08-19, [Fundamental] 模型量化
 2024-08-11, [Fundamental] 旋转位置编码(RoPE)
 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3
 Distributed System 2023-01-19, The Design of a Practical System for Fault-Tolerant Virtual Machines
@@ -305,8 +348,7 @@ Distributed System 2023-01-19, The Design of a Practical System for Fault-Tolera
 里程碑，旋转矩阵缓解Outliers
 2024-06-25, ✅[Oct 2023] 模型量化之QMoE: Practical Sub-1-Bit Compression of Trillion-Parameter Models
 MLSys2024， MoE量化
-2024-05-25, ✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration
-MLSys 2024 Best Paper</description>
+2024-05-25, ✅[April 2024] 模型量化之AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</description>
     </item>
   </channel>
 </rss>

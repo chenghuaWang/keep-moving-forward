@@ -7,15 +7,22 @@
 <meta name="robots" content="index, follow">
 <title>AI &amp; Sys 入门 | Ubios Home</title>
 <meta name="keywords" content="">
-<meta name="description" content="本文还没完成修改。
-1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C&#43;&#43; 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
-1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
-Spring 2023 Homepage
-并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
-1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.1.3 Stanford 143: Compilers Homepage
-现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2.">
+<meta name="description" content="日期 更新内容 2024-01-01 文章创建 2024-08-20 1. 根据最近的AI&amp;Sys发展情况做了跟进 2. 对几个AI&amp;Sys分支给出了学习路径和必读的文献 本文是笔者在学习AI&amp;Sys的过程中梳理出来的。本文默认读者掌握了：
+基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。 能熟练使用Python、C&#43;&#43;完成中型的项目。 对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。 对 CUDA 编程模型有了解，不要求使用。 本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。
+1. AI&amp;Sys / MLSys / LLMSys的基础内容 1.1 课程 TinyML and Efficient Deep Learning Computing, MIT han lab
+MIT 6.5940
+韩松老师主讲的课程
+课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。
+CS559E, cs.washington：
+cs.washington CSE559M
+完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。
+缺点是没有视屏，只有一些资料。
+Large Language Model Systems, CMU
+CMU 11868
+与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。
+推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。
+1.2 阅读材料 笔者总结了一些常识性的阅读材料，仅供入门阅读，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。
+LLM Basics">
 <meta name="author" content="chenghua.Wang">
 <link rel="canonical" href="https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/">
 <link crossorigin="anonymous" href="/keep-moving-forward/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
@@ -89,15 +96,22 @@ Spring 2023 Homepage
   
 
 <meta property="og:title" content="AI &amp; Sys 入门" />
-<meta property="og:description" content="本文还没完成修改。
-1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C&#43;&#43; 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
-1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
-Spring 2023 Homepage
-并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
-1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.1.3 Stanford 143: Compilers Homepage
-现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2." />
+<meta property="og:description" content="日期 更新内容 2024-01-01 文章创建 2024-08-20 1. 根据最近的AI&amp;Sys发展情况做了跟进 2. 对几个AI&amp;Sys分支给出了学习路径和必读的文献 本文是笔者在学习AI&amp;Sys的过程中梳理出来的。本文默认读者掌握了：
+基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。 能熟练使用Python、C&#43;&#43;完成中型的项目。 对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。 对 CUDA 编程模型有了解，不要求使用。 本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。
+1. AI&amp;Sys / MLSys / LLMSys的基础内容 1.1 课程 TinyML and Efficient Deep Learning Computing, MIT han lab
+MIT 6.5940
+韩松老师主讲的课程
+课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。
+CS559E, cs.washington：
+cs.washington CSE559M
+完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。
+缺点是没有视屏，只有一些资料。
+Large Language Model Systems, CMU
+CMU 11868
+与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。
+推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。
+1.2 阅读材料 笔者总结了一些常识性的阅读材料，仅供入门阅读，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。
+LLM Basics" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://chenghuawang.github.io/keep-moving-forward/about/hpc_ai/" /><meta property="article:section" content="about" />
 <meta property="article:published_time" content="2023-01-01T00:00:00+00:00" />
@@ -106,15 +120,22 @@ Spring 2023 Homepage
 
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="AI &amp; Sys 入门"/>
-<meta name="twitter:description" content="本文还没完成修改。
-1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C&#43;&#43; 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。
-1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。
-Spring 2023 Homepage
-并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。
-1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage
-1.1.3 Stanford 143: Compilers Homepage
-现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。
-1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2."/>
+<meta name="twitter:description" content="日期 更新内容 2024-01-01 文章创建 2024-08-20 1. 根据最近的AI&amp;Sys发展情况做了跟进 2. 对几个AI&amp;Sys分支给出了学习路径和必读的文献 本文是笔者在学习AI&amp;Sys的过程中梳理出来的。本文默认读者掌握了：
+基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。 能熟练使用Python、C&#43;&#43;完成中型的项目。 对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。 对 CUDA 编程模型有了解，不要求使用。 本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。
+1. AI&amp;Sys / MLSys / LLMSys的基础内容 1.1 课程 TinyML and Efficient Deep Learning Computing, MIT han lab
+MIT 6.5940
+韩松老师主讲的课程
+课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。
+CS559E, cs.washington：
+cs.washington CSE559M
+完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。
+缺点是没有视屏，只有一些资料。
+Large Language Model Systems, CMU
+CMU 11868
+与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。
+推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。
+1.2 阅读材料 笔者总结了一些常识性的阅读材料，仅供入门阅读，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。
+LLM Basics"/>
 
 
 <script type="application/ld+json">
@@ -143,12 +164,12 @@ Spring 2023 Homepage
   "@type": "BlogPosting",
   "headline": "AI \u0026 Sys 入门",
   "name": "AI \u0026 Sys 入门",
-  "description": "本文还没完成修改。\n1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。\n1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。\nSpring 2023 Homepage\n并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。\n1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage\n1.1.3 Stanford 143: Compilers Homepage\n现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。\n1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2.",
+  "description": "日期 更新内容 2024-01-01 文章创建 2024-08-20 1. 根据最近的AI\u0026amp;Sys发展情况做了跟进 2. 对几个AI\u0026amp;Sys分支给出了学习路径和必读的文献 本文是笔者在学习AI\u0026amp;Sys的过程中梳理出来的。本文默认读者掌握了：\n基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。 能熟练使用Python、C++完成中型的项目。 对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。 对 CUDA 编程模型有了解，不要求使用。 本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。\n1. AI\u0026amp;Sys / MLSys / LLMSys的基础内容 1.1 课程 TinyML and Efficient Deep Learning Computing, MIT han lab\nMIT 6.5940\n韩松老师主讲的课程\n课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。\nCS559E, cs.washington：\ncs.washington CSE559M\n完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。\n缺点是没有视屏，只有一些资料。\nLarge Language Model Systems, CMU\nCMU 11868\n与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。\n推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。\n1.2 阅读材料 笔者总结了一些常识性的阅读材料，仅供入门阅读，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。\nLLM Basics",
   "keywords": [
     
   ],
-  "articleBody": " 本文还没完成修改。\n1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。\n1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。\nSpring 2023 Homepage\n并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。\n1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage\n1.1.3 Stanford 143: Compilers Homepage\n现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。\n1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link A1. 相关领域的文章 cs.washington CSE559M 罗列了基本的阅读资料 ",
-  "wordCount" : "82",
+  "articleBody": " 日期 更新内容 2024-01-01 文章创建 2024-08-20 1. 根据最近的AI\u0026Sys发展情况做了跟进 2. 对几个AI\u0026Sys分支给出了学习路径和必读的文献 本文是笔者在学习AI\u0026Sys的过程中梳理出来的。本文默认读者掌握了：\n基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。 能熟练使用Python、C++完成中型的项目。 对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。 对 CUDA 编程模型有了解，不要求使用。 本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。\n1. AI\u0026Sys / MLSys / LLMSys的基础内容 1.1 课程 TinyML and Efficient Deep Learning Computing, MIT han lab\nMIT 6.5940\n韩松老师主讲的课程\n课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。\nCS559E, cs.washington：\ncs.washington CSE559M\n完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。\n缺点是没有视屏，只有一些资料。\nLarge Language Model Systems, CMU\nCMU 11868\n与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。\n推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。\n1.2 阅读材料 笔者总结了一些常识性的阅读材料，仅供入门阅读，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。\nLLM Basics\nRequired:\nAttention Is All You Need RoFormer: Enhanced Transformer with Rotary Position Embedding Optional:\nLlama 2: Open Foundation and Fine-Tuned Chat Models The Llama 3 Herd of Models Fine-Tuning：\nRequired:\nLoRA: Low-Rank Adaptation of Large Language Models Parameter-Efficient Transfer Learning for NLP The Power of Scale for Parameter-Efficient Prompt Tuning Optional:\nQLORA: E cient Finetuning of Quantized LLMs Quantization：\nRequired:\nTinyML and Efficient Deep Learning Computing Quantization(Part 1 and 2) GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration Optional:\nQuantization Algorithms - Distiller Documentation. From Intel AI Lab SpinQuant: LLM quantization with learned rotations Pruning / Sparsification：\nRequired:\nOptional:\nKV Cache Optimization：\nRequired:\nEfficient Memory Management for Large Language Model Serving with PagedAttention Prompt Cache: Modular Attention Reuse for Low-Latency Inference Optional:\nSGLang: Efficient Execution of Structured Language Model Programs Attention Acceleration：\nRequired:\nFrom Online Softmax to FlashAttention FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning Simple Hardware-Efficient Long Convolutions for Sequence Modeling Optional:\nFlash-Decoding for long-context inference FlashDecoding++: Faster Large Language Model Inference on GPUs Parallel Decoding：\nRequired:\nFast Inference from Transformers via Speculative Decoding Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads Optional:\nEAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty ML Compiler：\nRequired:\nTVM: An Automated End-to-End Optimizing Compiler for Deep Learning MLIR: A Compiler Infrastructure for the End of Moore’s Law Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations Optional:\nRammer: Enabling Holistic Deep Learning Compiler Optimizations with rTasks TASO: optimizing deep learning computation with automatic generation of graph substitutions Tensor Program Optimization with Probabilistic Programs LLM On Device Training：\nRequired:\nOptional:\nLLM Training Parallelism / Mem Optmization：\nRequired:\nOptional:\nLarge Scale LLM Serving / Inference：\nRequired:\nOptional:\nHardware Arch：\nRequired:\nOptional:\n1.3 项目 2. 基础技能 2.1 硬件相关 2.2 高性能计算 1. 前置知识 对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。\n1.1 Courses 1.1.1 CMU15418 Parallel computing Note: 2023 的视频没有公开，目前能够找到的最新的视频是 2018 年的，这个领域发展较快，初次入门还是选择 CS267。\nSpring 2023 Homepage\n并行计算入门课程，Lab 工作量非常的巨大。涉及现代多处理器，SIMD，分布式通讯协议MPI，GPU加速CUDA编程，异构计算，同步，Cache，等。\n1.1.2 UCB CS267 Applications of Parallel Computers Spring 2022 Homepage\n1.1.3 Stanford 143: Compilers Homepage\n现在有很多的自动并行做法想要使用编译技术来统一的生成调度代码和优化后的 kernel，编译技术是值得学习的。但是这门课是传统编译，和 MLIR 那一套的后端是有共性但是不是一致的，建议只看编译前端部分，后端部分可以较为简略的来看。\n1.2 Tools 1.2.1 CUDA 2023-04-18, CUDA: NSight System, link 2. Machine Learning System 2023-05-02, 浅析机器学习中的并行模型和自动并行方法, link A1. 相关领域的文章 cs.washington CSE559M 罗列了基本的阅读资料 ",
+  "wordCount" : "474",
   "inLanguage": "en",
   "datePublished": "2023-01-01T00:00:00Z",
   "dateModified": "2023-01-01T00:00:00Z",
@@ -263,7 +284,7 @@ Spring 2023 Homepage
     <h1 class="post-title entry-hint-parent">
       AI &amp; Sys 入门
     </h1>
-    <div class="post-meta"><span title='2023-01-01 00:00:00 +0000 UTC'>January 1, 2023</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang
+    <div class="post-meta"><span title='2023-01-01 00:00:00 +0000 UTC'>January 1, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang
 
 </div>
   </header> <div class="toc">
@@ -273,6 +294,24 @@ Spring 2023 Homepage
         </summary>
 
         <div class="inner"><ul>
+                <li>
+                    <a href="#1-aisys--mlsys--llmsys%e7%9a%84%e5%9f%ba%e7%a1%80%e5%86%85%e5%ae%b9" aria-label="1. AI&amp;Sys / MLSys / LLMSys的基础内容">1. AI&amp;Sys / MLSys / LLMSys的基础内容</a><ul>
+                        
+                <li>
+                    <a href="#11-%e8%af%be%e7%a8%8b" aria-label="1.1 课程">1.1 课程</a></li>
+                <li>
+                    <a href="#12-%e9%98%85%e8%af%bb%e6%9d%90%e6%96%99" aria-label="1.2 阅读材料">1.2 阅读材料</a></li>
+                <li>
+                    <a href="#13-%e9%a1%b9%e7%9b%ae" aria-label="1.3 项目">1.3 项目</a></li></ul>
+                </li>
+                <li>
+                    <a href="#2-%e5%9f%ba%e7%a1%80%e6%8a%80%e8%83%bd" aria-label="2. 基础技能">2. 基础技能</a><ul>
+                        
+                <li>
+                    <a href="#21-%e7%a1%ac%e4%bb%b6%e7%9b%b8%e5%85%b3" aria-label="2.1 硬件相关">2.1 硬件相关</a></li>
+                <li>
+                    <a href="#22-%e9%ab%98%e6%80%a7%e8%83%bd%e8%ae%a1%e7%ae%97" aria-label="2.2 高性能计算">2.2 高性能计算</a></li></ul>
+                </li>
                 <li>
                     <a href="#1-%e5%89%8d%e7%bd%ae%e7%9f%a5%e8%af%86" aria-label="1. 前置知识">1. 前置知识</a><ul>
                         
@@ -303,9 +342,185 @@ Spring 2023 Homepage
     </details>
 </div>
 
-  <div class="post-content"><blockquote>
-<p>本文还没完成修改。</p>
+  <div class="post-content"><table>
+<thead>
+<tr>
+<th style="text-align:center">日期</th>
+<th style="text-align:center">更新内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">2024-01-01</td>
+<td style="text-align:center">文章创建</td>
+</tr>
+<tr>
+<td style="text-align:center">2024-08-20</td>
+<td style="text-align:center">1. 根据最近的AI&amp;Sys发展情况做了跟进 2. 对几个AI&amp;Sys分支给出了学习路径和必读的文献</td>
+</tr>
+</tbody>
+</table>
+<p>本文是笔者在学习AI&amp;Sys的过程中梳理出来的。本文默认读者掌握了：</p>
+<ul>
+<li>基础的深度学习知识，对计算机视觉(完成大部分cs231n lab)有一定的了解。</li>
+<li>能熟练使用Python、C++完成中型的项目。</li>
+<li>对操作系统、体系结构有一定的了解(大部分CSAPP lab完成，理解了OSTEP书中的大部分知识/完成MIT 6.S081 XV6 lab大部分内容)。</li>
+<li>对 CUDA 编程模型有了解，不要求使用。</li>
+</ul>
+<p><mark>本文只记录入门需要看的书籍/课程/论文/项目等，暂时不包括更加深入的内容。</mark></p>
+<h1 id="1-aisys--mlsys--llmsys的基础内容">1. AI&amp;Sys / MLSys / LLMSys的基础内容<a hidden class="anchor" aria-hidden="true" href="#1-aisys--mlsys--llmsys的基础内容">#</a></h1>
+<h2 id="11-课程">1.1 课程<a hidden class="anchor" aria-hidden="true" href="#11-课程">#</a></h2>
+<p><strong>TinyML and Efficient Deep Learning Computing, MIT han lab</strong></p>
+<blockquote>
+<p><a href="https://efficientml.ai">MIT 6.5940</a></p>
+<p>韩松老师主讲的课程</p>
+<p>课程质量很高，在B站有FAll 2023的视屏。推荐入门的同学可以先看看这个，可以带你参观整个MLSys相关的大部分领域（偏向算法）。</p>
 </blockquote>
+<p><strong>CS559E, cs.washington：</strong></p>
+<blockquote>
+<p><a href="https://courses.cs.washington.edu/courses/cse599m/23sp/">cs.washington CSE559M</a></p>
+<p>完整的讲述了MLSys大部分的领域（偏向Sys），类似一个综述类型的课程，可以带领你了解完大部分MLSys的领域。</p>
+<p>缺点是没有视屏，只有一些资料。</p>
+</blockquote>
+<p><strong>Large Language Model Systems, CMU</strong></p>
+<blockquote>
+<p><a href="https://llmsystem.github.io/llmsystem2024spring/">CMU  11868</a></p>
+<p>与LLM联系的更加紧密一点，如RAG，大模型Serving。还有一些Sys上的，如GPU just-in-time compilation、Communication Efficient Distributed Training等。</p>
+</blockquote>
+<p>推荐先看韩松老师的课程来获得一个全局的视角（主要是补齐大模型的一些基本算法知识，大部分是推理上的，训练的知识是缺失的）。然后其他的课程可以选择看看，或者直接看您想从事方向的论文。</p>
+<h2 id="12-阅读材料">1.2 阅读材料<a hidden class="anchor" aria-hidden="true" href="#12-阅读材料">#</a></h2>
+<p>笔者总结了一些常识性的阅读材料，<mark>仅供入门阅读</mark>，可能会有重复，读者可以选择一些来阅读。阅读材料比较多，阅读的时候应该详略得当，明确主攻哪块方向。</p>
+<p><strong>LLM Basics</strong></p>
+<p><em><em>Required:</em></em></p>
+<blockquote>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/pdf/2104.09864">RoFormer: Enhanced Transformer with Rotary Position Embedding</a></li>
+</ul>
+</blockquote>
+<p><em><em>Optional:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2307.09288">Llama 2: Open Foundation and Fine-Tuned Chat Models</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/pdf/2407.21783">The Llama 3 Herd of Models</a></li>
+</ul>
+</blockquote>
+<p><strong>Fine-Tuning：</strong></p>
+<p><em><em>Required:</em></em></p>
+<blockquote>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2106.09685">LoRA: Low-Rank Adaptation of Large Language Models</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/1902.00751">Parameter-Efficient Transfer Learning for NLP</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2104.08691">The Power of Scale for Parameter-Efficient Prompt Tuning</a></li>
+</ul>
+</blockquote>
+<p><em><em>Optional:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2305.14314">QLORA: E cient Finetuning of Quantized LLMs</a></li>
+</ul>
+</blockquote>
+<p><strong>Quantization：</strong></p>
+<p><em><em>Required:</em></em></p>
+<blockquote>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://efficientml.ai">TinyML and Efficient Deep Learning Computing Quantization(Part 1 and 2)</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2210.17323">GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2208.07339">LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2211.10438">SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2306.00978">AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a></li>
+</ul>
+</blockquote>
+<p><em><em>Optional:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://intellabs.github.io/distiller/algo_quantization.html">Quantization Algorithms - Distiller Documentation. From Intel AI Lab</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2405.16406">SpinQuant: LLM quantization with learned rotations</a></li>
+</ul>
+</blockquote>
+<p><strong>Pruning / Sparsification：</strong></p>
+<p><em><em>Required:</em></em></p>
+<p><em><em>Optional:</em></em></p>
+<p><strong>KV Cache Optimization：</strong></p>
+<p><em><em>Required:</em></em></p>
+<blockquote>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2309.06180">Efficient Memory Management for Large Language Model Serving with PagedAttention</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2311.04934">Prompt Cache: Modular Attention Reuse for Low-Latency Inference</a></li>
+</ul>
+</blockquote>
+<p><em><em>Optional:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2312.07104">SGLang: Efficient Execution of Structured Language Model Programs</a></li>
+</ul>
+</blockquote>
+<p><strong>Attention Acceleration：</strong></p>
+<p><em><em>Required:</em></em></p>
+<blockquote>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://courses.cs.washington.edu/courses/cse599m/23sp/notes/flashattn.pdf">From Online Softmax to FlashAttention</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/pdf/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/pdf/2307.08691">FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2302.06646">Simple Hardware-Efficient Long Convolutions for Sequence Modeling</a></li>
+</ul>
+</blockquote>
+<p><em><em>Optional:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://crfm.stanford.edu/2023/10/12/flashdecoding.html">Flash-Decoding for long-context inference</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2311.01282">FlashDecoding++: Faster Large Language Model Inference on GPUs</a></li>
+</ul>
+</blockquote>
+<p><strong>Parallel Decoding：</strong></p>
+<p><em><em>Required:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2211.17192">Fast Inference from Transformers via Speculative Decoding</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2401.10774">Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads</a></li>
+</ul>
+</blockquote>
+<p><em><em>Optional:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2401.15077">EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty</a></li>
+</ul>
+</blockquote>
+<p><strong>ML Compiler：</strong></p>
+<p><em><em>Required:</em></em></p>
+<blockquote>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/1802.04799">TVM: An Automated End-to-End Optimizing Compiler for Deep Learning</a></li>
+<li><input checked="" disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2002.11054">MLIR: A Compiler Infrastructure for the End of Moore&rsquo;s Law</a></li>
+<li><input disabled="" type="checkbox"> <a href="http://www.eecs.harvard.edu/~htk/publication/2019-mapl-tillet-kung-cox.pdf">Triton: An Intermediate Language and Compiler for
+Tiled Neural Network Computations</a></li>
+</ul>
+</blockquote>
+<p><em><em>Optional:</em></em></p>
+<blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <a href="https://www.usenix.org/conference/osdi20/presentation/ma">Rammer: Enabling Holistic Deep Learning Compiler Optimizations with rTasks</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://dl.acm.org/doi/10.1145/3341301.3359630">TASO: optimizing deep learning computation with automatic generation of graph substitutions</a></li>
+<li><input disabled="" type="checkbox"> <a href="https://arxiv.org/abs/2205.13603">Tensor Program Optimization with Probabilistic Programs</a></li>
+</ul>
+</blockquote>
+<p><strong>LLM On Device Training：</strong></p>
+<p><em><em>Required:</em></em></p>
+<p><em><em>Optional:</em></em></p>
+<p><strong>LLM Training Parallelism / Mem Optmization：</strong></p>
+<p><em><em>Required:</em></em></p>
+<p><em><em>Optional:</em></em></p>
+<p><strong>Large Scale LLM Serving / Inference：</strong></p>
+<p><em><em>Required:</em></em></p>
+<p><em><em>Optional:</em></em></p>
+<p><strong>Hardware Arch：</strong></p>
+<p><em><em>Required:</em></em></p>
+<p><em><em>Optional:</em></em></p>
+<h2 id="13-项目">1.3 项目<a hidden class="anchor" aria-hidden="true" href="#13-项目">#</a></h2>
+<h1 id="2-基础技能">2. 基础技能<a hidden class="anchor" aria-hidden="true" href="#2-基础技能">#</a></h1>
+<h2 id="21-硬件相关">2.1 硬件相关<a hidden class="anchor" aria-hidden="true" href="#21-硬件相关">#</a></h2>
+<h2 id="22-高性能计算">2.2 高性能计算<a hidden class="anchor" aria-hidden="true" href="#22-高性能计算">#</a></h2>
+<hr>
 <h1 id="1-前置知识">1. 前置知识<a hidden class="anchor" aria-hidden="true" href="#1-前置知识">#</a></h1>
 <p>对于前置知识，默认已经通过了 MIT 6.S081 即以上难度的 OS 课程历练；有 Deep Learning 方面的课程基础或者科研经历；在体系结构上有一定的了解(从 CSAPP 到计组学完)。对于 C++ 编程较为熟练，能够使用 CMake 构建中型项目；能够使用 Pybind，对于 Python 高级编程较为熟练。在编译工具链(Clang, LLVM) 上有一定的了解，能够使用。对 CUDA 编程模型有了解，不要求使用。</p>
 <h2 id="11-courses">1.1 Courses<a hidden class="anchor" aria-hidden="true" href="#11-courses">#</a></h2>

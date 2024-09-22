@@ -7,8 +7,20 @@
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
-    <lastBuildDate>Tue, 17 Sep 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 22 Sep 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>【施工中】端侧大模型推理-算法-Part1: Deja Vu, LLM in a Flash</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/edgellms-algorithms-part-1/</link>
+      <pubDate>Sun, 22 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/edgellms-algorithms-part-1/</guid>
+      <description>本文主要总结两篇文章：Deja Vu 和 Apple 的 LLM in a flash。这两篇文章的内容都是端侧推理加速的尝试，他们主要使用了大致的思路&amp;ndash;利用MLP的稀疏性，各自的工程实现各有一些创新。
+Deja Vu: Contextual Sparsity for Efficient LLMs at Inference Time LLM in a flash: Efficient Large Language Model Inference with Limited Memory 端侧推理有着比较大的应用前景，随着端侧设备的算力跟进，端侧设备已经具有了运行7B模型的能力。在端侧运行小参数模型可以极大的减少云端的压力，从而减少运营成本。相比于云端的大模型，端侧大模型处理复杂问题能力不足，所以端侧和云端应该是相辅相成的。轻量级任务给端侧，需要长逻辑理解的任务交给云端。
+端侧和云的协同工作，也是一个很好的研究方向。
+0x01 Deja Vu 1. 问题分析和动机 作者通过分析OPT-175B模型的上下文稀疏性发现对于大部分的Transformer Layer，他们的稀疏性都在85%左右。上下文稀疏性就是：对于特定的输入，仅有一小部分的模型参数对最终结果有着重要的影响。 如图1-3所示：
+Fig 1. Contextual SparsityDeja Vu: Contextual Sparsity for Efficient LLMs at Inference Time
+Fig 3. Contextual sparsity in Attention HeadDeja Vu: Contextual Sparsity for Efficient LLMs at Inference Time</description>
+    </item>
     <item>
       <title>Q8_0 @ Q4_0_4 GEMM/GEMV in llama.cpp</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/q8_0_q4_0_4_gemm_in_llamacpp/</link>

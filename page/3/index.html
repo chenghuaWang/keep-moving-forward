@@ -174,6 +174,30 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">浅析机器学习中的并行模型和自动并行方法
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>数据并行、模型并行、流水并行、专家混合</p>
+  </div>
+  <footer class="entry-footer"><span title='2023-05-02 00:00:00 +0000 UTC'>May 2, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to 浅析机器学习中的并行模型和自动并行方法" href="https://chenghuawang.github.io/keep-moving-forward/tech/introduction_mldistri/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">CUDA: NSight System
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Usage of Nsight System</p>
+  </div>
+  <footer class="entry-footer"><span title='2023-04-18 00:00:00 +0000 UTC'>April 18, 2023</span>&nbsp;·&nbsp;6 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to CUDA: NSight System" href="https://chenghuawang.github.io/keep-moving-forward/tech/cuda_nsight_system/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">XV6 Lab 5: Copy On Write
     </h2>
   </header>
@@ -271,51 +295,12 @@ sleep 通过调用 user.h 中的系统调用函数来完成 sleep 程序。主�
   <footer class="entry-footer"><span title='2023-01-19 00:00:00 +0000 UTC'>January 19, 2023</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to The Design of a Practical System for Fault-Tolerant Virtual Machines" href="https://chenghuawang.github.io/keep-moving-forward/papers/ft-vm/"></a>
 </article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Google File System(GFS)
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>go back to home
-Paper link
-Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp. 20-43
-Last Edit: Jan 18, 2023
-GFS 有非常多的东西，这里只写了一些重要的部分。像是snapshot，文件删除，高可用机制，Replica管理等没有具体提及。
-Introduction GFS是google提出的一个可扩展分布式文件系统，为大型分布式数据密集型应用提供服务。可以在大规模的消费级机器集群上提供不错的容错能力。GFS在设计的时候主要依据6个假设(观察得出的):
-节点失效经常发生。系统由非常多的消费级机器组成，大量用户同时进行访问，这使得节点很容易因为程序bug、磁盘故障、内存故障等原因失效。 存储以大文件为主。每个文件通常100MB或几GB。系统需要支持小文件，但不需要对其进行特殊的优化。 大容量连续读，小容量随机读取是文件系统中的常态。 写入也已大容量为主，小容量无需特殊优化。 支持原子的文件追加操作。使得大量用户可以并行追加文件，而不需要额外的加锁机制。 高吞吐量比低延时更重要 为什么设计一个优秀的分布式存储系统非常的困难:
-Performance. 当数据量非常大的时候，数据分片(Sharding)是非常重要的。 Fault Tolerance. 但是由于数据在多台服务器上分片。由于多台服务器，整个系统出现故障的概率会大很多。因此需要容错机制 Replication. 复制数据副本到多台服务器上，但是为了用户能够拿到一致的数据，需要考虑一致性 Consistency. 为了一致性，不得不使用网络(极慢的数据交互方式)进行确认和同步。这又会影响性能(Performance)!!! 世界因此变成了一个美妙的环。:-)。这也是分布式的挑战之处。
-GFS讨论了上述的这些主题和在实际生产场景中的应用。
-Architecture Fig 1. GFS ArchGoole File System. Sanjay Ghemawat, Howard Gobioff, and Shun-Tak Leung. Proceedings of the 19th ACM Symposium on Operating Systems Principles, ACM, Bolton Landing, NY (2003), pp....</p>
-  </div>
-  <footer class="entry-footer"><span title='2023-01-18 00:00:00 +0000 UTC'>January 18, 2023</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to Google File System(GFS)" href="https://chenghuawang.github.io/keep-moving-forward/papers/gfs/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">MapReduce
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>OSDI&#39;04: 6th Symposium on Operating Systems Design and Implementation
-go back to home
-Paper link
-什么是 MapReduce 在MapReduce原文中是这么说的
-MapReduce is a programming model and an associated implementation for processing and generating large data sets. [1]
-这是一个较为简单的处理大型问题的分布式编程模型。其产生的原因是因为 google 想要让普通的程序员也能够通过一套简单的编程模型来编写分布式应用程序，以此来处理 google 内部的大数据。然后著名的 Jeff Dean 和 Sanjay Ghemawat 出马搞定了这个问题(在知乎上关于Jeff Dean的轶事:-))。MapReduce 在 google 内部运行很长的时间并且处理了很多业务，但是目前也败下阵来，具体原因参见 MapReduce 缺陷章节(MR早在2004年就出来了，其实是古早的技术了，其没有在性能上做文章，主要在可扩展性上)。
-MapReduce 的设计框架和基本流程 MR实际上是一个非常简单的框架，思路也非常的直白。MapReduce 背后的核心思想是将数据集映射到一个 &lt;key, value&gt; pair的集合中，然后使用相同的键对所有pair进行整合。 整体概念很简单，但是如果你设想下下面的情况，MR实际上非常有用: 基本上所有的数据都能被映射到一个 &lt;key, value&gt; 对中，并且key和value可以是任意类型。
-在论文中MR使用的样例是在超大的文件里做单词统计。这个框架还可以用来做：
-分布式的排序 分布式的搜索 Web链接图遍历 … Fig 1....</p>
-  </div>
-  <footer class="entry-footer"><span title='2023-01-17 00:00:00 +0000 UTC'>January 17, 2023</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to MapReduce" href="https://chenghuawang.github.io/keep-moving-forward/papers/mapreduce/"></a>
-</article>
 <footer class="page-footer">
   <nav class="pagination">
     <a class="prev" href="https://chenghuawang.github.io/keep-moving-forward/page/2/">
-      «&nbsp;Prev&nbsp;2/3
+      «&nbsp;Prev&nbsp;2/4
+    </a>
+    <a class="next" href="https://chenghuawang.github.io/keep-moving-forward/page/4/">Next&nbsp;4/4&nbsp;»
     </a>
   </nav>
 </footer>

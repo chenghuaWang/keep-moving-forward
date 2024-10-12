@@ -7,8 +7,41 @@
     <generator>Hugo -- 0.131.0</generator>
     <language>en</language>
     <copyright>chenghua.wang</copyright>
-    <lastBuildDate>Sun, 22 Sep 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 12 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://chenghuawang.github.io/keep-moving-forward/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Roofline Model</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/roofline_model/</link>
+      <pubDate>Sat, 12 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/roofline_model/</guid>
+      <description>在编写算子和框架的时候，经常需要分析程序的性能瓶颈。我们需要一个合适的指标和指导方法，Roofline model给出了一个简洁的定量分析方法。Roofline模型引入了一种基于Operational Intensity的定量分析方法，它定义了在计算平台上可实现的理论最大计算效率。该模型还提供了一个公式，用以计算在特定计算环境中可能达到的最高理论性能。
+我们先来看下roofline model的直观表示：
+Roofline ModelRoofline: An Insightful Visual Performance Model for Floating-Point Programs and Multicore Architectures
+我们先来看下图中指标的定义：
+计算强度 $I$ : 每Byte内存在交换后用于进行了多少浮点运算，即FLOPs/Bytes。模型的计算强度$I$越大，对于内存带宽的压力越小，内存的使用效率越高。
+算力的大小决定了屋顶的高度，带宽决定了斜率。
+在达到屋顶的转折点之前都是Memory Bound，在之后是Compute Bound。在Compute Bound的区域，不管计算强度$I$有多大，它的计算性能都由机器的实际最大计算性能所限制。
+Note:
+roofline model讲的是程序理论上可以达到的最好性能，而不是实际达到的性能。如cache大小的限制，网络限制，未必能达到roofline模型定义的边界。 </description>
+    </item>
+    <item>
+      <title>Xnnpack 使用指南</title>
+      <link>https://chenghuawang.github.io/keep-moving-forward/tech/xnnpack_guide/</link>
+      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://chenghuawang.github.io/keep-moving-forward/tech/xnnpack_guide/</guid>
+      <description>0x01 前言 XNNPACK是一个由Google维护的算子库，在TensorFlowLite，ExecuTorch，ONNX RT等众多知名框架中使用。笔者最近在做mllm的xnnpack后端适配工作，因xnnpack缺少文档，在此记录。
+xnnpack的test中展示了大部分xnnpack的API和使用方式，读者在碰到API使用问题的时候不妨去test文件夹下面找找答案；xnnpack遵循标准的doxygen注释，也较好的说明了函数和class的使用方法。
+在xnn中使用的是静态图构建的方法，在开始构建静态图之前，需要初始化xnn：
+xnn_initialize(nullptr /* allocator */) 使用如下API可以构建出一张subgraph，接下来的所有操作都在更改这张子图，
+xnn_subgraph_t subgraph_ = nullptr; auto status = xnn_create_subgraph(external_nums, 0, &amp;amp;subgraph_); 0x02 定义 Tensor 定义未经过量化的Tensor使用的API是：
+uint32_t uuid; status = xnn_define_tensor_value( /*subgraph*/..., /*dtype*/..., dims.size(), dims.data(), /*data=*/..., /*external id*/XNN_INVALID_VALUE_ID, /*flag*/0, /*id*/&amp;amp;uuid); 这里需要特殊解释的是external_id、flag和uuid三个值：
+external_id 是对于EXternal Inputs和Outputs才需要设置的，对于xnnpack内部管理的Tensor，不需要设置这个值，给出默认的XNN_INVALID_VALUE_ID就行。external_id的作用是让xnnpack可以从runtime中传入的external_values中索引到需要的Tensor值。详细解释如下： 在xnnpack中，每个Tensor都会有一个uuid，对于xnnpack自己管理的Tensor，uuid在定义的时候会由xnnpack自己生成。还记得在xnn_create_subgraph创建的时候需要传入external_nums吗？这里的external_nums就是用户侧预留的uuid。比如external_nums是3的时候，xnn_define_tensor_value就会从4开始计数给新创建的Tensor。而前3个Tensor，即external Tensor的uuid(external_id)就是1，2，3。
+flag flag是用来标识这个Tensor是不是External Inputs，Outputs或者是其他类型的Tensor。比如inputs tensor的flag是flags = XNN_VALUE_FLAG_EXTERNAL_INPUT;, outputs 是 flags = XNN_VALUE_FLAG_EXTERNAL_OUTPUT;
+uuid 是每个Tensor的全局索引标识
+题外话：
+在mllm中，Tensor的define过程如下：
+void defineXpTensor(XnnpackBackend *xpb, Tensor *t, XpTensorType ttype) { if (t-&amp;gt;uuid() !</description>
+    </item>
     <item>
       <title>【施工中】端侧大模型推理-算法-Part1: Deja Vu, LLM in a Flash</title>
       <link>https://chenghuawang.github.io/keep-moving-forward/tech/edgellms-algorithms-part-1/</link>
@@ -342,7 +375,7 @@ LLM Basics</description>
       <link>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</link>
       <pubDate>Sun, 01 Jan 2023 00:00:00 +0000</pubDate>
       <guid>https://chenghuawang.github.io/keep-moving-forward/about/tech_posts/</guid>
-      <description>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) 2024-08-19, [Fundamental] 模型量化 2024-08-21, [Fundamental] FlashDecoding Series MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities 2023-02-25, XV6 lab 2 syscall 2023-03-02, XV6 lab 3 page table 2023-03-12, XV6 lab 4 traps 2023-03-17, XV6 lab 5 copy on write Tools 2023-04-18, CUDA: NSight System Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法 Framework 2024-06-28, mllm框架浅析(一)-以QWen0.5B为例 2024-08-13, mllm框架浅析(二)-QNN-Backend Kernel Impls 2024-09-17, Q8_0 @ Q4_0_4 GEMM/GEMV in llama.</description>
+      <description>Fundamental 2024-08-10, [Fundamental]From Online Softmax to Flash Attention V3 2024-08-11, [Fundamental] 旋转位置编码(RoPE) 2024-08-19, [Fundamental] 模型量化 2024-08-21, [Fundamental] FlashDecoding Series MIT6.S081, XV6 Lab 2023-02-23, XV6 lab 1 Utilities 2023-02-25, XV6 lab 2 syscall 2023-03-02, XV6 lab 3 page table 2023-03-12, XV6 lab 4 traps 2023-03-17, XV6 lab 5 copy on write Tools 2023-04-18, CUDA: NSight System 2024-10-08, Xnnpack 使用指南 2024-10-12, Roofline Model Parallel 2023-05-02, 浅析机器学习中的并行模型和自动并行方法 Framework 2024-06-28, mllm框架浅析(一)-以QWen0.5B为例 2024-08-13, mllm框架浅析(二)-QNN-Backend Kernel Impls 2024-09-17, Q8_0 @ Q4_0_4 GEMM/GEMV in llama.</description>
     </item>
     <item>
       <title>论文解析</title>

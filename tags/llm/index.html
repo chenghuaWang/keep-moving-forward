@@ -172,6 +172,26 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">Roofline Model
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>在编写算子和框架的时候，经常需要分析程序的性能瓶颈。我们需要一个合适的指标和指导方法，Roofline model给出了一个简洁的定量分析方法。Roofline模型引入了一种基于Operational Intensity的定量分析方法，它定义了在计算平台上可实现的理论最大计算效率。该模型还提供了一个公式，用以计算在特定计算环境中可能达到的最高理论性能。
+我们先来看下roofline model的直观表示：
+Roofline ModelRoofline: An Insightful Visual Performance Model for Floating-Point Programs and Multicore Architectures
+我们先来看下图中指标的定义：
+计算强度 $I$ : 每Byte内存在交换后用于进行了多少浮点运算，即FLOPs/Bytes。模型的计算强度$I$越大，对于内存带宽的压力越小，内存的使用效率越高。
+算力的大小决定了屋顶的高度，带宽决定了斜率。
+在达到屋顶的转折点之前都是Memory Bound，在之后是Compute Bound。在Compute Bound的区域，不管计算强度$I$有多大，它的计算性能都由机器的实际最大计算性能所限制。
+Note:
+roofline model讲的是程序理论上可以达到的最好性能，而不是实际达到的性能。如cache大小的限制，网络限制，未必能达到roofline模型定义的边界。 </p>
+  </div>
+  <footer class="entry-footer"><span title='2024-10-12 00:00:00 +0000 UTC'>October 12, 2024</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;chenghua.Wang</footer>
+  <a class="entry-link" aria-label="post link to Roofline Model" href="https://chenghuawang.github.io/keep-moving-forward/tech/roofline_model/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">【施工中】端侧大模型推理-算法-Part1: Deja Vu, LLM in a Flash
     </h2>
   </header>
@@ -288,18 +308,6 @@ Fig 1. QuaRot workflow 1 Fig 2. QuaRot workflow 2 Quarot文中的图片已经非
   </div>
   <footer class="entry-footer"><span title='2024-08-11 00:00:00 +0000 UTC'>August 11, 2024</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;chenghua.Wang</footer>
   <a class="entry-link" aria-label="post link to [Fundamental] 旋转位置编码(RoPE)" href="https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_rope/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">[Fundamental] From Online Softmax to Flash Attention V3
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Flash Attention from Fundamental Series</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-08-10 00:00:00 +0000 UTC'>August 10, 2024</span>&nbsp;·&nbsp;7 min&nbsp;·&nbsp;chenghua.Wang</footer>
-  <a class="entry-link" aria-label="post link to [Fundamental] From Online Softmax to Flash Attention V3" href="https://chenghuawang.github.io/keep-moving-forward/tech/fundamental_from_online_softmax_to_flash_attentionv3/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
